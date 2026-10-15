@@ -31,5 +31,6 @@ enum class TipoCompaniaEnum(val etiqueta: String) {
 enum class AccesoDestinoEnum(val codigo: String) {
     A1("A1"),
     A2("A2"),
-    A3("A3")
+    A3("A3"),
+    A4("A4"),
 }
