@@ -10,6 +10,7 @@ val TerracotaRincon = Color(0xFFCC4E3C)
 val FondoGris = Color(0xFFF8F9FA)
 val TextoPrincipal = Color(0xFF1A1C1E)
 val BlancoTarjeta = Color(0xFFFFFFFF)
+val GrisDeshabilitado = Color(0xFFBDBDBD)
 
 // Colores de estado (opcionales para feedback en UI)
 val VerdeExito = Color(0xFF2E7D32)
