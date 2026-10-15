@@ -20,4 +20,8 @@ object Dimens {
     val tamanoIcono = 24.dp
     val buttonHeight = 52.dp
     val chipHeight = 36.dp
+
+    //tarjetas JOSE
+    val radioTarjeta = 16.dp
+    val elevacionTarjeta = 2.dp
 }

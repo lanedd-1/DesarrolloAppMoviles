@@ -33,8 +33,8 @@ fun EtiquetaEstado(
             text = texto,
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.padding(
-                horizontal = Dimens.medium,
-                vertical = Dimens.small
+                horizontal = Dimens.espacioMedio,
+                vertical = Dimens.espacioChico
             )
         )
     }
