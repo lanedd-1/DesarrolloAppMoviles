@@ -59,11 +59,10 @@ fun CampoTexto(
 private fun CampoTextoPreview() {
     RinconSurTheme {
         CampoTexto(
-            valor = "ana@",
+            valor = "15-09-2026",
             onValorCambia = {},
-            etiqueta = "Correo electrónico",
+            etiqueta = "Fecha",
             icono = R.drawable.ic_correo,
-            error = "Ingresa un correo válido",
             modifier = Modifier.padding(16.dp)
         )
     }
