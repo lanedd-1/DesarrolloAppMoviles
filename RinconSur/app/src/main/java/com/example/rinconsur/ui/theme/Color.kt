@@ -1,4 +1,4 @@
-package com.example.rinconsur.ui.ui.theme
+package com.example.rinconsur.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,3 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--JOSE RECABARREN -->
 <resources>
-    <string name="app_name">RinconSur</string>
+    <string name="app_name">Rincón Sur - Control</string>
+
+    <!-- Pantalla 1: Mis Sesiones (Observador) -->
+    <string name="titulo_mis_sesiones">Mis Sesiones</string>
+    <string name="subtitulo_observador">Hola, %1$s.</string>
+    <string name="descripcion_sesiones">Tus sesiones de observación de hoy.</string>
+    <string name="etiqueta_hoy">Hoy · %1$s</string>
+    <string name="estado_programada">Programada</string>
+    <string name="estado_finalizada">Finalizada</string>
+    <string name="btn_iniciar_observacion">Iniciar Observación</string>
+    <string name="alerta_por_validar">Por validar por supervisor</string>
+    <string name="estado_guardado_local">Guardada localmente · Sincronización pendiente</string>
+    <string name="alerta_sin_conexion">Sin conexión · Guardado local activo</string>
+    <string name="texto_aviso_conexion">Puedes observar sin internet. Los registros se sincronizarán al recuperar la conexión.</string>
+
+    <!-- Pantalla 2: Sesión en Curso (Registro de Pasillo) -->
+    <string name="titulo_sesion_en_curso">Sesión en Curso</string>
+    <string name="etiqueta_estado_curso">En curso · %1$s</string>
+    <string name="nuevo_registro_titulo">Nuevo registro</string>
+    <string name="aviso_solo_toca">Solo toca opciones</string>
+    <string name="etiqueta_clasificacion">Clasificación</string>
+    <string name="etiqueta_obligatoria">Obligatoria</string>
+    <string name="opcion_transito">Tránsito</string>
+    <string name="opcion_visita">Visita</string>
+    <string name="opcion_no_det">No det.</string>
+    <string name="etiqueta_rango_etario">Rango etario</string>
+    <string name="etiqueta_compania">Compañía</string>
+    <string name="opcion_solo">Solo</string>
+    <string name="opcion_pareja">Pareja</string>
+    <string name="opcion_con_ninos">Con niños</string>
+    <string name="opcion_grupo">Grupo 3+</string>
+    <string name="pregunta_bolsas">¿Trae bolsas de otra tienda?</string>
+    <string name="opcion_si">Sí</string>
+    <string name="opcion_no">No</string>
+    <string name="etiqueta_destino">Destino</string>
+    <string name="aviso_solo_si_transito">Solo si es Tránsito</string>
+    <string name="btn_guardar_registro">Guardar registro</string>
+    <string name="titulo_registros_sesion">Registros en esta sesión</string>
+    <string name="ultimo_registro_texto">Último: %1$s</string>
+    <string name="btn_anular_ultimo">Anular último registro</string>
+    <string name="aviso_sincronizacion_pendiente">Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.</string>
+
+    <!-- Pantalla 3: Métricas Jefatura -->
+    <string name="titulo_metricas">Métricas Rincón Sur</string>
+    <string name="etiqueta_jefatura">JEFATURA</string>
+    <string name="titulo_conversion_total">Conversión total</string>
+    <string name="etiqueta_conversion_bruta">Conversión bruta</string>
+    <string name="etiqueta_boletas_globales">Boletas globales</string>
+    <string name="etiqueta_ingresos_accesos">Ingresos · 4 accesos</string>
+    <string name="texto_explicacion_conversion">497 / 5.735 ingresos de sensores. Las boletas son de toda la tienda, no de una puerta.</string>
+    <string name="titulo_estimacion_accesos">Estimación por accesos</string>
+    <string name="texto_explicacion_estimacion">Sensores: ingresos medidos. Tránsito: proyección a partir de muestras validadas, no conteo exacto.</string>
+    <string name="etiqueta_ingresos_sensor">Ingresos de sensor</string>
+    <string name="etiqueta_transito_estimado">Tránsito estimado</string>
+    <string name="etiqueta_perfil_transito">Perfil del tránsito</string>
+    <string name="aviso_conversion_depurada">La conversión depurada requiere más datos</string>
+    <string name="texto_aviso_conversion_depurada">Debe descontar el tránsito estimado en todos los accesos. No se calcula con solo A4 y A1.</string>
+
+    <!-- Descripciones para accesibilidad (TalkBack) -->
+    <string name="cd_volver">Volver</string>
+    <string name="cd_icono_acceso">Ícono de acceso a tienda</string>
 </resources>

@@ -1,6 +1,5 @@
-package com.example.rinconsur.ui.ui.theme
+package com.example.rinconsur.ui.theme
 
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable

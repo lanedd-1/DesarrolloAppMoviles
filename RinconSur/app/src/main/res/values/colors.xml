@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--JOSE RECABARREN -->
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Paleta oficial Rincón Sur -->
+    <color name="burdeo_rincon">#7A1A24</color>
+    <color name="terracota_rincon">#CC4E3C</color>
+    <color name="fondo_gris">#F8F9FA</color>
+    <color name="texto_principal">#1A1C1E</color>
+    <color name="blanco_tarjeta">#FFFFFF</color>
+
+    <!-- Colores de estado y feedback -->
+    <color name="verde_exito">#2E7D32</color>
+    <color name="rojo_alerta">#D32F2F</color>
+    <color name="fondo_chip_seleccionado">#FBE9E7</color> <!-- Tono suave para chips seleccionados -->
+    <color name="sombra_imagen">#B3000000</color> <!-- negro al 70% de opacidad -->
 </resources>
