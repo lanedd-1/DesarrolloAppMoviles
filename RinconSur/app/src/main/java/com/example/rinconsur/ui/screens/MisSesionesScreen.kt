@@ -1,6 +1,7 @@
 package com.example.rinconsur.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -109,21 +110,23 @@ fun MisSesionesScreen(
                 }
             }
 
-            // Indicadores rápidos del día
+            // Indicadores rápidos del día (TarjetaEstadistica x2)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
             ) {
-                TarjetaEstadistica(
-                    etiqueta = "Sesiones Hoy",
-                    valor = "2 / 4",
-                    modifier = Modifier
-                )
-                TarjetaEstadistica(
-                    etiqueta = "Muestras Registradas",
-                    valor = "142",
-                    modifier = Modifier.weight(1f)
-                )
+                Box(modifier = Modifier.weight(1f)) {
+                    TarjetaEstadistica(
+                        valor = "2 / 4",
+                        etiqueta = "Sesiones Hoy"
+                    )
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    TarjetaEstadistica(
+                        valor = "142",
+                        etiqueta = "Muestras Registradas"
+                    )
+                }
             }
 
             // Lista de Sesiones Programadas
@@ -206,10 +209,9 @@ private fun ItemSesion(
     }
 }
 
-
 // ----------------------------- PREVIEW -----------------------------
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, showSystemUi = true, heightDp = 800)
 @Composable
 private fun MisSesionesScreenPreview() {
     RinconSurTheme {
