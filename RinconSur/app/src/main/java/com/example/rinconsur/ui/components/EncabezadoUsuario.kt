@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.rinconsur.R
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
@@ -45,7 +46,10 @@ fun EncabezadoUsuario(
                 fontWeight = FontWeight.Bold
             )
         }
-        AvatarCircular(iniciales = iniciales)
+        AvatarCircular(
+            imagen = R.drawable.ic_persona, // o la imagen de perfil que tengas en drawable
+            descripcion = "Foto de perfil"
+        )
     }
 }
 

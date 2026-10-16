@@ -25,7 +25,7 @@ object EstilosBoton {
     val forma = RoundedCornerShape(Dimens.cornerSmall)
 
     // Relleno interno
-    val relleno = PaddingValues(horizontal = Dimens.medium, vertical = Dimens.small)
+    val relleno = PaddingValues(horizontal = Dimens.espacioMedio, vertical = Dimens.espacioChico)
 
     // Estilos de colores para Botón Principal (Burdeo)
     @Composable

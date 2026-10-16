@@ -14,6 +14,8 @@ object Dimens {
     val radioCampo = 8.dp
     val radioTarjeta = 16.dp
     val cornerSmall = 8.dp
+
+    val cornerMedium = 16.dp
     val bordeAvatar = 4.dp
 
     // Tamaños de componentes
