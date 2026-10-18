@@ -31,7 +31,7 @@ fun TarjetaEstadistica(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         shape = EstilosTarjeta.forma,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
