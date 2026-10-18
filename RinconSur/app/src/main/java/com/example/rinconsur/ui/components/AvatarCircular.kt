@@ -41,6 +41,6 @@ fun AvatarCircular(
 @Composable
 private fun AvatarCircularPreview() {
     RinconSurTheme {
-        AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Foto de perfil", modifier = Modifier.padding(16.dp))
+        AvatarCircular(imagen = R.drawable.ic_correo, descripcion = "Foto de perfil", modifier = Modifier.padding(16.dp))
     }
 }

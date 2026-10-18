@@ -62,4 +62,6 @@
     <!-- Descripciones para accesibilidad (TalkBack) -->
     <string name="cd_volver">Volver</string>
     <string name="cd_icono_acceso">Ícono de acceso a tienda</string>
+    <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
+    <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
 </resources>

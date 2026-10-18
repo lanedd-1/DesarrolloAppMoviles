@@ -1,6 +1,5 @@
 package com.example.rinconsur.ui.components
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,12 +18,12 @@ import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
 
-// JOSE RECABARREN
+//JOSE RECABARREN
 @Composable
 fun EncabezadoUsuario(
     rol: String,
     nombreUsuario: String,
-    @DrawableRes imagenAvatar: Int,
+    iniciales: String,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -48,8 +47,8 @@ fun EncabezadoUsuario(
             )
         }
         AvatarCircular(
-            imagen = imagenAvatar,
-            descripcion = "Foto de perfil de $nombreUsuario"
+            imagen = R.drawable.ic_persona, // o la imagen de perfil que tengas en drawable
+            descripcion = "Foto de perfil"
         )
     }
 }
@@ -61,7 +60,7 @@ private fun EncabezadoUsuarioPreview() {
         EncabezadoUsuario(
             rol = "Perfil Observador",
             nombreUsuario = "Tamara R.",
-            imagenAvatar = R.drawable.ic_persona,
+            iniciales = "TR",
             modifier = Modifier.padding(16.dp)
         )
     }
