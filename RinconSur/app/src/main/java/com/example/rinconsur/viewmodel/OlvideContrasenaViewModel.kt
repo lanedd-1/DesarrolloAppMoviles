@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-
 data class OlvideContrasenaUiState(
     val correo: String = "",
     val codigoSms: String = "",
@@ -31,7 +30,6 @@ class OlvideContrasenaViewModel : ViewModel() {
         }
     }
 
-
     fun onEnviarCodigo(): Boolean {
         val correo = _uiState.value.correo
         val error = when {
@@ -45,7 +43,6 @@ class OlvideContrasenaViewModel : ViewModel() {
             return false
         }
 
-
         _uiState.update {
             it.copy(
                 codigoEnviado = true,
@@ -54,7 +51,6 @@ class OlvideContrasenaViewModel : ViewModel() {
         }
         return true
     }
-
 
     fun onVerificarCodigo(): Boolean {
         val codigo = _uiState.value.codigoSms

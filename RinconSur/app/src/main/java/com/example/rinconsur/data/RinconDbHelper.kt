@@ -161,4 +161,18 @@ class RinconDbHelper(context: Context) :
         rolId = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ROL)),
         rolNombre = cursor.getString(cursor.getColumnIndexOrThrow(ROL_NOMBRE))
     )
+
+    fun actualizarContrasena(correo: String, nuevaContrasena: String): Boolean {
+        val db = this.writableDatabase
+        val valores = ContentValues().apply {
+            put(USU_CONTRASENA, nuevaContrasena)
+        }
+        val filasAfectadas = db.update(
+            TABLA_USUARIOS,
+            valores,
+            "$USU_CORREO = ?",
+            arrayOf(correo)
+        )
+        return filasAfectadas > 0
+    }
 }
