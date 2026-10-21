@@ -23,7 +23,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
-import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.model.LoginUiState
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
@@ -56,9 +54,8 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // 1. Instanciamos la conexión a la Base de Datos local (SQLite)
+    // 1. Obtenemos el contexto de la aplicación para pasárselo a SQLite
     val contexto = LocalContext.current
-    val dbHelper = remember { RinconDbHelper(contexto) }
 
     LoginContent(
         uiState = uiState,
@@ -66,8 +63,8 @@ fun LoginScreen(
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         onIngresar = {
-            // 2. Le pasamos la Base de Datos a la función de validación
-            if (viewModel.onIngresar(dbHelper)) {
+            // 2. Le pasamos el contexto al ViewModel para que valide con RinconDbHelper
+            if (viewModel.onIngresar(contexto)) {
                 onLoginExitoso()
             }
         }
@@ -116,7 +113,6 @@ fun LoginContent(
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
         ) {
-            // Encabezado del login
             Column {
                 Text(
                     text = "ACCESO INTERNO",
@@ -137,11 +133,9 @@ fun LoginContent(
                 )
             }
 
-            // Tarjeta principal del formulario
             TarjetaSeccion(titulo = "Tu cuenta de trabajo") {
                 Spacer(modifier = Modifier.height(Dimens.espacioMini))
 
-                // Campo Correo
                 Column {
                     Text(
                         text = "Correo",
@@ -161,7 +155,6 @@ fun LoginContent(
 
                 Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
-                // Campo Contraseña
                 Column {
                     Text(
                         text = "Contraseña",
@@ -181,7 +174,6 @@ fun LoginContent(
 
                 Spacer(modifier = Modifier.height(Dimens.espacioMedio))
 
-                // Botón Iniciar Sesión
                 BotonPrincipal(
                     texto = "Iniciar sesión",
                     onClick = onIngresar,
@@ -199,7 +191,6 @@ fun LoginContent(
                 )
             }
 
-            // Tarjeta de Ayuda / Soporte
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -231,7 +222,6 @@ fun LoginContent(
 
             Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
-            // Pie de página
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
