@@ -23,20 +23,23 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
+import com.example.rinconsur.data.RinconDbHelper
+import com.example.rinconsur.model.LoginUiState
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
 import com.example.rinconsur.ui.components.CampoTexto
@@ -44,20 +47,42 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
-import androidx.compose.ui.res.painterResource
+import com.example.rinconsur.viewmodel.LoginViewModel
+
+@Composable
+fun LoginScreen(
+    onLoginExitoso: () -> Unit = {},
+    viewModel: LoginViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // 1. Instanciamos la conexión a la Base de Datos local (SQLite)
+    val contexto = LocalContext.current
+    val dbHelper = remember { RinconDbHelper(contexto) }
+
+    LoginContent(
+        uiState = uiState,
+        onCorreoCambia = viewModel::onCorreoCambia,
+        onContrasenaCambia = viewModel::onContrasenaCambia,
+        onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
+        onIngresar = {
+            // 2. Le pasamos la Base de Datos a la función de validación
+            if (viewModel.onIngresar(dbHelper)) {
+                onLoginExitoso()
+            }
+        }
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(
-    onLoginExitoso: () -> Unit = {}
+fun LoginContent(
+    uiState: LoginUiState,
+    onCorreoCambia: (String) -> Unit,
+    onContrasenaCambia: (String) -> Unit,
+    onAlternarVisibilidad: () -> Unit,
+    onIngresar: () -> Unit
 ) {
-    // Estado local visual (como enseña el profesor)
-    var correo by remember { mutableStateOf("") }
-    var contrasena by remember { mutableStateOf("") }
-    var contrasenaVisible by remember { mutableStateOf(false) }
-    var errorCorreo by remember { mutableStateOf<String?>(null) }
-    var errorContrasena by remember { mutableStateOf<String?>(null) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -125,14 +150,11 @@ fun LoginScreen(
                     )
                     Spacer(modifier = Modifier.height(Dimens.espacioMini))
                     CampoTexto(
-                        valor = correo,
-                        onValorCambia = {
-                            correo = it
-                            errorCorreo = null
-                        },
+                        valor = uiState.correo,
+                        onValorCambia = onCorreoCambia,
                         etiqueta = "Ingresa tu correo electrónico",
                         icono = R.drawable.ic_correo,
-                        error = errorCorreo,
+                        error = uiState.errorCorreo,
                         tipoTeclado = KeyboardType.Email
                     )
                 }
@@ -148,15 +170,12 @@ fun LoginScreen(
                     )
                     Spacer(modifier = Modifier.height(Dimens.espacioMini))
                     CampoContrasena(
-                        valor = contrasena,
-                        onValorCambia = {
-                            contrasena = it
-                            errorContrasena = null
-                        },
+                        valor = uiState.contrasena,
+                        onValorCambia = onContrasenaCambia,
                         etiqueta = "Ingresa tu contraseña",
-                        visible = contrasenaVisible,
-                        onAlternarVisible = { contrasenaVisible = !contrasenaVisible },
-                        error = errorContrasena
+                        visible = uiState.contrasenaVisible,
+                        onAlternarVisible = onAlternarVisibilidad,
+                        error = uiState.errorContrasena
                     )
                 }
 
@@ -165,16 +184,7 @@ fun LoginScreen(
                 // Botón Iniciar Sesión
                 BotonPrincipal(
                     texto = "Iniciar sesión",
-                    onClick = {
-                        // Validación básica como la del profesor
-                        if (correo.isBlank()) {
-                            errorCorreo = "El correo es obligatorio"
-                        } else if (contrasena.isBlank()) {
-                            errorContrasena = "La contraseña es obligatoria"
-                        } else {
-                            onLoginExitoso()
-                        }
-                    },
+                    onClick = onIngresar,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -227,7 +237,7 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Observadores · Supervisores · Jefatura",
+                    text = "Observadores · Jefe de Tienda · Administrador",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
@@ -244,10 +254,34 @@ fun LoginScreen(
 
 // ----------------------------- PREVIEWS -----------------------------
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, showSystemUi = true, name = "1. Login Limpio")
 @Composable
-private fun LoginScreenPreview() {
+private fun LoginLimpioPreview() {
     RinconSurTheme {
-        LoginScreen()
+        LoginContent(
+            uiState = LoginUiState(correo = "observador@RinconSur.cl"),
+            onCorreoCambia = {},
+            onContrasenaCambia = {},
+            onAlternarVisibilidad = {},
+            onIngresar = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "2. Login Con Errores")
+@Composable
+private fun LoginConErroresPreview() {
+    RinconSurTheme {
+        LoginContent(
+            uiState = LoginUiState(
+                correo = "observador@gmail.com",
+                errorCorreo = "Debe ser un correo institucional (@RinconSur.cl)",
+                errorContrasena = "La contraseña es obligatoria"
+            ),
+            onCorreoCambia = {},
+            onContrasenaCambia = {},
+            onAlternarVisibilidad = {},
+            onIngresar = {}
+        )
     }
 }
