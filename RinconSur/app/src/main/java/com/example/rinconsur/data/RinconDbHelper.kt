@@ -25,6 +25,7 @@ class RinconDbHelper(context: Context) :
         private const val USU_ID = "id_usuario"
         private const val USU_NOMBRE = "nombre"
         private const val USU_CORREO = "correo"
+        private const val USU_CONTRASENA = "contrasena"
         private const val USU_ROL = "id_rol"
 
         // Creación de tablas
@@ -155,6 +156,7 @@ class RinconDbHelper(context: Context) :
     private fun leerUsuario(cursor: Cursor) = Usuario(
         nombre = cursor.getString(cursor.getColumnIndexOrThrow(USU_NOMBRE)),
         correo = cursor.getString(cursor.getColumnIndexOrThrow(USU_CORREO)),
+        contrasena = cursor.getString(cursor.getColumnIndexOrThrow(USU_CONTRASENA)),
         id = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ID)),
         rolId = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ROL)),
         rolNombre = cursor.getString(cursor.getColumnIndexOrThrow(ROL_NOMBRE))

@@ -102,6 +102,7 @@ class FormularioViewModel : ViewModel() {
         return if (hayErrores) null else Usuario(
             nombre = estado.nombre,
             correo = correoLimpio,
+            contrasena = estado.contrasena,
             rolNombre = estado.rolSeleccionado
         )
     }
