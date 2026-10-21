@@ -1,25 +1,22 @@
 package com.example.rinconsur.model
 
-// =====================================================================
-//  SesionEnCursoUiState.kt — ESTADO DE LA PANTALLA DE REGISTRO EN VIVO
-//  ---------------------------------------------------------------------
-//  Mantiene todo lo que la vista necesita para dibujarse y actualizarse
-//  inmediatamente al tocar un botón en el modo "one-tap".
-// =====================================================================
-
 data class SesionEnCursoUiState(
     val accesoNombre: String = "Acceso A4",
-    val tiempoTranscurridosMin: Int = 14,
+    val ubicacionAcceso: String = "Conexión Ferretería",
+    val tiempoTranscurridoMin: Int = 14,
+    val observadorNombre: String = "Tamara R.",
+    val fecha: String = "15-09-2026",
+    val guardadoLocalActivo: Boolean = true,
 
-    // Opciones seleccionadas actualmente en el formulario táctil
-    val clasificacion: ClasificacionPersona = ClasificacionPersona.TRANSITO,
-    val rangoEtario: RangoEtarioEnum = RangoEtarioEnum.EDAD_26_40,
-    val compania: TipoCompaniaEnum = TipoCompaniaEnum.SOLO,
+    // Selecciones actuales (one-tap)
+    val clasificacionSeleccionada: ClasificacionPersona = ClasificacionPersona.TRANSITO,
+    val rangoEtarioSeleccionado: RangoEtarioEnum = RangoEtarioEnum.EDAD_26_40,
+    val companiaSeleccionada: TipoCompaniaEnum = TipoCompaniaEnum.SOLO,
     val traeBolsasOtraTienda: Boolean = false,
-    val destinoTrandito: AccesoDestinoEnum = AccesoDestinoEnum.A1,
+    val destinoSeleccionado: AccesoDestinoEnum = AccesoDestinoEnum.A1,
 
-    // Estadísticas rápidas en pantalla
+    // Historial y métricas de la sesión activa
     val totalRegistrosSesion: Int = 42,
-    val ultimoRegistroTexto: String = "Tránsito · 26–40 · Solo",
-    val guardandoLocalOffline: Boolean = true
+    val ultimoRegistroResumen: String = "Tránsito · 26–40 · Solo",
+    val permiteAnular: Boolean = true
 )
