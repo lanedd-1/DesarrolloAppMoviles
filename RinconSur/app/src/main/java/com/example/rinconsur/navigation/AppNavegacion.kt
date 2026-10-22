@@ -39,12 +39,13 @@ fun AppNavegacion() {
             )
         }
 
-        // 2. Recuperar contraseña: correo + código SMS
-        composable(Ruta.OlvideContrasena.ruta) {
+        // 2. Recuperar contraseña: correo + código de verificación
+        composable(route = Ruta.OlvideContrasena.ruta) {
             OlvideContrasenaScreen(
-                onCodigoVerificado = { correo ->
-                    navController.navigate(Ruta.CambiarContrasena.crear(correo)) {
-                        popUpTo(Ruta.OlvideContrasena.ruta) { inclusive = true }
+                onCodigoVerificado = { correoUsuario ->
+                    // Le pasamos el correo verificado a la siguiente pantalla
+                    navController.navigate(route = Ruta.CambiarContrasena.crear(correoUsuario)) {
+                        popUpTo(route = Ruta.OlvideContrasena.ruta) { inclusive = true }
                     }
                 },
                 onVolver = { navController.navigateUp() }
@@ -89,7 +90,7 @@ fun AppNavegacion() {
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
                     navController.navigate(Ruta.MisSesiones.ruta) {
-                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true } // Evita ciclos infinitos
+                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true }
                     }
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
@@ -112,42 +113,10 @@ fun AppNavegacion() {
                         popUpTo(Ruta.MisSesiones.ruta) { inclusive = true }
                     }
                 },
-                onIrCrearCuenta = { /* Ya estamos aquí, no hace nada */ },
+                onIrCrearCuenta = { /* Ya estamos aquí */ },
                 onCerrarSesion = {
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 }
-            )
-        }
-
-        composable("login") {
-            LoginScreen(
-                onLoginExitoso = {},
-                onOlvidasteContrasena = {
-                    navController.navigate("olvide_contrasena")
-                },
-                onVolver = { navController.popBackStack() }
-            )
-        }
-
-        composable("olvide_contrasena") {
-            OlvideContrasenaScreen(
-                onCodigoVerificado = {
-                    navController.navigate("cambiar_contrasena")
-                },
-                onVolver = { navController.popBackStack() }
-            )
-        }
-
-        composable("cambiar_contrasena") {
-            CambiarContrasenaScreen(
-                onCambioExitoso = {
-                    // Solución segura: Usamos popUpTo(0) para limpiar el historial
-                    // sin importar cómo se llame el nombre interno de la ruta inicial.
-                    navController.navigate("login") {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                onVolver = { navController.popBackStack() }
             )
         }
     }

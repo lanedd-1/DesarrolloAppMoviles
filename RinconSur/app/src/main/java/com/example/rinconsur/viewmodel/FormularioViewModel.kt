@@ -40,7 +40,6 @@ class FormularioViewModel : ViewModel() {
         _uiState.update { it.copy(contrasenaVisible = !it.contrasenaVisible) }
     }
 
-    // Convierte el nombre del rol elegido en el ID que guarda la BD
     private fun rolIdDesdeNombre(nombre: String): Long? = when (nombre) {
         "Observador de Pasillo" -> Rol.ID_OBSERVADOR
         "Jefe de Tienda" -> Rol.ID_JEFE_TIENDA
@@ -52,10 +51,8 @@ class FormularioViewModel : ViewModel() {
         val estado = _uiState.value
         val correoLimpio = estado.correo.trim().lowercase()
 
-        // 1. Nombre completo obligatorio
         val errorNombre = if (estado.nombre.isBlank()) "El nombre completo es obligatorio" else null
 
-        // 2. Correo corporativo estricto
         var errorCorreo = if (correoLimpio.isBlank()) {
             "El correo es obligatorio"
         } else if (!correoLimpio.contains("@")) {
@@ -66,14 +63,11 @@ class FormularioViewModel : ViewModel() {
             null
         }
 
-        // 3. Rol obligatorio
         val rolId = rolIdDesdeNombre(estado.rolSeleccionado)
         val errorRol = if (rolId == null) "Debes seleccionar un rol para el colaborador" else null
 
-        // Contraseña: min 8 caracteres, 1 mayúscula, 1 minúscula, 1 carácter especial
         val patronContrasena = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._\\-]).{8,}$".toRegex()
 
-        // 4. Validación de contraseña
         val errorContrasena = if (estado.contrasena.isBlank()) {
             "La contraseña es obligatoria"
         } else if (!estado.contrasena.matches(patronContrasena)) {
@@ -82,7 +76,6 @@ class FormularioViewModel : ViewModel() {
             null
         }
 
-        // 5. Confirmación idéntica
         val errorConfirmarContrasena = if (estado.confirmarContrasena.isBlank()) {
             "Confirma la contraseña"
         } else if (estado.confirmarContrasena != estado.contrasena) {
@@ -97,7 +90,6 @@ class FormularioViewModel : ViewModel() {
 
         var usuarioCreado: Usuario? = null
 
-        // 6. Si el formulario es válido, se guarda en la BD (el hash se calcula en crearUsuario)
         if (!hayErrores && rolId != null) {
             val dbHelper = RinconDbHelper(contexto)
 
@@ -115,7 +107,6 @@ class FormularioViewModel : ViewModel() {
                     errorCorreo = "No se pudo crear la cuenta, intenta nuevamente"
                     hayErrores = true
                 } else {
-                    // Se devuelve el usuario SIN la contraseña
                     usuarioCreado = Usuario(
                         id = nuevoId,
                         nombre = estado.nombre.trim(),

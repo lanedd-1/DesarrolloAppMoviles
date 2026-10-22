@@ -1,7 +1,12 @@
 package com.example.rinconsur.viewmodel
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
+import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,7 +15,7 @@ import kotlinx.coroutines.flow.update
 
 data class OlvideContrasenaUiState(
     val correo: String = "",
-    val codigoSms: String = "",
+    val codigoCorreo: String = "",
     val codigoEnviado: Boolean = false,
     val errorCorreo: String? = null,
     val errorCodigo: String? = null,
@@ -22,17 +27,15 @@ class OlvideContrasenaViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(OlvideContrasenaUiState())
     val uiState: StateFlow<OlvideContrasenaUiState> = _uiState.asStateFlow()
 
-    // Código generado al "enviar el SMS" (simulado)
     private var codigoGenerado: String = ""
 
     fun onCorreoCambia(valor: String) {
-        // Si cambia el correo, el código anterior deja de valer
         _uiState.update {
             it.copy(
                 correo = valor.trim().lowercase(),
                 errorCorreo = null,
                 codigoEnviado = false,
-                codigoSms = "",
+                codigoCorreo = "",
                 errorCodigo = null,
                 mensajeExito = null
             )
@@ -41,7 +44,7 @@ class OlvideContrasenaViewModel : ViewModel() {
 
     fun onCodigoCambia(valor: String) {
         if (valor.all { it.isDigit() } && valor.length <= 6) {
-            _uiState.update { it.copy(codigoSms = valor, errorCodigo = null) }
+            _uiState.update { it.copy(codigoCorreo = valor, errorCodigo = null) }
         }
     }
 
@@ -62,20 +65,53 @@ class OlvideContrasenaViewModel : ViewModel() {
             return false
         }
 
+
         codigoGenerado = (100000..999999).random().toString()
+
+
+        mostrarNotificacionCodigo(contexto, codigoGenerado)
 
         _uiState.update {
             it.copy(
                 codigoEnviado = true,
-                mensajeExito = "Código SMS enviado (simulado). Tu código es: $codigoGenerado"
+                mensajeExito = "¡Revisa la notificación en tu dispositivo! Código enviado."
             )
         }
         return true
     }
 
+
+    private fun mostrarNotificacionCodigo(contexto: Context, codigo: String) {
+        val channelId = "canal_recuperacion_rincon"
+        val notificationManager = contexto.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Recuperación de Contraseña",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Canal para enviar el código de verificación de Rincón Sur"
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val notificacion = NotificationCompat.Builder(contexto, channelId)
+            .setSmallIcon(R.drawable.ic_correo) // Asegúrate de tener este ícono en res/drawable
+            .setContentTitle("Rincón Sur - Código de Verificación")
+            .setContentText("Tu código de recuperación es: $codigo")
+            .setStyle(NotificationCompat.BigTextStyle().bigText("Tu código institucional es: $codigo. Ingrésalo en la aplicación para continuar."))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(101, notificacion)
+    }
+
     fun onVerificarCodigo(): Boolean {
-        val codigo = _uiState.value.codigoSms
-        if (codigo.length < 4) {
+        val codigo = _uiState.value.codigoCorreo
+        if (codigo.length < 6) {
             _uiState.update { it.copy(errorCodigo = "Ingresa el código completo de 6 dígitos") }
             return false
         }

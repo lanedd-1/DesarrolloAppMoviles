@@ -1,5 +1,7 @@
 package com.example.rinconsur.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,8 +35,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
+import com.example.rinconsur.permisos.Permisos
 import com.example.rinconsur.ui.components.BotonPrincipal
-import com.example.rinconsur.ui.components.BotonSecundario
 import com.example.rinconsur.ui.components.CampoTexto
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
@@ -50,11 +54,34 @@ fun OlvideContrasenaScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
 
+
+    val permisoNoti = Permisos.NOTIFICACIONES
+
+    val permisoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+        }
+    }
+
+
+    LaunchedEffect(Unit) {
+        if (permisoNoti.isNotEmpty() && !Permisos.tiene(contexto, permisoNoti)) {
+            permisoLauncher.launch(permisoNoti)
+        }
+    }
+
     OlvideContrasenaContent(
         uiState = uiState,
         onCorreoCambia = viewModel::onCorreoCambia,
         onCodigoCambia = viewModel::onCodigoCambia,
-        onEnviarCodigo = { viewModel.onEnviarCodigo(contexto) },
+        onEnviarCodigo = {
+            if (permisoNoti.isEmpty() || Permisos.tiene(contexto, permisoNoti)) {
+                viewModel.onEnviarCodigo(contexto)
+            } else {
+                Permisos.abrirAjustes(contexto)
+            }
+        },
         onVerificarCodigo = {
             if (viewModel.onVerificarCodigo()) {
                 onCodigoVerificado(uiState.correo)
@@ -88,7 +115,7 @@ fun OlvideContrasenaContent(
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_volver), // O tu ícono de volver
+                            painter = painterResource(R.drawable.ic_menu),
                             contentDescription = "Volver",
                             tint = Color.White
                         )
@@ -110,9 +137,9 @@ fun OlvideContrasenaContent(
         ) {
             Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
 
-            TarjetaSeccion(titulo = "Validación de Identidad") {
+            TarjetaSeccion(titulo = "Validación por Correo") {
                 Text(
-                    text = "Ingresa tu correo corporativo para enviarte un código SMS de verificación.",
+                    text = "Ingresa tu correo corporativo para enviarte un código de verificación.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
@@ -145,9 +172,9 @@ fun OlvideContrasenaContent(
 
 
                     CampoTexto(
-                        valor = uiState.codigoSms,
+                        valor = uiState.codigoCorreo,
                         onValorCambia = onCodigoCambia,
-                        etiqueta = "Ingresa código SMS (ej: 4892)",
+                        etiqueta = "Ingresa código de 6 dígitos",
                         icono = R.drawable.ic_correo,
                         error = uiState.errorCodigo,
                         tipoTeclado = KeyboardType.Number
@@ -159,10 +186,10 @@ fun OlvideContrasenaContent(
 
             Spacer(modifier = Modifier.height(Dimens.espacioGrande))
 
-            // Botones Dinámicos
+
             if (!uiState.codigoEnviado) {
                 BotonPrincipal(
-                    texto = "Enviar Código SMS",
+                    texto = "Enviar Código al Correo",
                     onClick = onEnviarCodigo,
                     modifier = Modifier.fillMaxWidth(0.9f)
                 )
@@ -179,7 +206,9 @@ fun OlvideContrasenaContent(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, name = "1. Pantalla Inicial Olvide Contraseña")
+
+
+@Preview(showBackground = true, showSystemUi = true, name = "1. Pantalla Inicial Correo")
 @Composable
 private fun OlvideContrasenaLimpioPreview() {
     RinconSurTheme {
@@ -194,7 +223,7 @@ private fun OlvideContrasenaLimpioPreview() {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, name = "2. Con Código SMS Enviado")
+@Preview(showBackground = true, showSystemUi = true, name = "2. Con Código Enviado por Correo")
 @Composable
 private fun OlvideContrasenaEnviadoPreview() {
     RinconSurTheme {
@@ -202,7 +231,7 @@ private fun OlvideContrasenaEnviadoPreview() {
             uiState = OlvideContrasenaUiState(
                 correo = "brandon@rinconsur.cl",
                 codigoEnviado = true,
-                mensajeExito = "¡Código SMS enviado a tu teléfono asociado!"
+                mensajeExito = "Código enviado al correo"
             ),
             onCorreoCambia = {},
             onCodigoCambia = {},
