@@ -163,7 +163,7 @@ fun MisSesionesScreen(
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_menu),
+                                painter = painterResource(R.drawable.ic_volver),
                                 contentDescription = "Abrir menú",
                                 tint = Color.White
                             )
