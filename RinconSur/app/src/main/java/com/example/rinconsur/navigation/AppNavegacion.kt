@@ -1,6 +1,9 @@
 package com.example.rinconsur.navigation
 
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,6 +19,7 @@ import com.example.rinconsur.ui.screens.SesionEnCursoScreen
 @Composable
 fun AppNavegacion() {
     val navController = rememberNavController()
+    val contexto = LocalContext.current
 
     NavHost(
         navController = navController,
@@ -28,11 +32,42 @@ fun AppNavegacion() {
                     navController.navigate(Ruta.MisSesiones.ruta) {
                         popUpTo(Ruta.Login.ruta) { inclusive = true }
                     }
+                },
+                onOlvidasteContrasena = {
+                    navController.navigate(Ruta.OlvideContrasena.ruta)
                 }
             )
         }
 
-        // 2. Mis Sesiones
+        // 2. Recuperar contraseña: correo + código SMS
+        composable(Ruta.OlvideContrasena.ruta) {
+            OlvideContrasenaScreen(
+                onCodigoVerificado = { correo ->
+                    navController.navigate(Ruta.CambiarContrasena.crear(correo)) {
+                        popUpTo(Ruta.OlvideContrasena.ruta) { inclusive = true }
+                    }
+                },
+                onVolver = { navController.navigateUp() }
+            )
+        }
+
+        // 3. Nueva contraseña (recibe el correo verificado)
+        composable(
+            route = Ruta.CambiarContrasena.ruta,
+            arguments = listOf(navArgument("correo") { type = NavType.StringType })
+        ) { entrada ->
+            val correo = Uri.decode(entrada.arguments?.getString("correo").orEmpty())
+            CambiarContrasenaScreen(
+                correoUsuario = correo,
+                onCambioExitoso = {
+                    Toast.makeText(contexto, "Contraseña actualizada. Inicia sesión.", Toast.LENGTH_LONG).show()
+                    navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
+                },
+                onVolver = { navController.navigateUp() }
+            )
+        }
+
+        // 4. Mis Sesiones
         composable(Ruta.MisSesiones.ruta) {
             MisSesionesScreen(
                 onIniciarSesionConteo = { acceso ->
@@ -45,7 +80,7 @@ fun AppNavegacion() {
             )
         }
 
-        // 3. Sesión en Curso (Ahora con acceso al Menú Lateral)
+        // 5. Sesión en Curso (con acceso al Menú Lateral)
         composable(
             route = Ruta.SesionEnCurso.ruta,
             arguments = listOf(navArgument("acceso") { type = NavType.StringType })
@@ -64,10 +99,13 @@ fun AppNavegacion() {
             )
         }
 
-        // 4. Formulario (Ahora con acceso al Menú Lateral)
+        // 6. Formulario (con acceso al Menú Lateral)
         composable(Ruta.Formulario.ruta) {
             FormularioScreen(
-                onRegistroExitoso = { _ -> navController.navigateUp() },
+                onRegistroExitoso = { usuario ->
+                    Toast.makeText(contexto, "Cuenta creada para ${usuario.nombre}", Toast.LENGTH_LONG).show()
+                    navController.navigateUp()
+                },
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
                     navController.navigate(Ruta.MisSesiones.ruta) {

@@ -22,40 +22,45 @@ class CambiarContrasenaViewModel : ViewModel() {
     val uiState: StateFlow<CambiarContrasenaUiState> = _uiState.asStateFlow()
 
     fun onContrasenaNuevaCambia(valor: String) {
-        _uiState.update {
-            it.copy(contrasenaNueva = valor, errorContrasenaNueva = null)
-        }
+        _uiState.update { it.copy(contrasenaNueva = valor, errorContrasenaNueva = null) }
     }
 
     fun onConfirmarContrasenaCambia(valor: String) {
-        _uiState.update {
-            it.copy(confirmarContrasena = valor, errorConfirmarContrasena = null)
-        }
+        _uiState.update { it.copy(confirmarContrasena = valor, errorConfirmarContrasena = null) }
     }
 
     fun onAlternarVisibilidad() {
         _uiState.update { it.copy(contrasenaVisible = !it.contrasenaVisible) }
     }
 
-
     fun onGuardarContrasena(correoUsuario: String, dbHelper: RinconDbHelper): Boolean {
         val estado = _uiState.value
 
+        // Mismas reglas que el formulario de registro
+        val patronContrasena = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._\\-]).{8,}$".toRegex()
+
         var errorNueva = when {
             estado.contrasenaNueva.isBlank() -> "La contraseña es obligatoria"
-            estado.contrasenaNueva.length < 6 -> "Mínimo 6 caracteres"
+            !estado.contrasenaNueva.matches(patronContrasena) ->
+                "Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 carácter especial"
             else -> null
         }
 
-        var errorConfirmar = when {
+        val errorConfirmar = when {
             estado.confirmarContrasena.isBlank() -> "Confirma la contraseña"
             estado.contrasenaNueva != estado.confirmarContrasena -> "Las contraseñas no coinciden"
             else -> null
         }
 
+        // Sin correo no sabemos qué cuenta actualizar
+        if (errorNueva == null && correoUsuario.isBlank()) {
+            errorNueva = "No se pudo identificar la cuenta, vuelve a iniciar el proceso"
+        }
+
         val hayErrores = errorNueva != null || errorConfirmar != null
 
         if (!hayErrores) {
+            // actualizarContrasena hashea con BCrypt antes de guardar
             dbHelper.actualizarContrasena(correoUsuario, estado.contrasenaNueva)
         }
 

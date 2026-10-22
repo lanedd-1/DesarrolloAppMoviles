@@ -84,6 +84,19 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     // METODOS DE CONSULTA Y ACTUALIZACION
     // ---------------------------------------------------------
 
+    fun crearUsuario(nombre: String, correo: String, contrasenaPlana: String, rolId: Long): Long {
+        val db = this.writableDatabase
+        val hash = BCrypt.withDefaults().hashToString(BCRYPT_COSTO, contrasenaPlana.toCharArray())
+
+        val valores = ContentValues().apply {
+            put(USU_NOMBRE, nombre.trim())
+            put(USU_CORREO, correo.trim().lowercase())
+            put(USU_CONTRASENA, hash)
+            put(USU_ROL, rolId)
+        }
+        return db.insert(TABLA_USUARIOS, null, valores)
+    }
+
     fun validarLogin(correo: String, contrasenaPlana: String): Boolean {
         val db = this.readableDatabase
         val correoLimpio = correo.trim().lowercase()
@@ -99,6 +112,17 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             val verificacion = BCrypt.verifyer().verify(contrasenaPlana.toCharArray(), hashGuardado.toCharArray())
             existe = verificacion.verified
         }
+        cursor.close()
+        return existe
+    }
+
+    fun existeCorreo(correo: String): Boolean {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT 1 FROM $TABLA_USUARIOS WHERE $USU_CORREO = ?",
+            arrayOf(correo.trim().lowercase())
+        )
+        val existe = cursor.moveToFirst()
         cursor.close()
         return existe
     }

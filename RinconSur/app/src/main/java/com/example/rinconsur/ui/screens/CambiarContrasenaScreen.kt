@@ -182,9 +182,9 @@ private fun CambiarContrasenaErroresPreview() {
     RinconSurTheme {
         CambiarContrasenaContent(
             uiState = CambiarContrasenaUiState(
-                contrasenaNueva = "123",
+                contrasenaNueva = "rin",
                 confirmarContrasena = "12345",
-                errorContrasenaNueva = "Mínimo 6 caracteres",
+                errorContrasenaNueva = "Mínimo 8 caracteres, 1 mayuscula , 1 minuscula y 1 caracter especial",
                 errorConfirmarContrasena = "Las contraseñas no coinciden"
             ),
             onContrasenaNuevaCambia = {},

@@ -1,7 +1,10 @@
 package com.example.rinconsur.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.model.FormularioUiState
+import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,15 +40,23 @@ class FormularioViewModel : ViewModel() {
         _uiState.update { it.copy(contrasenaVisible = !it.contrasenaVisible) }
     }
 
-    fun onRegistrar(): Usuario? {
+    // Convierte el nombre del rol elegido en el ID que guarda la BD
+    private fun rolIdDesdeNombre(nombre: String): Long? = when (nombre) {
+        "Observador de Pasillo" -> Rol.ID_OBSERVADOR
+        "Jefe de Tienda" -> Rol.ID_JEFE_TIENDA
+        "Administrador" -> Rol.ID_ADMINISTRADOR
+        else -> null
+    }
+
+    fun onRegistrar(contexto: Context): Usuario? {
         val estado = _uiState.value
         val correoLimpio = estado.correo.trim().lowercase()
 
         // 1. Nombre completo obligatorio
         val errorNombre = if (estado.nombre.isBlank()) "El nombre completo es obligatorio" else null
 
-        // 2. Correo corporativo estricto (@RinconSur.cl insensible a mayúsculas/minúsculas)
-        val errorCorreo = if (correoLimpio.isBlank()) {
+        // 2. Correo corporativo estricto
+        var errorCorreo = if (correoLimpio.isBlank()) {
             "El correo es obligatorio"
         } else if (!correoLimpio.contains("@")) {
             "Ingresa un correo válido"
@@ -55,13 +66,14 @@ class FormularioViewModel : ViewModel() {
             null
         }
 
-        // 3. Selección obligatoria de Rol/Cargo
-        val errorRol = if (estado.rolSeleccionado.isBlank()) "Debes seleccionar un rol para el colaborador" else null
+        // 3. Rol obligatorio
+        val rolId = rolIdDesdeNombre(estado.rolSeleccionado)
+        val errorRol = if (rolId == null) "Debes seleccionar un rol para el colaborador" else null
 
-        // Regex para Contraseña: min 8 caracteres, 1 mayúscula, 1 minúscula, 1 carácter especial
+        // Contraseña: min 8 caracteres, 1 mayúscula, 1 minúscula, 1 carácter especial
         val patronContrasena = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._\\-]).{8,}$".toRegex()
 
-        // 4. Validación de contraseña con los nuevos requisitos
+        // 4. Validación de contraseña
         val errorContrasena = if (estado.contrasena.isBlank()) {
             "La contraseña es obligatoria"
         } else if (!estado.contrasena.matches(patronContrasena)) {
@@ -70,7 +82,7 @@ class FormularioViewModel : ViewModel() {
             null
         }
 
-        // 5. Confirmación de contraseña idéntica
+        // 5. Confirmación idéntica
         val errorConfirmarContrasena = if (estado.confirmarContrasena.isBlank()) {
             "Confirma la contraseña"
         } else if (estado.confirmarContrasena != estado.contrasena) {
@@ -79,14 +91,41 @@ class FormularioViewModel : ViewModel() {
             null
         }
 
-        // Evaluación de errores al estilo exacto de tu profesor
-        val hayErrores = listOf(
-            errorNombre,
-            errorCorreo,
-            errorRol,
-            errorContrasena,
-            errorConfirmarContrasena
+        var hayErrores = listOf(
+            errorNombre, errorCorreo, errorRol, errorContrasena, errorConfirmarContrasena
         ).any { it != null }
+
+        var usuarioCreado: Usuario? = null
+
+        // 6. Si el formulario es válido, se guarda en la BD (el hash se calcula en crearUsuario)
+        if (!hayErrores && rolId != null) {
+            val dbHelper = RinconDbHelper(contexto)
+
+            if (dbHelper.existeCorreo(correoLimpio)) {
+                errorCorreo = "Ya existe una cuenta con este correo"
+                hayErrores = true
+            } else {
+                val nuevoId = dbHelper.crearUsuario(
+                    nombre = estado.nombre,
+                    correo = correoLimpio,
+                    contrasenaPlana = estado.contrasena,
+                    rolId = rolId
+                )
+                if (nuevoId == -1L) {
+                    errorCorreo = "No se pudo crear la cuenta, intenta nuevamente"
+                    hayErrores = true
+                } else {
+                    // Se devuelve el usuario SIN la contraseña
+                    usuarioCreado = Usuario(
+                        id = nuevoId,
+                        nombre = estado.nombre.trim(),
+                        correo = correoLimpio,
+                        rolId = rolId,
+                        rolNombre = estado.rolSeleccionado
+                    )
+                }
+            }
+        }
 
         _uiState.update {
             it.copy(
@@ -99,12 +138,7 @@ class FormularioViewModel : ViewModel() {
             )
         }
 
-        return if (hayErrores) null else Usuario(
-            nombre = estado.nombre,
-            correo = correoLimpio,
-            contrasena = estado.contrasena,
-            rolNombre = estado.rolSeleccionado
-        )
+        return if (hayErrores) null else usuarioCreado
     }
 
     fun onLimpiar() {

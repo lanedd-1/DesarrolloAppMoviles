@@ -1,6 +1,8 @@
 package com.example.rinconsur.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.example.rinconsur.data.RinconDbHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,8 +22,21 @@ class OlvideContrasenaViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(OlvideContrasenaUiState())
     val uiState: StateFlow<OlvideContrasenaUiState> = _uiState.asStateFlow()
 
+    // Código generado al "enviar el SMS" (simulado)
+    private var codigoGenerado: String = ""
+
     fun onCorreoCambia(valor: String) {
-        _uiState.update { it.copy(correo = valor.trim().lowercase(), errorCorreo = null) }
+        // Si cambia el correo, el código anterior deja de valer
+        _uiState.update {
+            it.copy(
+                correo = valor.trim().lowercase(),
+                errorCorreo = null,
+                codigoEnviado = false,
+                codigoSms = "",
+                errorCodigo = null,
+                mensajeExito = null
+            )
+        }
     }
 
     fun onCodigoCambia(valor: String) {
@@ -30,12 +45,16 @@ class OlvideContrasenaViewModel : ViewModel() {
         }
     }
 
-    fun onEnviarCodigo(): Boolean {
+    fun onEnviarCodigo(contexto: Context): Boolean {
         val correo = _uiState.value.correo
-        val error = when {
+        var error = when {
             correo.isBlank() -> "El correo es obligatorio"
             !correo.endsWith("@rinconsur.cl") -> "Debe ser un correo institucional (@RinconSur.cl)"
             else -> null
+        }
+
+        if (error == null && !RinconDbHelper(contexto).existeCorreo(correo)) {
+            error = "Esta cuenta no está registrada"
         }
 
         if (error != null) {
@@ -43,10 +62,12 @@ class OlvideContrasenaViewModel : ViewModel() {
             return false
         }
 
+        codigoGenerado = (100000..999999).random().toString()
+
         _uiState.update {
             it.copy(
                 codigoEnviado = true,
-                mensajeExito = "¡Código SMS enviado a tu teléfono asociado!"
+                mensajeExito = "Código SMS enviado (simulado). Tu código es: $codigoGenerado"
             )
         }
         return true
@@ -55,13 +76,18 @@ class OlvideContrasenaViewModel : ViewModel() {
     fun onVerificarCodigo(): Boolean {
         val codigo = _uiState.value.codigoSms
         if (codigo.length < 4) {
-            _uiState.update { it.copy(errorCodigo = "Ingresa el código completo de 4 o 6 dígitos") }
+            _uiState.update { it.copy(errorCodigo = "Ingresa el código completo de 6 dígitos") }
+            return false
+        }
+        if (codigo != codigoGenerado) {
+            _uiState.update { it.copy(errorCodigo = "Código incorrecto") }
             return false
         }
         return true
     }
 
     fun onLimpiar() {
+        codigoGenerado = ""
         _uiState.value = OlvideContrasenaUiState()
     }
 }
