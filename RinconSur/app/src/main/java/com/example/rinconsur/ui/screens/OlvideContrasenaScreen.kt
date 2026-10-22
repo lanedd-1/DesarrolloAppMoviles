@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,20 +43,21 @@ import com.example.rinconsur.viewmodel.OlvideContrasenaViewModel
 
 @Composable
 fun OlvideContrasenaScreen(
-    onCodigoVerificado: () -> Unit = {},
+    onCodigoVerificado: (String) -> Unit = {},
     onVolver: () -> Unit = {},
     viewModel: OlvideContrasenaViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val contexto = LocalContext.current
 
     OlvideContrasenaContent(
         uiState = uiState,
         onCorreoCambia = viewModel::onCorreoCambia,
         onCodigoCambia = viewModel::onCodigoCambia,
-        onEnviarCodigo = { viewModel.onEnviarCodigo() },
+        onEnviarCodigo = { viewModel.onEnviarCodigo(contexto) },
         onVerificarCodigo = {
             if (viewModel.onVerificarCodigo()) {
-                onCodigoVerificado()
+                onCodigoVerificado(uiState.correo)
             }
         },
         onVolver = onVolver
@@ -86,7 +88,7 @@ fun OlvideContrasenaContent(
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_menu), // O tu ícono de volver
+                            painter = painterResource(R.drawable.ic_volver), //
                             contentDescription = "Volver",
                             tint = Color.White
                         )
