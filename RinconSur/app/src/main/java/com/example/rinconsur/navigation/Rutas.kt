@@ -1,5 +1,7 @@
 package com.example.rinconsur.navigation
 
+import android.net.Uri
+
 // =====================================================================
 //  Ruta.kt — Identificadores de pantalla para el NavHost
 // =====================================================================
@@ -14,6 +16,14 @@ sealed class Ruta(val ruta: String) {
 
     // Pantalla para crear un nuevo usuario/colaborador
     data object Formulario : Ruta("formulario")
+
+    // Recuperación de contraseña (correo + código SMS)
+    data object OlvideContrasena : Ruta("olvide_contrasena")
+
+    // Nueva contraseña: recibe el correo de la cuenta a actualizar
+    data object CambiarContrasena : Ruta("cambiar_contrasena/{correo}") {
+        fun crear(correo: String) = "cambiar_contrasena/${Uri.encode(correo)}"
+    }
 
     // Pantalla de conteo que recibe qué puerta/acceso se seleccionó
     data object SesionEnCurso : Ruta("sesion_en_curso/{acceso}") {
