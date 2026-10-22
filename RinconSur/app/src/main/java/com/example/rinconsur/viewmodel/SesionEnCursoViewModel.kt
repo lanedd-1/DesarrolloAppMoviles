@@ -16,7 +16,6 @@ class SesionEnCursoViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(SesionEnCursoUiState())
     val uiState: StateFlow<SesionEnCursoUiState> = _uiState.asStateFlow()
 
-    // Historial temporal en memoria para permitir anular el último registro
     private val historialRegistros = mutableListOf<String>()
 
     init {

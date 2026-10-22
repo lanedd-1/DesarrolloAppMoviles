@@ -39,12 +39,13 @@ fun AppNavegacion() {
             )
         }
 
-        // 2. Recuperar contraseña: correo + código SMS
-        composable(Ruta.OlvideContrasena.ruta) {
+        // 2. Recuperar contraseña: correo + código de verificación
+        composable(route = Ruta.OlvideContrasena.ruta) {
             OlvideContrasenaScreen(
-                onCodigoVerificado = { correo ->
-                    navController.navigate(Ruta.CambiarContrasena.crear(correo)) {
-                        popUpTo(Ruta.OlvideContrasena.ruta) { inclusive = true }
+                onCodigoVerificado = { correoUsuario ->
+                    // Le pasamos el correo verificado a la siguiente pantalla
+                    navController.navigate(route = Ruta.CambiarContrasena.crear(correoUsuario)) {
+                        popUpTo(route = Ruta.OlvideContrasena.ruta) { inclusive = true }
                     }
                 },
                 onVolver = { navController.navigateUp() }
@@ -89,7 +90,7 @@ fun AppNavegacion() {
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
                     navController.navigate(Ruta.MisSesiones.ruta) {
-                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true } // Evita ciclos infinitos
+                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true }
                     }
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
@@ -112,7 +113,7 @@ fun AppNavegacion() {
                         popUpTo(Ruta.MisSesiones.ruta) { inclusive = true }
                     }
                 },
-                onIrCrearCuenta = { /* Ya estamos aquí, no hace nada */ },
+                onIrCrearCuenta = { /* Ya estamos aquí */ },
                 onCerrarSesion = {
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 }

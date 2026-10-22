@@ -36,7 +36,6 @@ class CambiarContrasenaViewModel : ViewModel() {
     fun onGuardarContrasena(correoUsuario: String, dbHelper: RinconDbHelper): Boolean {
         val estado = _uiState.value
 
-        // Mismas reglas que el formulario de registro
         val patronContrasena = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._\\-]).{8,}$".toRegex()
 
         var errorNueva = when {
@@ -52,7 +51,6 @@ class CambiarContrasenaViewModel : ViewModel() {
             else -> null
         }
 
-        // Sin correo no sabemos qué cuenta actualizar
         if (errorNueva == null && correoUsuario.isBlank()) {
             errorNueva = "No se pudo identificar la cuenta, vuelve a iniciar el proceso"
         }
@@ -60,7 +58,6 @@ class CambiarContrasenaViewModel : ViewModel() {
         val hayErrores = errorNueva != null || errorConfirmar != null
 
         if (!hayErrores) {
-            // actualizarContrasena hashea con BCrypt antes de guardar
             dbHelper.actualizarContrasena(correoUsuario, estado.contrasenaNueva)
         }
 
