@@ -1,5 +1,6 @@
 package com.example.rinconsur.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -45,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -62,10 +66,13 @@ import com.example.rinconsur.ui.components.AvatarCircular
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.BotonSecundario
 import com.example.rinconsur.ui.components.DialogoCerrarSesion
+import com.example.rinconsur.ui.components.DialogoPausarSesion
+import com.example.rinconsur.ui.components.DialogoFinalizarSesion // Asumiendo que creaste este componente también
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
+import com.example.rinconsur.ui.theme.RojoAlerta
 import com.example.rinconsur.ui.theme.TerracotaRincon
 import com.example.rinconsur.viewmodel.SesionEnCursoViewModel
 import kotlinx.coroutines.launch
@@ -79,6 +86,7 @@ fun SesionEnCursoScreen(
     viewModel: SesionEnCursoViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val contexto = LocalContext.current
 
     SesionEnCursoContent(
         uiState = uiState,
@@ -87,9 +95,13 @@ fun SesionEnCursoScreen(
         onCompaniaSeleccionada = viewModel::onCompaniaSeleccionada,
         onBolsasOtraTiendaCambia = viewModel::onBolsasOtraTiendaCambia,
         onDestinoSeleccionado = viewModel::onDestinoSeleccionado,
-        onGuardarRegistro = viewModel::onGuardarRegistro,
-        onAnularUltimoRegistro = viewModel::onAnularUltimoRegistro,
-        onVolver = onVolver, // <- Aquí pasamos la función
+        onGuardarRegistro = { viewModel.onGuardarRegistro(contexto) },
+        onFinalizarSesion = {
+            viewModel.finalizarSesionConteo(contexto)
+            onVolver()
+        },
+        onAnularUltimoRegistro = { viewModel.onAnularUltimoRegistro(contexto) },
+        onVolver = onVolver,
         onIrMisSesiones = onIrMisSesiones,
         onIrCrearCuenta = onIrCrearCuenta,
         onCerrarSesion = onCerrarSesion
@@ -106,8 +118,9 @@ fun SesionEnCursoContent(
     onBolsasOtraTiendaCambia: (Boolean) -> Unit,
     onDestinoSeleccionado: (AccesoDestinoEnum) -> Unit,
     onGuardarRegistro: () -> Unit,
+    onFinalizarSesion: () -> Unit, // <- Faltaba este parámetro
     onAnularUltimoRegistro: () -> Unit,
-    onVolver: () -> Unit = {}, // <- Añadido al constructor
+    onVolver: () -> Unit = {},
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
@@ -116,14 +129,30 @@ fun SesionEnCursoContent(
     val scope = rememberCoroutineScope()
 
     var mostrarDialogo by remember { mutableStateOf(false) }
+    var mostrarDialogoFinalizar by remember { mutableStateOf(false) }
+    var mostrarDialogoPausar by remember { mutableStateOf(false) }
+
+    // Intercepta el botón físico del celular
+    BackHandler { mostrarDialogoPausar = true }
 
     if (mostrarDialogo) {
         DialogoCerrarSesion(
-            onConfirmar = {
-                mostrarDialogo = false
-                onCerrarSesion()
-            },
+            onConfirmar = { mostrarDialogo = false; onCerrarSesion() },
             onCancelar = { mostrarDialogo = false }
+        )
+    }
+
+    if (mostrarDialogoPausar) {
+        DialogoPausarSesion(
+            onConfirmar = { mostrarDialogoPausar = false; onVolver() },
+            onCancelar = { mostrarDialogoPausar = false }
+        )
+    }
+
+    if (mostrarDialogoFinalizar) {
+        DialogoFinalizarSesion(
+            onConfirmar = { mostrarDialogoFinalizar = false; onFinalizarSesion() },
+            onCancelar = { mostrarDialogoFinalizar = false }
         )
     }
 
@@ -131,37 +160,13 @@ fun SesionEnCursoContent(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text(
-                    text = "Rincón Sur",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(Dimens.espacioMedio)
-                )
+                Text(text = "Rincón Sur", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(Dimens.espacioMedio))
                 HorizontalDivider()
-
-                NavigationDrawerItem(
-                    label = { Text("Mis Sesiones") },
-                    selected = false,
-                    onClick = { scope.launch { drawerState.close() }; onIrMisSesiones() },
-                    modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
-                )
-
-                NavigationDrawerItem(
-                    label = { Text("Registrar Colaborador") },
-                    selected = false,
-                    onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() },
-                    modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
-                )
-
+                NavigationDrawerItem(label = { Text("Mis Sesiones") }, selected = false, onClick = { scope.launch { drawerState.close() }; onIrMisSesiones() }, modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini))
+                NavigationDrawerItem(label = { Text("Registrar Colaborador") }, selected = false, onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() }, modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini))
                 Spacer(modifier = Modifier.weight(1f))
                 HorizontalDivider()
-
-                NavigationDrawerItem(
-                    label = { Text("Cerrar sesión", color = MaterialTheme.colorScheme.error) },
-                    selected = false,
-                    onClick = { scope.launch { drawerState.close() }; mostrarDialogo = true },
-                    modifier = Modifier.padding(Dimens.espacioChico)
-                )
+                NavigationDrawerItem(label = { Text("Cerrar sesión", color = MaterialTheme.colorScheme.error) }, selected = false, onClick = { scope.launch { drawerState.close() }; mostrarDialogo = true }, modifier = Modifier.padding(Dimens.espacioChico))
             }
         }
     ) {
@@ -175,13 +180,12 @@ fun SesionEnCursoContent(
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { onVolver() }) { //
+                        // Conecta la flecha superior al diálogo de pausa
+                        IconButton(onClick = { mostrarDialogoPausar = true }) {
                             Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = "Volver atrás", tint = Color.White)
                         }
                     },
-                    actions = {
-                        AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Observador", modifier = Modifier.padding(end = Dimens.espacioMedio).size(36.dp))
-                    },
+                    actions = { AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Observador", modifier = Modifier.padding(end = Dimens.espacioMedio).size(36.dp)) },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
                 )
             },
@@ -195,12 +199,7 @@ fun SesionEnCursoContent(
                     .padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
             ) {
-                // Cabecera informativa del acceso y cronómetro
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(modifier = Modifier.size(8.dp).clip(RoundedCornerShape(50)).background(Color(0xFFD32F2F)))
@@ -212,14 +211,9 @@ fun SesionEnCursoContent(
                     Text(text = "⏱ ${uiState.tiempoTranscurridoMin} min", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 }
 
-                // Banner informativo de sincronización offline
                 if (uiState.guardadoLocalActivo) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(Dimens.cornerSmall))
-                            .background(Color(0xFFE8F5E9))
-                            .padding(horizontal = Dimens.espacioMedio, vertical = Dimens.espacioChico),
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(Dimens.cornerSmall)).background(Color(0xFFE8F5E9)).padding(horizontal = Dimens.espacioMedio, vertical = Dimens.espacioChico),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(painter = painterResource(R.drawable.ic_check), contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(18.dp))
@@ -228,61 +222,40 @@ fun SesionEnCursoContent(
                     }
                 }
 
-                // Contenedor principal de captura de muestra rápida
                 TarjetaSeccion(titulo = "Nuevo registro") {
                     Text("Solo toca opciones", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                     Spacer(modifier = Modifier.height(Dimens.espacioMini))
 
-                    // 1. Clasificación
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text("Clasificación", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                         Text("Obligatoria", style = MaterialTheme.typography.bodySmall, color = BurdeoRincon, fontWeight = FontWeight.Bold)
                     }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        ClasificacionPersona.entries.forEach { opcion ->
-                            BotonOpcionTactil(texto = opcion.etiqueta, seleccionado = uiState.clasificacionSeleccionada == opcion, onClick = { onClasificacionSeleccionada(opcion) })
-                        }
+                        ClasificacionPersona.entries.forEach { opcion -> BotonOpcionTactil(texto = opcion.etiqueta, seleccionado = uiState.clasificacionSeleccionada == opcion, onClick = { onClasificacionSeleccionada(opcion) }) }
                     }
 
                     Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
-                    // 2. Rango Etario
                     Text("Rango etario", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        RangoEtarioEnum.entries.forEach { rango ->
-                            BotonOpcionTactil(texto = rango.etiqueta, seleccionado = uiState.rangoEtarioSeleccionado == rango, onClick = { onRangoEtarioSeleccionado(rango) })
-                        }
+                        RangoEtarioEnum.entries.forEach { rango -> BotonOpcionTactil(texto = rango.etiqueta, seleccionado = uiState.rangoEtarioSeleccionado == rango, onClick = { onRangoEtarioSeleccionado(rango) }) }
                     }
 
                     Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
-                    // 3. Compañía
                     Text("Compañía", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        TipoCompaniaEnum.entries.forEach { comp ->
-                            BotonOpcionTactil(texto = comp.etiqueta, seleccionado = uiState.companiaSeleccionada == comp, onClick = { onCompaniaSeleccionada(comp) })
-                        }
+                        TipoCompaniaEnum.entries.forEach { comp -> BotonOpcionTactil(texto = comp.etiqueta, seleccionado = uiState.companiaSeleccionada == comp, onClick = { onCompaniaSeleccionada(comp) }) }
                     }
 
                     Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
-                    // 4. Bolsas de otra tienda (Refactorizado)
                     Text("¿Trae bolsas de otra tienda?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        if (uiState.traeBolsasOtraTienda) {
-                            BotonPrincipal(texto = "Sí", onClick = { onBolsasOtraTiendaCambia(true) }, modifier = Modifier.weight(1f))
-                        } else {
-                            BotonSecundario(texto = "Sí", onClick = { onBolsasOtraTiendaCambia(true) }, modifier = Modifier.weight(1f))
-                        }
-
-                        if (!uiState.traeBolsasOtraTienda) {
-                            BotonPrincipal(texto = "No", onClick = { onBolsasOtraTiendaCambia(false) }, modifier = Modifier.weight(1f))
-                        } else {
-                            BotonSecundario(texto = "No", onClick = { onBolsasOtraTiendaCambia(false) }, modifier = Modifier.weight(1f))
-                        }
+                        if (uiState.traeBolsasOtraTienda) BotonPrincipal(texto = "Sí", onClick = { onBolsasOtraTiendaCambia(true) }, modifier = Modifier.weight(1f)) else BotonSecundario(texto = "Sí", onClick = { onBolsasOtraTiendaCambia(true) }, modifier = Modifier.weight(1f))
+                        if (!uiState.traeBolsasOtraTienda) BotonPrincipal(texto = "No", onClick = { onBolsasOtraTiendaCambia(false) }, modifier = Modifier.weight(1f)) else BotonSecundario(texto = "No", onClick = { onBolsasOtraTiendaCambia(false) }, modifier = Modifier.weight(1f))
                     }
 
-                    // 5. Destino (visible solo si es Tránsito)
                     if (uiState.clasificacionSeleccionada == ClasificacionPersona.TRANSITO) {
                         Spacer(modifier = Modifier.height(Dimens.espacioChico))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -290,17 +263,25 @@ fun SesionEnCursoContent(
                             Text("Solo si es Tránsito", style = MaterialTheme.typography.bodySmall, color = TerracotaRincon)
                         }
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                            AccesoDestinoEnum.entries.forEach { dest ->
-                                BotonOpcionTactil(texto = dest.codigo, seleccionado = uiState.destinoSeleccionado == dest, onClick = { onDestinoSeleccionado(dest) })
-                            }
+                            AccesoDestinoEnum.entries.forEach { dest -> BotonOpcionTactil(texto = dest.codigo, seleccionado = uiState.destinoSeleccionado == dest, onClick = { onDestinoSeleccionado(dest) }) }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(Dimens.espacioMedio))
                     BotonPrincipal(texto = "Guardar registro", onClick = onGuardarRegistro, modifier = Modifier.fillMaxWidth())
+
+                    Spacer(modifier = Modifier.height(Dimens.espacioChico))
+                    // Botón Finalizar movido debajo de Guardar
+                    Button(
+                        onClick = { mostrarDialogoFinalizar = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = RojoAlerta),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, RojoAlerta)
+                    ) {
+                        Text("Finalizar registro", fontWeight = FontWeight.Bold)
+                    }
                 }
 
-                // Contador de sesión y botón de anulación inmediata
                 Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                     Column(modifier = Modifier.padding(Dimens.espacioMedio), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -314,79 +295,36 @@ fun SesionEnCursoContent(
                     }
                 }
 
-                Text(
-                    text = "Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                    modifier = Modifier.padding(bottom = Dimens.espacioGrande)
-                )
+                Text(text = "Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+                Spacer(modifier = Modifier.height(Dimens.espacioMedio))
             }
         }
     }
 }
 
-// Botón de opción táctil reutilizable dentro de la pantalla
 @Composable
 private fun BotonOpcionTactil(
-    texto: String,
-    seleccionado: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    texto: String, seleccionado: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(Dimens.cornerSmall))
-            .background(if (seleccionado) BurdeoRincon.copy(alpha = 0.12f) else Color.White)
-            .border(
-                width = if (seleccionado) 1.5.dp else 1.dp,
-                color = if (seleccionado) BurdeoRincon else Color(0xFFD6D6D6),
-                shape = RoundedCornerShape(Dimens.cornerSmall)
-            )
-            .clickable { onClick() }
-            .padding(horizontal = Dimens.espacioMedio, vertical = Dimens.espacioChico),
+        modifier = modifier.clip(RoundedCornerShape(Dimens.cornerSmall)).background(if (seleccionado) BurdeoRincon.copy(alpha = 0.12f) else Color.White).border(width = if (seleccionado) 1.5.dp else 1.dp, color = if (seleccionado) BurdeoRincon else Color(0xFFD6D6D6), shape = RoundedCornerShape(Dimens.cornerSmall)).clickable { onClick() }.padding(horizontal = Dimens.espacioMedio, vertical = Dimens.espacioChico),
         contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (seleccionado) {
-                Text(text = "✓ ", color = BurdeoRincon, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            }
-            Text(
-                text = texto,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal,
-                color = if (seleccionado) BurdeoRincon else Color(0xFF1A1C1E)
-            )
+            if (seleccionado) Text(text = "✓ ", color = BurdeoRincon, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(text = texto, style = MaterialTheme.typography.bodyMedium, fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal, color = if (seleccionado) BurdeoRincon else Color(0xFF1A1C1E))
         }
     }
 }
 
-// ----------------------------- PREVIEWS -----------------------------
-
-@Preview(showBackground = true, showSystemUi = true, name = "1. Sesión en Curso - Tránsito")
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun SesionEnCursoTransitoPreview() {
     RinconSurTheme {
         SesionEnCursoContent(
             uiState = SesionEnCursoUiState(),
             onClasificacionSeleccionada = {}, onRangoEtarioSeleccionado = {}, onCompaniaSeleccionada = {},
-            onBolsasOtraTiendaCambia = {}, onDestinoSeleccionado = {}, onGuardarRegistro = {}, onAnularUltimoRegistro = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "2. Sesión en Curso - Visita (Sin Destino)")
-@Composable
-private fun SesionEnCursoVisitaPreview() {
-    RinconSurTheme {
-        SesionEnCursoContent(
-            uiState = SesionEnCursoUiState(
-                clasificacionSeleccionada = ClasificacionPersona.VISITA,
-                totalRegistrosSesion = 0,
-                ultimoRegistroResumen = "Sin registros previos",
-                permiteAnular = false
-            ),
-            onClasificacionSeleccionada = {}, onRangoEtarioSeleccionado = {}, onCompaniaSeleccionada = {},
-            onBolsasOtraTiendaCambia = {}, onDestinoSeleccionado = {}, onGuardarRegistro = {}, onAnularUltimoRegistro = {}
+            onBolsasOtraTiendaCambia = {}, onDestinoSeleccionado = {}, onGuardarRegistro = {}, onFinalizarSesion = {}, onAnularUltimoRegistro = {}
         )
     }
 }

@@ -1,6 +1,7 @@
 package com.example.rinconsur.model
 
 data class SesionEnCursoUiState(
+    val idSesionActual: Long = 1L,
     val accesoNombre: String = "Acceso A4",
     val ubicacionAcceso: String = "Conexión Ferretería",
     val tiempoTranscurridoMin: Int = 14,
