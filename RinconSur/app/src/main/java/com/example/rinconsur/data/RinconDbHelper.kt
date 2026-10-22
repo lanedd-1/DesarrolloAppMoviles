@@ -172,4 +172,28 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         )
 
     }
+    fun buscarPorId(id: Long): Usuario? {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT u.*, r.rol_nombre AS rol_nombre " +
+                    "FROM usuarios u " +
+                    "INNER JOIN roles r ON u.usu_rol = r.rol_id " +
+                    "WHERE u.usu_id = ?",
+            arrayOf(id.toString())
+        )
+
+        var usuario: Usuario? = null
+        if (cursor.moveToFirst()) {
+            usuario = Usuario(
+                id = cursor.getLong(cursor.getColumnIndexOrThrow("usu_id")),
+                nombre = cursor.getString(cursor.getColumnIndexOrThrow("usu_nombre")),
+                correo = cursor.getString(cursor.getColumnIndexOrThrow("usu_correo")),
+                contrasena = cursor.getString(cursor.getColumnIndexOrThrow("usu_contrasena")),
+                rolId = cursor.getLong(cursor.getColumnIndexOrThrow("usu_rol")),
+                rolNombre = cursor.getString(cursor.getColumnIndexOrThrow("rol_nombre"))
+            )
+        }
+        cursor.close()
+        return usuario
+    }
 }

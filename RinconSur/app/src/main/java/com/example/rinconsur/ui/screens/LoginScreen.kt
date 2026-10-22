@@ -18,7 +18,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,8 +27,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.rinconsur.R
-import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.model.LoginUiState
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
@@ -49,7 +46,7 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
-    val dbHelper = remember { RinconDbHelper(contexto) }
+    // Borramos el dbHelper de aquí porque el ViewModel ya se encarga de eso internamente usando el contexto
 
     LoginContent(
         uiState = uiState,
@@ -57,6 +54,7 @@ fun LoginScreen(
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         onIngresar = {
+            // ¡Solución al error rojo! Pasamos solo 'contexto' de forma directa
             if (viewModel.onIngresar(contexto)) {
                 onLoginExitoso()
             }
@@ -77,7 +75,6 @@ fun LoginContent(
     onOlvidasteContrasena: () -> Unit = {},
     onVolver: () -> Unit = {}
 ) {
-    // 1. Scaffold limpio sin Drawer ni menú hamburguesa
     Scaffold(
         topBar = {
             TopAppBar(
@@ -96,7 +93,6 @@ fun LoginContent(
                         )
                     }
                 },
-                // 2. Quitamos el navigationIcon (la hamburguesa) por seguridad
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )
         },
@@ -119,7 +115,7 @@ fun LoginContent(
                     valor = uiState.correo,
                     onValorCambia = onCorreoCambia,
                     etiqueta = "Correo corporativo (@RinconSur.cl)",
-                    icono = R.drawable.ic_correo,
+                    icono = com.example.rinconsur.R.drawable.ic_correo,
                     error = uiState.errorCorreo,
                     tipoTeclado = KeyboardType.Email
                 )
@@ -139,7 +135,7 @@ fun LoginContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.End
                 ) {
-                    // 🚀 Aquí conectamos el botón con la acción onOlvidasteContrasena que viene del NavHost
+                    // ¡Corrección clave! Ahora sí llama a la función de navegación
                     TextButton(onClick = onOlvidasteContrasena) {
                         Text(
                             text = "¿Olvidaste tu contraseña?",
