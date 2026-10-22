@@ -37,6 +37,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -67,6 +68,7 @@ fun FormularioScreen(
     viewModel: FormularioViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val contexto = LocalContext.current
 
     FormularioContent(
         uiState = uiState,
@@ -76,7 +78,7 @@ fun FormularioScreen(
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onConfirmarContrasenaCambia = viewModel::onConfirmarContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
-        onRegistrar = { viewModel.onRegistrar()?.let { usuario -> onRegistroExitoso(usuario) } },
+        onRegistrar = { viewModel.onRegistrar(contexto)?.let { usuario -> onRegistroExitoso(usuario) } },
         onLimpiar = viewModel::onLimpiar,
         onIrMisSesiones = onIrMisSesiones,
         onIrCrearCuenta = onIrCrearCuenta,
