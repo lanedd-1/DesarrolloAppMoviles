@@ -3,7 +3,7 @@ package com.example.rinconsur.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.rinconsur.model.LoginUiState
-import com.example.rinconsur.RinconDbHelper // Ojo con la ruta de tu DbHelper
+import com.example.rinconsur.data.RinconDbHelper // Ojo con la ruta de tu DbHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,5 +1,6 @@
-package com.example.rinconsur // Ajusta si lo tienes dentro de una carpeta como .database
+package com.example.rinconsur.data // Revisa si lo tienes en otra carpeta como .data o .database
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -10,7 +11,8 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "rinconsur.db"
-        private const val DATABASE_VERSION = 2
+        // Subimos a versión 3 para que refresque los cambios automáticamente
+        private const val DATABASE_VERSION = 3
 
         // Tabla Roles
         private const val TABLA_ROLES = "roles"
@@ -47,7 +49,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     "(${Rol.ID_JEFE_TIENDA}, 'Jefe de Tienda'), " +
                     "(${Rol.ID_ADMINISTRADOR}, 'Administrador')"
 
-        // Query: Precargar Usuarios
+        // Query: Precargar Usuarios (Las claves iniciales son 123456)
         private const val SQL_PRECARGAR_USUARIOS =
             "INSERT INTO $TABLA_USUARIOS ($USU_NOMBRE, $USU_CORREO, $USU_CONTRASENA, $USU_ROL) VALUES " +
                     "('Tamara Ramírez', 'observador@rinconsur.cl', '123456', ${Rol.ID_OBSERVADOR}), " +
@@ -74,7 +76,11 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         onCreate(db)
     }
 
-    // (Opcional) Método de validación directa
+    // ---------------------------------------------------------
+    // METODOS DE CONSULTA Y ACTUALIZACION
+    // ---------------------------------------------------------
+
+    // 1. Método para Login (solo verifica si el par correo/clave existe)
     fun validarLogin(correo: String, contrasena: String): Boolean {
         val db = this.readableDatabase
         val cursor = db.rawQuery(
@@ -86,10 +92,9 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return existe
     }
 
-    // ¡NUEVO! Método para buscar un usuario completo por su correo
+    // 2. Método para buscar un usuario trayendo todos sus datos (para los errores específicos)
     fun buscarPorCorreo(correo: String): Usuario? {
         val db = this.readableDatabase
-        // Usamos INNER JOIN para traer el nombre del rol además de los datos del usuario
         val cursor = db.rawQuery(
             "SELECT u.*, r.$ROL_NOMBRE AS $ROL_NOMBRE " +
                     "FROM $TABLA_USUARIOS u " +
@@ -111,5 +116,23 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
         cursor.close()
         return usuario
+    }
+
+    // 3. ¡NUEVO! Método para actualizar la contraseña desde "Olvidé mi contraseña"
+    fun actualizarContrasena(correo: String, nuevaContrasena: String) {
+        val db = this.writableDatabase
+
+        val valores = ContentValues().apply {
+            put(USU_CONTRASENA, nuevaContrasena)
+        }
+
+        db.update(
+            TABLA_USUARIOS,
+            valores,
+            "$USU_CORREO = ?",
+            arrayOf(correo)
+        )
+
+        db.close()
     }
 }
