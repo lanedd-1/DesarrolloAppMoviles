@@ -1,21 +1,18 @@
 package com.example.rinconsur.ui.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,20 +20,21 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
+import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.model.LoginUiState
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
@@ -50,12 +48,15 @@ import com.example.rinconsur.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(
     onLoginExitoso: () -> Unit = {},
+    onOlvidasteContrasena: () -> Unit = {},
+    onVolver: () -> Unit = {},
     viewModel: LoginViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // 1. Obtenemos el contexto de la aplicación para pasárselo a SQLite
+    // 1. Obtenemos el contexto actual y preparamos el helper de la base de datos
     val contexto = LocalContext.current
+    val dbHelper = remember { RinconDbHelper(contexto) }
 
     LoginContent(
         uiState = uiState,
@@ -63,11 +64,13 @@ fun LoginScreen(
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         onIngresar = {
-            // 2. Le pasamos el contexto al ViewModel para que valide con RinconDbHelper
-            if (viewModel.onIngresar(contexto)) {
+            // 2. Le pasamos dbHelper a la función onIngresar
+            if (viewModel.onIngresar(dbHelper)) {
                 onLoginExitoso()
             }
-        }
+        },
+        onOlvidasteContrasena = onOlvidasteContrasena,
+        onVolver = onVolver
     )
 }
 
@@ -78,29 +81,31 @@ fun LoginContent(
     onCorreoCambia: (String) -> Unit,
     onContrasenaCambia: (String) -> Unit,
     onAlternarVisibilidad: () -> Unit,
-    onIngresar: () -> Unit
+    onIngresar: () -> Unit,
+    onOlvidasteContrasena: () -> Unit = {},
+    onVolver: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            text = "Iniciar sesión",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Rincón Sur",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.8f)
+                    Text(
+                        text = "Iniciar Sesión",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onVolver) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_menu),
+                            contentDescription = "Volver",
+                            tint = Color.White
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BurdeoRincon
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -111,167 +116,111 @@ fun LoginContent(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.espacioPantalla),
-            verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
+
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column {
-                Text(
-                    text = "ACCESO INTERNO",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = BurdeoRincon,
-                    fontWeight = FontWeight.Bold
+
+            Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
+
+
+            TarjetaSeccion(titulo = "Credenciales de Acceso") {
+
+                CampoTexto(
+                    valor = uiState.correo,
+                    onValorCambia = onCorreoCambia,
+                    etiqueta = "Correo corporativo (@RinconSur.cl)",
+                    icono = R.drawable.ic_correo,
+                    error = uiState.errorCorreo,
+                    tipoTeclado = KeyboardType.Email
                 )
-                Text(
-                    text = "Bienvenido/a",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(Dimens.espacioMini))
-                Text(
-                    text = "Ingresa con tu cuenta para continuar con la operación de tienda.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                )
-            }
 
-            TarjetaSeccion(titulo = "Tu cuenta de trabajo") {
-                Spacer(modifier = Modifier.height(Dimens.espacioMini))
-
-                Column {
-                    Text(
-                        text = "Correo",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(modifier = Modifier.height(Dimens.espacioMini))
-                    CampoTexto(
-                        valor = uiState.correo,
-                        onValorCambia = onCorreoCambia,
-                        etiqueta = "Ingresa tu correo electrónico",
-                        icono = R.drawable.ic_correo,
-                        error = uiState.errorCorreo,
-                        tipoTeclado = KeyboardType.Email
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(Dimens.espacioChico))
-
-                Column {
-                    Text(
-                        text = "Contraseña",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(modifier = Modifier.height(Dimens.espacioMini))
-                    CampoContrasena(
-                        valor = uiState.contrasena,
-                        onValorCambia = onContrasenaCambia,
-                        etiqueta = "Ingresa tu contraseña",
-                        visible = uiState.contrasenaVisible,
-                        onAlternarVisible = onAlternarVisibilidad,
-                        error = uiState.errorContrasena
-                    )
-                }
 
                 Spacer(modifier = Modifier.height(Dimens.espacioMedio))
 
-                BotonPrincipal(
-                    texto = "Iniciar sesión",
-                    onClick = onIngresar,
-                    modifier = Modifier.fillMaxWidth()
+
+                CampoContrasena(
+                    valor = uiState.contrasena,
+                    onValorCambia = onContrasenaCambia,
+                    etiqueta = "Contraseña",
+                    visible = uiState.contrasenaVisible,
+                    onAlternarVisible = onAlternarVisibilidad,
+                    error = uiState.errorContrasena
                 )
+
 
                 Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
+
                 Text(
-                    text = "Accederás a las funciones de tu perfil asignado.",
+                    text = "¿Olvidaste tu contraseña?",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    color = BurdeoRincon,
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .clickable { onOlvidasteContrasena() }
+                        .padding(vertical = Dimens.espacioMini)
                 )
+
+
+                Spacer(modifier = Modifier.height(Dimens.espacioMini))
             }
 
-            Row(
+
+            Spacer(modifier = Modifier.height(Dimens.espacioGrande))
+
+
+            BotonPrincipal(
+                texto = "Iniciar Sesión",
+                onClick = onIngresar,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(Dimens.cornerMedium))
-                    .background(Color(0xFFF1F3F4))
-                    .padding(Dimens.espacioMedio),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_correo),
-                    contentDescription = null,
-                    tint = BurdeoRincon,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(Dimens.espacioMedio))
-                Column {
-                    Text(
-                        text = "¿Necesitas ayuda para ingresar?",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Si no tienes cuenta u olvidaste tu contraseña, contacta a tu supervisor.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
-                    )
-                }
-            }
+                    .fillMaxWidth(0.9f)
+            )
 
-            Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Observadores · Jefe de Tienda · Administrador",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                )
-                Text(
-                    text = "Muestreo operativo y flujo de tienda",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                )
-            }
+            Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
         }
     }
 }
 
-// ----------------------------- PREVIEWS -----------------------------
 
-@Preview(showBackground = true, showSystemUi = true, name = "1. Login Limpio")
+
+@Preview(showBackground = true, showSystemUi = true, name = "1. Login Limpio (Centrado)")
 @Composable
 private fun LoginLimpioPreview() {
     RinconSurTheme {
         LoginContent(
-            uiState = LoginUiState(correo = "observador@RinconSur.cl"),
+            uiState = LoginUiState(
+                correo = "BrandonRecabarren@RinconSur.cl"
+            ),
             onCorreoCambia = {},
             onContrasenaCambia = {},
             onAlternarVisibilidad = {},
-            onIngresar = {}
+            onIngresar = {},
+            onOlvidasteContrasena = {},
+            onVolver = {}
         )
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, name = "2. Login Con Errores")
+@Preview(showBackground = true, showSystemUi = true, name = "2. Login Con Errores (Centrado)")
 @Composable
 private fun LoginConErroresPreview() {
     RinconSurTheme {
         LoginContent(
             uiState = LoginUiState(
-                correo = "observador@gmail.com",
+                correo = "usuario@gmail.com",
                 errorCorreo = "Debe ser un correo institucional (@RinconSur.cl)",
                 errorContrasena = "La contraseña es obligatoria"
             ),
             onCorreoCambia = {},
             onContrasenaCambia = {},
             onAlternarVisibilidad = {},
-            onIngresar = {}
+            onIngresar = {},
+            onOlvidasteContrasena = {},
+            onVolver = {}
         )
     }
 }
