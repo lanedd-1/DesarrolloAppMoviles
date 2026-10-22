@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -25,6 +26,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -50,12 +52,16 @@ import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.components.AvatarCircular
 import com.example.rinconsur.ui.components.BotonPrincipal
+import com.example.rinconsur.ui.components.BotonSecundario
+import com.example.rinconsur.ui.components.DialogoCerrarSesion
 import com.example.rinconsur.ui.components.EtiquetaEstado
 import com.example.rinconsur.ui.components.TarjetaEstadistica
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
+import com.example.rinconsur.ui.theme.RojoAlerta
+import com.example.rinconsur.ui.theme.VerdeExito
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,6 +80,9 @@ fun MisSesionesScreen(
     // Estado para guardar el usuario que cargaremos de la base de datos
     var usuarioActual by remember { mutableStateOf<Usuario?>(null) }
 
+    // Controla si se muestra el diálogo de confirmación al cerrar sesión
+    var mostrarDialogo by remember { mutableStateOf(false) }
+
     // Al cargar la pantalla, leemos el ID de la sesión y buscamos al usuario en SQLite
     LaunchedEffect(Unit) {
         val idUsuarioLogueado = SesionPreferencias(contexto).obtenerIdUsuario()
@@ -81,6 +90,16 @@ fun MisSesionesScreen(
             val dbHelper = RinconDbHelper(contexto)
             usuarioActual = dbHelper.buscarPorId(idUsuarioLogueado)
         }
+    }
+
+    if (mostrarDialogo) {
+        DialogoCerrarSesion(
+            onConfirmar = {
+                mostrarDialogo = false
+                onCerrarSesion()
+            },
+            onCancelar = { mostrarDialogo = false }
+        )
     }
 
     ModalNavigationDrawer(
@@ -102,7 +121,7 @@ fun MisSesionesScreen(
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                 )
 
-                // ¡NUEVA REGLA! Se muestra si el rol es Administrador O Jefe de Tienda
+                // Se muestra si el rol es Administrador O Jefe de Tienda
                 if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
                     NavigationDrawerItem(
                         label = { Text("Registrar Colaborador") },
@@ -123,9 +142,7 @@ fun MisSesionesScreen(
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        // Limpiamos la sesión en SharedPreferences antes de salir
-                        SesionPreferencias(contexto).limpiar()
-                        onCerrarSesion()
+                        mostrarDialogo = true // abre el diálogo, NO cierra la sesión todavía
                     },
                     modifier = Modifier.padding(Dimens.espacioChico)
                 )
