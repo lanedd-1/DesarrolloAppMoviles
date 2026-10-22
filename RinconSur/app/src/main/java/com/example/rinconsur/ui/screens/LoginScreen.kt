@@ -16,6 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -28,7 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,8 +53,6 @@ fun LoginScreen(
     viewModel: LoginViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // 1. Obtenemos el contexto actual y preparamos el helper de la base de datos
     val contexto = LocalContext.current
     val dbHelper = remember { RinconDbHelper(contexto) }
 
@@ -64,8 +62,7 @@ fun LoginScreen(
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         onIngresar = {
-            // 2. Le pasamos dbHelper a la función onIngresar
-            if (viewModel.onIngresar(dbHelper)) {
+            if (viewModel.onIngresar(contexto)) {
                 onLoginExitoso()
             }
         },
@@ -85,26 +82,26 @@ fun LoginContent(
     onOlvidasteContrasena: () -> Unit = {},
     onVolver: () -> Unit = {}
 ) {
+    // 1. Scaffold limpio sin Drawer ni menú hamburguesa
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Iniciar Sesión",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onVolver) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_menu),
-                            contentDescription = "Volver",
-                            tint = Color.White
+                    Column {
+                        Text(
+                            text = "Iniciar Sesión",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Rincón Sur",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White.copy(alpha = 0.8f)
                         )
                     }
                 },
+                // 2. Quitamos el navigationIcon (la hamburguesa) por seguridad
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )
         },
@@ -116,15 +113,12 @@ fun LoginContent(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.espacioPantalla),
-
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.Center
         ) {
-
-            Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
-
+            Spacer(modifier = Modifier.height(Dimens.espacioGrande))
 
             TarjetaSeccion(titulo = "Credenciales de Acceso") {
+                Spacer(modifier = Modifier.height(Dimens.espacioMini))
 
                 CampoTexto(
                     valor = uiState.correo,
@@ -135,9 +129,7 @@ fun LoginContent(
                     tipoTeclado = KeyboardType.Email
                 )
 
-
                 Spacer(modifier = Modifier.height(Dimens.espacioMedio))
-
 
                 CampoContrasena(
                     valor = uiState.contrasena,
@@ -148,73 +140,40 @@ fun LoginContent(
                     error = uiState.errorContrasena
                 )
 
-
-                Spacer(modifier = Modifier.height(Dimens.espacioChico))
-
-
-                Text(
-                    text = "¿Olvidaste tu contraseña?",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = BurdeoRincon,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .clickable { onOlvidasteContrasena() }
-                        .padding(vertical = Dimens.espacioMini)
-                )
-
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.End
+                ) {
+                    TextButton(onClick = { /* Acción para recuperar contraseña */ }) {
+                        Text(
+                            text = "¿Olvidaste tu contraseña?",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = BurdeoRincon,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(Dimens.espacioMini))
+
+                BotonPrincipal(
+                    texto = "Iniciar Sesión",
+                    onClick = onIngresar,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
-
             Spacer(modifier = Modifier.height(Dimens.espacioGrande))
-
-
-            BotonPrincipal(
-                texto = "Iniciar Sesión",
-                onClick = onIngresar,
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-            )
-
-
-            Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
         }
     }
 }
 
-
-
-@Preview(showBackground = true, showSystemUi = true, name = "1. Login Limpio (Centrado)")
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun LoginLimpioPreview() {
+private fun LoginScreenPreview() {
     RinconSurTheme {
         LoginContent(
-            uiState = LoginUiState(
-                correo = "BrandonRecabarren@RinconSur.cl"
-            ),
-            onCorreoCambia = {},
-            onContrasenaCambia = {},
-            onAlternarVisibilidad = {},
-            onIngresar = {},
-            onOlvidasteContrasena = {},
-            onVolver = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "2. Login Con Errores (Centrado)")
-@Composable
-private fun LoginConErroresPreview() {
-    RinconSurTheme {
-        LoginContent(
-            uiState = LoginUiState(
-                correo = "usuario@gmail.com",
-                errorCorreo = "Debe ser un correo institucional (@RinconSur.cl)",
-                errorContrasena = "La contraseña es obligatoria"
-            ),
+            uiState = LoginUiState(),
             onCorreoCambia = {},
             onContrasenaCambia = {},
             onAlternarVisibilidad = {},
