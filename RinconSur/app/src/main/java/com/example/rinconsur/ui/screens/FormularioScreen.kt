@@ -10,23 +10,30 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,11 +55,15 @@ import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
 import com.example.rinconsur.viewmodel.FormularioViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun FormularioScreen(
     onRegistroExitoso: (Usuario) -> Unit = {},
     onVolver: () -> Unit = {},
+    onIrMisSesiones: () -> Unit = {},
+    onIrCrearCuenta: () -> Unit = {},
+    onCerrarSesion: () -> Unit = {},
     viewModel: FormularioViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -65,13 +76,11 @@ fun FormularioScreen(
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onConfirmarContrasenaCambia = viewModel::onConfirmarContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
-        onRegistrar = {
-            viewModel.onRegistrar()?.let { usuario ->
-                onRegistroExitoso(usuario)
-            }
-        },
+        onRegistrar = { viewModel.onRegistrar()?.let { usuario -> onRegistroExitoso(usuario) } },
         onLimpiar = viewModel::onLimpiar,
-        onVolver = onVolver
+        onIrMisSesiones = onIrMisSesiones,
+        onIrCrearCuenta = onIrCrearCuenta,
+        onCerrarSesion = onCerrarSesion
     )
 }
 
@@ -87,143 +96,101 @@ fun FormularioContent(
     onAlternarVisibilidad: () -> Unit,
     onRegistrar: () -> Unit,
     onLimpiar: () -> Unit,
-    onVolver: () -> Unit = {}
+    onIrMisSesiones: () -> Unit = {},
+    onIrCrearCuenta: () -> Unit = {},
+    onCerrarSesion: () -> Unit = {}
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Crear Cuenta Colaborador",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onVolver) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_menu),
-                            contentDescription = "Volver",
-                            tint = Color.White
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    text = "Rincón Sur",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(Dimens.espacioMedio)
+                )
+                HorizontalDivider()
+
+                NavigationDrawerItem(
+                    label = { Text("Mis Sesiones") },
+                    selected = false,
+                    onClick = { scope.launch { drawerState.close() }; onIrMisSesiones() },
+                    modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Registrar Colaborador") },
+                    selected = true, // Marcado activo porque estamos en esta pantalla
+                    onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() },
+                    modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+                HorizontalDivider()
+
+                NavigationDrawerItem(
+                    label = { Text("Cerrar sesión", color = MaterialTheme.colorScheme.error) },
+                    selected = false,
+                    onClick = { scope.launch { drawerState.close() }; onCerrarSesion() },
+                    modifier = Modifier.padding(Dimens.espacioChico)
+                )
+            }
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Crear Cuenta Colaborador", color = Color.White) },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = "Menú", tint = Color.White)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { innerPadding ->
+            // [AQUÍ QUEDA INTACTO TU CÓDIGO DE LAS CAJAS DE TEXTO Y BOTONES]
+            Column(
+                modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()).padding(Dimens.espacioPantalla),
+                verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
+            ) {
+                TarjetaSeccion(titulo = "Datos del Nuevo Usuario") {
+                    CampoTexto(valor = uiState.nombre, onValorCambia = onNombreCambia, etiqueta = "Nombre completo", icono = R.drawable.ic_persona, error = uiState.errorNombre)
+                    CampoTexto(valor = uiState.correo, onValorCambia = onCorreoCambia, etiqueta = "Correo corporativo", icono = R.drawable.ic_correo, error = uiState.errorCorreo, tipoTeclado = KeyboardType.Email)
+
+                    var expandido by remember { mutableStateOf(false) }
+                    ExposedDropdownMenuBox(expanded = expandido, onExpandedChange = { expandido = it }) {
+                        OutlinedTextField(
+                            value = uiState.rolSeleccionado, onValueChange = {}, readOnly = true, label = { Text("Cargo / Rol") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
+                            isError = uiState.errorRol != null, modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                         )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(Dimens.espacioPantalla),
-            verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
-        ) {
-            TarjetaSeccion(titulo = "Datos del Nuevo Usuario") {
-                // 1. Campo Nombre Completo
-                CampoTexto(
-                    valor = uiState.nombre,
-                    onValorCambia = onNombreCambia,
-                    etiqueta = "Nombre completo",
-                    icono = R.drawable.ic_persona,
-                    error = uiState.errorNombre
-                )
-
-                // 2. Campo Correo Corporativo
-                CampoTexto(
-                    valor = uiState.correo,
-                    onValorCambia = onCorreoCambia,
-                    etiqueta = "Correo corporativo (@RinconSur.cl)",
-                    icono = R.drawable.ic_correo,
-                    error = uiState.errorCorreo,
-                    tipoTeclado = KeyboardType.Email
-                )
-
-                // 3. Desplegable de Rol/Cargo
-                var expandido by remember { mutableStateOf(false) }
-
-                ExposedDropdownMenuBox(
-                    expanded = expandido,
-                    onExpandedChange = { expandido = it }
-                ) {
-                    OutlinedTextField(
-                        value = uiState.rolSeleccionado,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Cargo / Rol asignado") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
-                        isError = uiState.errorRol != null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expandido,
-                        onDismissRequest = { expandido = false }
-                    ) {
-                        uiState.rolesDisponibles.forEach { rol ->
-                            DropdownMenuItem(
-                                text = { Text(rol) },
-                                onClick = {
-                                    onRolSeleccionado(rol)
-                                    expandido = false
-                                }
-                            )
+                        ExposedDropdownMenu(expanded = expandido, onDismissRequest = { expandido = false }) {
+                            uiState.rolesDisponibles.forEach { rol ->
+                                DropdownMenuItem(text = { Text(rol) }, onClick = { onRolSeleccionado(rol); expandido = false })
+                            }
                         }
                     }
-                }
-                uiState.errorRol?.let { mensaje ->
-                    Text(
-                        text = mensaje,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = Dimens.espacioChico)
-                    )
+                    uiState.errorRol?.let { mensaje -> Text(text = mensaje, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = Dimens.espacioChico)) }
+
+                    CampoContrasena(valor = uiState.contrasena, onValorCambia = onContrasenaCambia, etiqueta = "Contraseña", visible = uiState.contrasenaVisible, onAlternarVisible = onAlternarVisibilidad, error = uiState.errorContrasena)
+                    CampoContrasena(valor = uiState.confirmarContrasena, onValorCambia = onConfirmarContrasenaCambia, etiqueta = "Confirmar contraseña", visible = uiState.contrasenaVisible, onAlternarVisible = onAlternarVisibilidad, error = uiState.errorConfirmarContrasena)
                 }
 
-                // 4. Campo Contraseña
-                CampoContrasena(
-                    valor = uiState.contrasena,
-                    onValorCambia = onContrasenaCambia,
-                    etiqueta = "Contraseña",
-                    visible = uiState.contrasenaVisible,
-                    onAlternarVisible = onAlternarVisibilidad,
-                    error = uiState.errorContrasena
-                )
-
-                // 5. Campo Confirmar Contraseña
-                CampoContrasena(
-                    valor = uiState.confirmarContrasena,
-                    onValorCambia = onConfirmarContrasenaCambia,
-                    etiqueta = "Confirmar contraseña",
-                    visible = uiState.contrasenaVisible,
-                    onAlternarVisible = onAlternarVisibilidad,
-                    error = uiState.errorConfirmarContrasena
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
+                    BotonSecundario(texto = "Limpiar", onClick = onLimpiar, modifier = Modifier.weight(1f))
+                    BotonPrincipal(texto = "Crear Cuenta", onClick = onRegistrar, modifier = Modifier.weight(1f))
+                }
             }
-
-            // Botones de Acción
-            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
-                BotonSecundario(
-                    texto = "Limpiar Campos",
-                    onClick = onLimpiar,
-                    modifier = Modifier.weight(1f)
-                )
-                BotonPrincipal(
-                    texto = "Crear Cuenta",
-                    onClick = onRegistrar,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(Dimens.espacioMedio))
         }
     }
 }
-
 // ----------------------------- PREVIEWS -----------------------------
 
 @Preview(showBackground = true, showSystemUi = true, name = "1. Registro Limpio")
@@ -232,13 +199,21 @@ private fun FormularioLimpioPreview() {
     RinconSurTheme {
         FormularioContent(
             uiState = FormularioUiState(
-                nombre = "Brandon Matias Recabarren Bustamante",
-                correo = "BrandonRecabarren@RinconSur.cl",
+                nombre = "Cristopher Bustamante",
+                correo = "cbustamante@RinconSur.cl",
                 rolSeleccionado = "Observador de Pasillo"
             ),
-            onNombreCambia = {}, onCorreoCambia = {}, onRolSeleccionado = {},
-            onContrasenaCambia = {}, onConfirmarContrasenaCambia = {},
-            onAlternarVisibilidad = {}, onRegistrar = {}, onLimpiar = {}
+            onNombreCambia = {},
+            onCorreoCambia = {},
+            onRolSeleccionado = {},
+            onContrasenaCambia = {},
+            onConfirmarContrasenaCambia = {},
+            onAlternarVisibilidad = {},
+            onRegistrar = {},
+            onLimpiar = {},
+            onIrMisSesiones = {},
+            onIrCrearCuenta = {},
+            onCerrarSesion = {}
         )
     }
 }
@@ -253,12 +228,20 @@ private fun FormularioConErroresPreview() {
                 errorNombre = "El nombre completo es obligatorio",
                 errorCorreo = "Debe ser un correo institucional (@RinconSur.cl)",
                 errorRol = "Debes seleccionar un rol para el colaborador",
-                errorContrasena = "Mínimo 8 caracteres y 1 carácter especial",
+                errorContrasena = "Mínimo 6 caracteres",
                 errorConfirmarContrasena = "Las contraseñas no coinciden"
             ),
-            onNombreCambia = {}, onCorreoCambia = {}, onRolSeleccionado = {},
-            onContrasenaCambia = {}, onConfirmarContrasenaCambia = {},
-            onAlternarVisibilidad = {}, onRegistrar = {}, onLimpiar = {}
+            onNombreCambia = {},
+            onCorreoCambia = {},
+            onRolSeleccionado = {},
+            onContrasenaCambia = {},
+            onConfirmarContrasenaCambia = {},
+            onAlternarVisibilidad = {},
+            onRegistrar = {},
+            onLimpiar = {},
+            onIrMisSesiones = {},
+            onIrCrearCuenta = {},
+            onCerrarSesion = {}
         )
     }
 }

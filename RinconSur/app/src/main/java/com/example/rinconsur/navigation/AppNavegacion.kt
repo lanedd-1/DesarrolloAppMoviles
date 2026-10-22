@@ -19,7 +19,7 @@ fun AppNavegacion() {
         navController = navController,
         startDestination = Ruta.Login.ruta
     ) {
-        // 1. Pantalla de Inicio de Sesión
+        // 1. Pantalla de Inicio de Sesión (Sin Menú Lateral)
         composable(Ruta.Login.ruta) {
             LoginScreen(
                 onLoginExitoso = {
@@ -30,35 +30,52 @@ fun AppNavegacion() {
             )
         }
 
-        // 2. Pantalla Principal de Trabajo (Mis Sesiones)
+        // 2. Mis Sesiones
         composable(Ruta.MisSesiones.ruta) {
             MisSesionesScreen(
                 onIniciarSesionConteo = { acceso ->
                     navController.navigate(Ruta.SesionEnCurso.crear(acceso))
                 },
-                onAbrirMenu = {
-                    navController.navigate(Ruta.Formulario.ruta)
+                onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
+                onCerrarSesion = {
+                    navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 }
             )
         }
 
-        // 3. Pantalla de Observación Táctil con parámetro en ruta (igual a Editar en el profesor)
+        // 3. Sesión en Curso (Ahora con acceso al Menú Lateral)
         composable(
             route = Ruta.SesionEnCurso.ruta,
             arguments = listOf(navArgument("acceso") { type = NavType.StringType })
         ) {
             SesionEnCursoScreen(
-                onVolver = { navController.navigateUp() }
+                onVolver = { navController.navigateUp() },
+                onIrMisSesiones = {
+                    navController.navigate(Ruta.MisSesiones.ruta) {
+                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true } // Evita ciclos infinitos
+                    }
+                },
+                onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
+                onCerrarSesion = {
+                    navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
+                }
             )
         }
 
-        // 4. Formulario de Creación de Colaborador (5 Validaciones)
+        // 4. Formulario (Ahora con acceso al Menú Lateral)
         composable(Ruta.Formulario.ruta) {
             FormularioScreen(
-                onRegistroExitoso = { _ ->
-                    navController.navigateUp()
+                onRegistroExitoso = { _ -> navController.navigateUp() },
+                onVolver = { navController.navigateUp() },
+                onIrMisSesiones = {
+                    navController.navigate(Ruta.MisSesiones.ruta) {
+                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true }
+                    }
                 },
-                onVolver = { navController.navigateUp() }
+                onIrCrearCuenta = { /* Ya estamos aquí, no hace nada */ },
+                onCerrarSesion = {
+                    navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
+                }
             )
         }
     }
