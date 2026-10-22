@@ -29,15 +29,25 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.rinconsur.R
+import com.example.rinconsur.data.RinconDbHelper
+import com.example.rinconsur.data.SesionPreferencias
+import com.example.rinconsur.model.Rol
+import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.components.AvatarCircular
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.EtiquetaEstado
@@ -55,9 +65,23 @@ fun MisSesionesScreen(
     onIrCrearCuenta: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
-    // Estado del Drawer (abierto/cerrado) y corrutinas para animarlo
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    // Obtenemos el contexto para acceder a la BD y las SharedPreferences
+    val contexto = LocalContext.current
+
+    // Estado para guardar el usuario que cargaremos de la base de datos
+    var usuarioActual by remember { mutableStateOf<Usuario?>(null) }
+
+    // Al cargar la pantalla, leemos el ID de la sesión y buscamos al usuario en SQLite
+    LaunchedEffect(Unit) {
+        val idUsuarioLogueado = SesionPreferencias(contexto).obtenerIdUsuario()
+        if (idUsuarioLogueado != -1L) {
+            val dbHelper = RinconDbHelper(contexto)
+            usuarioActual = dbHelper.buscarPorId(idUsuarioLogueado)
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -74,21 +98,22 @@ fun MisSesionesScreen(
                 NavigationDrawerItem(
                     label = { Text("Mis Sesiones") },
                     selected = true, // Está en esta pantalla
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                    },
+                    onClick = { scope.launch { drawerState.close() } },
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                 )
 
-                NavigationDrawerItem(
-                    label = { Text("Registrar Colaborador") },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        onIrCrearCuenta()
-                    },
-                    modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
-                )
+                // ¡NUEVA REGLA! Se muestra si el rol es Administrador O Jefe de Tienda
+                if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
+                    NavigationDrawerItem(
+                        label = { Text("Registrar Colaborador") },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            onIrCrearCuenta()
+                        },
+                        modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                    )
+                }
 
                 Spacer(modifier = Modifier.weight(1f))
                 HorizontalDivider()
@@ -98,6 +123,8 @@ fun MisSesionesScreen(
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
+                        // Limpiamos la sesión en SharedPreferences antes de salir
+                        SesionPreferencias(contexto).limpiar()
                         onCerrarSesion()
                     },
                     modifier = Modifier.padding(Dimens.espacioChico)
@@ -105,7 +132,6 @@ fun MisSesionesScreen(
             }
         }
     ) {
-        // Todo el contenido original del Scaffold va dentro del Drawer
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -139,7 +165,7 @@ fun MisSesionesScreen(
                     .padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
             ) {
-                // Encabezado con foto y datos del colaborador
+                // Encabezado con foto y datos del colaborador dinámicos
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -150,17 +176,19 @@ fun MisSesionesScreen(
                     ) {
                         AvatarCircular(
                             imagen = R.drawable.ic_persona,
-                            descripcion = "Foto de perfil Tamara"
+                            descripcion = "Foto de perfil"
                         )
                         Spacer(modifier = Modifier.width(Dimens.espacioMedio))
                         Column {
+                            // Mostramos el nombre real del usuario de la BD
                             Text(
-                                text = "Tamara R.",
+                                text = usuarioActual?.nombre ?: "Cargando...",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
+                            // Mostramos el rol real de la BD
                             Text(
-                                text = "Observador de Pasillo · Turno Mañana",
+                                text = "${usuarioActual?.rolNombre ?: ""} · Turno",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
@@ -168,7 +196,7 @@ fun MisSesionesScreen(
                     }
                 }
 
-                // Indicadores rápidos del día (TarjetaEstadistica x2)
+                // Indicadores rápidos del día
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)

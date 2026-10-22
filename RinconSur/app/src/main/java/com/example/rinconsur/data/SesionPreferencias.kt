@@ -1,28 +1,26 @@
 package com.example.rinconsur.data
 
 import android.content.Context
-import androidx.core.content.edit
+import android.content.SharedPreferences
 
-// =====================================================================
-//  SharedPreferences — SesionPreferencias.kt
-// =====================================================================
+class SesionPreferencias(contexto: Context) {
 
-class SesionPreferencias(context: Context) {
+    // Archivo interno del celular donde se guarda la sesión
+    private val preferencias: SharedPreferences =
+        contexto.getSharedPreferences("sesion_rincon_sur", Context.MODE_PRIVATE)
 
-    private val prefs = context.getSharedPreferences("sesion", Context.MODE_PRIVATE)
-
-    companion object {
-        private const val CLAVE_ID_USUARIO = "id_usuario"
-        private const val SIN_SESION = -1L
-    }
-
+    // Guarda el ID del usuario al pasar por el LoginScreen
     fun guardar(idUsuario: Long) {
-        prefs.edit { putLong(CLAVE_ID_USUARIO, idUsuario) }
+        preferencias.edit().putLong("id_usuario_logueado", idUsuario).apply()
     }
 
-    fun leer(): Long = prefs.getLong(CLAVE_ID_USUARIO, SIN_SESION)
+    // Lee el ID del usuario al abrir MisSesionesScreen (Devuelve -1 si no hay sesión)
+    fun obtenerIdUsuario(): Long {
+        return preferencias.getLong("id_usuario_logueado", -1L)
+    }
 
-    fun borrar() {
-        prefs.edit { remove(CLAVE_ID_USUARIO) }
+    // Borra la sesión cuando el usuario toca "Cerrar sesión" en el menú
+    fun limpiar() {
+        preferencias.edit().clear().apply()
     }
 }
