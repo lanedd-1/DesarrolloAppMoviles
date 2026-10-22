@@ -118,37 +118,5 @@ fun AppNavegacion() {
                 }
             )
         }
-
-        composable("login") {
-            LoginScreen(
-                onLoginExitoso = {},
-                onOlvidasteContrasena = {
-                    navController.navigate("olvide_contrasena")
-                },
-                onVolver = { navController.popBackStack() }
-            )
-        }
-
-        composable("olvide_contrasena") {
-            OlvideContrasenaScreen(
-                onCodigoVerificado = {
-                    navController.navigate("cambiar_contrasena")
-                },
-                onVolver = { navController.popBackStack() }
-            )
-        }
-
-        composable("cambiar_contrasena") {
-            CambiarContrasenaScreen(
-                onCambioExitoso = {
-                    // Solución segura: Usamos popUpTo(0) para limpiar el historial
-                    // sin importar cómo se llame el nombre interno de la ruta inicial.
-                    navController.navigate("login") {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                onVolver = { navController.popBackStack() }
-            )
-        }
     }
 }
