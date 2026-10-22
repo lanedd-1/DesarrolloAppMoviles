@@ -1,9 +1,10 @@
-package com.example.rinconsur.data // Revisa si lo tienes en otra carpeta como .data o .database
+package com.example.rinconsur.data
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
 
@@ -11,8 +12,9 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "rinconsur.db"
-        // Subimos a versión 3 para que refresque los cambios automáticamente
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 5
+
+        private const val BCRYPT_COSTO = 10
 
         // Tabla Roles
         private const val TABLA_ROLES = "roles"
@@ -48,18 +50,10 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     "(${Rol.ID_OBSERVADOR}, 'Observador de Pasillo'), " +
                     "(${Rol.ID_JEFE_TIENDA}, 'Jefe de Tienda'), " +
                     "(${Rol.ID_ADMINISTRADOR}, 'Administrador')"
-
-        // Query: Precargar Usuarios (Las claves iniciales son 123456)
-        private const val SQL_PRECARGAR_USUARIOS =
-            "INSERT INTO $TABLA_USUARIOS ($USU_NOMBRE, $USU_CORREO, $USU_CONTRASENA, $USU_ROL) VALUES " +
-                    "('Tamara Ramírez', 'observador@rinconsur.cl', '123456', ${Rol.ID_OBSERVADOR}), " +
-                    "('Rodrigo Saavedra', 'supervisor@rinconsur.cl', '123456', ${Rol.ID_JEFE_TIENDA}), " +
-                    "('Administrador IT', 'admin@rinconsur.cl', '123456', ${Rol.ID_ADMINISTRADOR})"
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
         super.onConfigure(db)
-        // Activa el chequeo estricto de claves foráneas
         db.setForeignKeyConstraintsEnabled(true)
     }
 
@@ -67,7 +61,17 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db.execSQL(SQL_CREAR_ROLES)
         db.execSQL(SQL_CREAR_USUARIOS)
         db.execSQL(SQL_PRECARGAR_ROLES)
-        db.execSQL(SQL_PRECARGAR_USUARIOS)
+
+        // Hasheamos la contraseña inicial respetando mayúsculas y símbolos
+        val hashInicial = BCrypt.withDefaults().hashToString(BCRYPT_COSTO, "Rincor.2026!".toCharArray())
+
+        val sqlPrecargarUsuarios =
+            "INSERT INTO $TABLA_USUARIOS ($USU_NOMBRE, $USU_CORREO, $USU_CONTRASENA, $USU_ROL) VALUES " +
+                    "('Tamara Ramírez', 'observador@rinconsur.cl', '$hashInicial', ${Rol.ID_OBSERVADOR}), " +
+                    "('Rodrigo Saavedra', 'supervisor@rinconsur.cl', '$hashInicial', ${Rol.ID_JEFE_TIENDA}), " +
+                    "('Administrador IT', 'admin@rinconsur.cl', '$hashInicial', ${Rol.ID_ADMINISTRADOR})"
+
+        db.execSQL(sqlPrecargarUsuarios)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -80,27 +84,35 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     // METODOS DE CONSULTA Y ACTUALIZACION
     // ---------------------------------------------------------
 
-    // 1. Método para Login (solo verifica si el par correo/clave existe)
-    fun validarLogin(correo: String, contrasena: String): Boolean {
+    fun validarLogin(correo: String, contrasenaPlana: String): Boolean {
         val db = this.readableDatabase
+        val correoLimpio = correo.trim().lowercase()
+
         val cursor = db.rawQuery(
-            "SELECT * FROM $TABLA_USUARIOS WHERE $USU_CORREO = ? AND $USU_CONTRASENA = ?",
-            arrayOf(correo, contrasena)
+            "SELECT $USU_CONTRASENA FROM $TABLA_USUARIOS WHERE $USU_CORREO = ?",
+            arrayOf(correoLimpio)
         )
-        val existe = cursor.count > 0
+
+        var existe = false
+        if (cursor.moveToFirst()) {
+            val hashGuardado = cursor.getString(0)
+            val verificacion = BCrypt.verifyer().verify(contrasenaPlana.toCharArray(), hashGuardado.toCharArray())
+            existe = verificacion.verified
+        }
         cursor.close()
         return existe
     }
 
-    // 2. Método para buscar un usuario trayendo todos sus datos (para los errores específicos)
     fun buscarPorCorreo(correo: String): Usuario? {
         val db = this.readableDatabase
+        val correoLimpio = correo.trim().lowercase()
+
         val cursor = db.rawQuery(
             "SELECT u.*, r.$ROL_NOMBRE AS $ROL_NOMBRE " +
                     "FROM $TABLA_USUARIOS u " +
                     "INNER JOIN $TABLA_ROLES r ON u.$USU_ROL = r.$ROL_ID " +
                     "WHERE u.$USU_CORREO = ?",
-            arrayOf(correo)
+            arrayOf(correoLimpio)
         )
 
         var usuario: Usuario? = null
@@ -118,21 +130,22 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return usuario
     }
 
-    // 3. ¡NUEVO! Método para actualizar la contraseña desde "Olvidé mi contraseña"
-    fun actualizarContrasena(correo: String, nuevaContrasena: String) {
+    fun actualizarContrasena(correo: String, nuevaContrasenaPlana: String) {
         val db = this.writableDatabase
+        val correoLimpio = correo.trim().lowercase()
+
+        val hashNuevo = BCrypt.withDefaults().hashToString(BCRYPT_COSTO, nuevaContrasenaPlana.toCharArray())
 
         val valores = ContentValues().apply {
-            put(USU_CONTRASENA, nuevaContrasena)
+            put(USU_CONTRASENA, hashNuevo)
         }
 
         db.update(
             TABLA_USUARIOS,
             valores,
             "$USU_CORREO = ?",
-            arrayOf(correo)
+            arrayOf(correoLimpio)
         )
 
-        db.close()
     }
 }
