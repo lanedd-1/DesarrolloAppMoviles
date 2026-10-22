@@ -16,7 +16,7 @@ data class SesionEnCursoUiState(
     val destinoSeleccionado: AccesoDestinoEnum = AccesoDestinoEnum.A1,
 
     // Historial y métricas de la sesión activa
-    val totalRegistrosSesion: Int = 42,
-    val ultimoRegistroResumen: String = "Tránsito · 26–40 · Solo",
+    val totalRegistrosSesion: Int = 0,
+    val ultimoRegistroResumen: String = "No hay Registros",
     val permiteAnular: Boolean = true
 )

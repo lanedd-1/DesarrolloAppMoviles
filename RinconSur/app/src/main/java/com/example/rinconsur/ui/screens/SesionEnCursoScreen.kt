@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -33,7 +32,6 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -68,9 +66,7 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
-import com.example.rinconsur.ui.theme.RojoAlerta
 import com.example.rinconsur.ui.theme.TerracotaRincon
-import com.example.rinconsur.ui.theme.VerdeExito
 import com.example.rinconsur.viewmodel.SesionEnCursoViewModel
 import kotlinx.coroutines.launch
 
@@ -93,6 +89,7 @@ fun SesionEnCursoScreen(
         onDestinoSeleccionado = viewModel::onDestinoSeleccionado,
         onGuardarRegistro = viewModel::onGuardarRegistro,
         onAnularUltimoRegistro = viewModel::onAnularUltimoRegistro,
+        onVolver = onVolver, // <- Aquí pasamos la función
         onIrMisSesiones = onIrMisSesiones,
         onIrCrearCuenta = onIrCrearCuenta,
         onCerrarSesion = onCerrarSesion
@@ -110,6 +107,7 @@ fun SesionEnCursoContent(
     onDestinoSeleccionado: (AccesoDestinoEnum) -> Unit,
     onGuardarRegistro: () -> Unit,
     onAnularUltimoRegistro: () -> Unit,
+    onVolver: () -> Unit = {}, // <- Añadido al constructor
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
@@ -177,8 +175,8 @@ fun SesionEnCursoContent(
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = "Menú", tint = Color.White)
+                        IconButton(onClick = { onVolver() }) { //
+                            Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = "Volver atrás", tint = Color.White)
                         }
                     },
                     actions = {
@@ -268,11 +266,20 @@ fun SesionEnCursoContent(
 
                     Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
-                    // 4. Bolsas de otra tienda
+                    // 4. Bolsas de otra tienda (Refactorizado)
                     Text("¿Trae bolsas de otra tienda?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        BotonOpcionTactil(texto = "Sí", seleccionado = uiState.traeBolsasOtraTienda, onClick = { onBolsasOtraTiendaCambia(true) }, modifier = Modifier.weight(1f))
-                        BotonOpcionTactil(texto = "No", seleccionado = !uiState.traeBolsasOtraTienda, onClick = { onBolsasOtraTiendaCambia(false) }, modifier = Modifier.weight(1f))
+                        if (uiState.traeBolsasOtraTienda) {
+                            BotonPrincipal(texto = "Sí", onClick = { onBolsasOtraTiendaCambia(true) }, modifier = Modifier.weight(1f))
+                        } else {
+                            BotonSecundario(texto = "Sí", onClick = { onBolsasOtraTiendaCambia(true) }, modifier = Modifier.weight(1f))
+                        }
+
+                        if (!uiState.traeBolsasOtraTienda) {
+                            BotonPrincipal(texto = "No", onClick = { onBolsasOtraTiendaCambia(false) }, modifier = Modifier.weight(1f))
+                        } else {
+                            BotonSecundario(texto = "No", onClick = { onBolsasOtraTiendaCambia(false) }, modifier = Modifier.weight(1f))
+                        }
                     }
 
                     // 5. Destino (visible solo si es Tránsito)
