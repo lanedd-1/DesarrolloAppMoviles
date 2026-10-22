@@ -3,7 +3,8 @@ package com.example.rinconsur.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.rinconsur.model.LoginUiState
-import com.example.rinconsur.data.RinconDbHelper // Ojo con la ruta de tu DbHelper
+import com.example.rinconsur.data.RinconDbHelper
+import com.example.rinconsur.data.SesionPreferencias
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,10 +30,8 @@ class LoginViewModel : ViewModel() {
     fun onIngresar(contexto: Context): Boolean {
         val estado = _uiState.value
 
-        // Pasamos el correo a minúsculas para que no importe cómo lo escriba el usuario
         val correoLimpio = estado.correo.trim().lowercase()
 
-        // 1. Usamos 'var' para poder sobreescribir el error si la BD lo rechaza
         var errorCorreo = if (correoLimpio.isBlank()) {
             "El correo es obligatorio"
         } else if (!correoLimpio.endsWith("@rinconsur.cl")) {
@@ -51,23 +50,24 @@ class LoginViewModel : ViewModel() {
 
         var hayErrores = errorCorreo != null || errorContrasena != null
 
-        // 2. Si escribieron algo válido, consultamos la Base de Datos SQLite
+        // Si el formato es válido, validamos contra la BD usando BCrypt
         if (!hayErrores) {
             val dbHelper = RinconDbHelper(contexto)
-            val usuarioEnBd = dbHelper.buscarPorCorreo(correoLimpio)
 
-            if (usuarioEnBd == null) {
-                // El correo no existe en la BD
-                errorCorreo = "Esta cuenta no está registrada"
+            val credencialesCorrectas = dbHelper.validarLogin(correoLimpio, estado.contrasena)
+
+            if (!credencialesCorrectas) {
+                errorContrasena = "Correo o contraseña incorrectos"
                 hayErrores = true
-            } else if (usuarioEnBd.contrasena != estado.contrasena) {
-                // El correo existe, pero la clave está mal
-                errorContrasena = "Contraseña incorrecta"
-                hayErrores = true
+            } else {
+                // Login exitoso: guardamos el ID del usuario en SharedPreferences
+                val usuario = dbHelper.buscarPorCorreo(correoLimpio)
+                if (usuario != null) {
+                    SesionPreferencias(contexto).guardar(usuario.id)
+                }
             }
         }
 
-        // 3. Actualizamos la vista con los errores finales (o éxito)
         _uiState.update {
             it.copy(
                 errorCorreo = errorCorreo,

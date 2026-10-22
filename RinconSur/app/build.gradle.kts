@@ -60,6 +60,6 @@ dependencies {
     implementation("at.favre.lib:bcrypt:0.10.2")
 
     // NUEVO (Bloque 1): navegación entre pantallas (NavHost, NavController)
-    implementation("androidx.navigation:navigation-compose:2.10.2")
+    implementation("androidx.navigation:navigation-compose:2.8.7")
 
 }
