@@ -88,7 +88,7 @@ fun OlvideContrasenaContent(
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_volver), //
+                            painter = painterResource(R.drawable.ic_volver), // O tu ícono de volver
                             contentDescription = "Volver",
                             tint = Color.White
                         )
