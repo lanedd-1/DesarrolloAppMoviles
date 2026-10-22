@@ -1,69 +1,63 @@
-package com.example.rinconsur.data
+package com.example.rinconsur // Ajusta si lo tienes dentro de una carpeta como .database
 
-import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
 
-class RinconDbHelper(context: Context) :
-    SQLiteOpenHelper(context, NOMBRE_BD, null, VERSION_BD) {
+class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val NOMBRE_BD = "rinconsur.db"
-        private const val VERSION_BD = 1
+        private const val DATABASE_NAME = "rinconsur.db"
+        private const val DATABASE_VERSION = 2
 
-        // Tabla de Roles
+        // Tabla Roles
         private const val TABLA_ROLES = "roles"
-        private const val ROL_ID = "id_rol"
-        private const val ROL_NOMBRE = "nombre_rol"
+        private const val ROL_ID = "rol_id"
+        private const val ROL_NOMBRE = "rol_nombre"
 
-        // Tabla de Usuarios
+        // Tabla Usuarios
         private const val TABLA_USUARIOS = "usuarios"
-        private const val USU_ID = "id_usuario"
-        private const val USU_NOMBRE = "nombre"
-        private const val USU_CORREO = "correo"
-        private const val USU_CONTRASENA = "contrasena"
-        private const val USU_ROL = "id_rol"
+        private const val USU_ID = "usu_id"
+        private const val USU_NOMBRE = "usu_nombre"
+        private const val USU_CORREO = "usu_correo"
+        private const val USU_CONTRASENA = "usu_contrasena"
+        private const val USU_ROL = "usu_rol"
 
-        // Creación de tablas
+        // Query: Crear tabla Roles
         private const val SQL_CREAR_ROLES =
             "CREATE TABLE $TABLA_ROLES (" +
-                    "$ROL_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "$ROL_NOMBRE TEXT NOT NULL UNIQUE)"
+                    "$ROL_ID INTEGER PRIMARY KEY, " +
+                    "$ROL_NOMBRE TEXT NOT NULL)"
 
+        // Query: Crear tabla Usuarios
         private const val SQL_CREAR_USUARIOS =
             "CREATE TABLE $TABLA_USUARIOS (" +
                     "$USU_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "$USU_NOMBRE TEXT NOT NULL, " +
                     "$USU_CORREO TEXT NOT NULL UNIQUE, " +
+                    "$USU_CONTRASENA TEXT NOT NULL, " +
                     "$USU_ROL INTEGER NOT NULL REFERENCES $TABLA_ROLES($ROL_ID))"
 
-        // Datos Iniciales (Precarga)
+        // Query: Precargar Roles
         private const val SQL_PRECARGAR_ROLES =
             "INSERT INTO $TABLA_ROLES ($ROL_ID, $ROL_NOMBRE) VALUES " +
                     "(${Rol.ID_OBSERVADOR}, 'Observador de Pasillo'), " +
                     "(${Rol.ID_JEFE_TIENDA}, 'Jefe de Tienda'), " +
                     "(${Rol.ID_ADMINISTRADOR}, 'Administrador')"
 
+        // Query: Precargar Usuarios
         private const val SQL_PRECARGAR_USUARIOS =
-            "INSERT INTO $TABLA_USUARIOS ($USU_NOMBRE, $USU_CORREO, $USU_ROL) VALUES " +
-                    "('Tamara Ramírez', 'observador@rinconsur.cl', ${Rol.ID_OBSERVADOR}), " +
-                    "('Rodrigo Saavedra', 'supervisor@rinconsur.cl', ${Rol.ID_JEFE_TIENDA}), " +
-                    "('Administrador IT', 'admin@rinconsur.cl', ${Rol.ID_ADMINISTRADOR})"
-
-        // Query Base con INNER JOIN para traer al Usuario con el Nombre de su Rol
-        private const val SQL_SELECT_USUARIOS =
-            "SELECT u.*, r.$ROL_NOMBRE AS $ROL_NOMBRE " +
-                    "FROM $TABLA_USUARIOS u " +
-                    "INNER JOIN $TABLA_ROLES r ON u.$USU_ROL = r.$ROL_ID"
+            "INSERT INTO $TABLA_USUARIOS ($USU_NOMBRE, $USU_CORREO, $USU_CONTRASENA, $USU_ROL) VALUES " +
+                    "('Tamara Ramírez', 'observador@rinconsur.cl', '123456', ${Rol.ID_OBSERVADOR}), " +
+                    "('Rodrigo Saavedra', 'supervisor@rinconsur.cl', '123456', ${Rol.ID_JEFE_TIENDA}), " +
+                    "('Administrador IT', 'admin@rinconsur.cl', '123456', ${Rol.ID_ADMINISTRADOR})"
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
         super.onConfigure(db)
-        // Activa el chequeo estricto de claves foráneas (Foreign Keys)
+        // Activa el chequeo estricto de claves foráneas
         db.setForeignKeyConstraintsEnabled(true)
     }
 
@@ -75,104 +69,47 @@ class RinconDbHelper(context: Context) :
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // En versión 1, aún no se requiere migración estructural (como el Avatar del profe).
-        // Se deja preparado para el futuro.
+        db.execSQL("DROP TABLE IF EXISTS $TABLA_USUARIOS")
+        db.execSQL("DROP TABLE IF EXISTS $TABLA_ROLES")
+        onCreate(db)
     }
 
-    // =========================================================================
-    // MÉTODOS CRUD (Lógica Base de Datos)
-    // =========================================================================
-
-    fun listarRoles(): List<Rol> {
-        val roles = mutableListOf<Rol>()
-        readableDatabase.rawQuery(
-            "SELECT $ROL_ID, $ROL_NOMBRE FROM $TABLA_ROLES ORDER BY $ROL_ID", null
-        ).use { cursor ->
-            while (cursor.moveToNext()) {
-                roles.add(
-                    Rol(
-                        id = cursor.getLong(cursor.getColumnIndexOrThrow(ROL_ID)),
-                        nombre = cursor.getString(cursor.getColumnIndexOrThrow(ROL_NOMBRE))
-                    )
-                )
-            }
-        }
-        return roles
-    }
-
-    // Retorna el ID generado, o -1 si falla (ej. correo duplicado)
-    fun insertarUsuario(usuario: Usuario): Long =
-        writableDatabase.insert(TABLA_USUARIOS, null, valoresDe(usuario))
-
-    fun listarUsuarios(): List<Usuario> =
-        consultarUsuarios("$SQL_SELECT_USUARIOS ORDER BY u.$USU_NOMBRE", null)
-
-    fun buscarUsuarios(texto: String): List<Usuario> {
-        val patron = "%$texto%"
-        return consultarUsuarios(
-            "$SQL_SELECT_USUARIOS WHERE u.$USU_NOMBRE LIKE ? OR u.$USU_CORREO LIKE ? " +
-                    "ORDER BY u.$USU_NOMBRE",
-            arrayOf(patron, patron)
+    // (Opcional) Método de validación directa
+    fun validarLogin(correo: String, contrasena: String): Boolean {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLA_USUARIOS WHERE $USU_CORREO = ? AND $USU_CONTRASENA = ?",
+            arrayOf(correo, contrasena)
         )
+        val existe = cursor.count > 0
+        cursor.close()
+        return existe
     }
 
-    fun buscarPorId(id: Long): Usuario? =
-        consultarUsuarios("$SQL_SELECT_USUARIOS WHERE u.$USU_ID = ?", arrayOf(id.toString()))
-            .firstOrNull()
-
-    // MÉTODO PARA LOGIN: Busca si el correo existe
-    fun buscarPorCorreo(correo: String): Usuario? =
-        consultarUsuarios("$SQL_SELECT_USUARIOS WHERE u.$USU_CORREO = ?", arrayOf(correo))
-            .firstOrNull()
-
-    fun actualizarUsuario(usuario: Usuario): Int =
-        writableDatabase.update(
-            TABLA_USUARIOS, valoresDe(usuario), "$USU_ID = ?", arrayOf(usuario.id.toString())
-        )
-
-    fun eliminarUsuario(id: Long): Int =
-        writableDatabase.delete(TABLA_USUARIOS, "$USU_ID = ?", arrayOf(id.toString()))
-
-    // =========================================================================
-    // FUNCIONES AUXILIARES DE MAPEO
-    // =========================================================================
-
-    private fun valoresDe(usuario: Usuario) = ContentValues().apply {
-        put(USU_NOMBRE, usuario.nombre)
-        put(USU_CORREO, usuario.correo)
-        put(USU_ROL, usuario.rolId)
-    }
-
-    private fun consultarUsuarios(sql: String, args: Array<String>?): List<Usuario> {
-        val lista = mutableListOf<Usuario>()
-        readableDatabase.rawQuery(sql, args).use { cursor ->
-            while (cursor.moveToNext()) {
-                lista.add(leerUsuario(cursor))
-            }
-        }
-        return lista
-    }
-
-    private fun leerUsuario(cursor: Cursor) = Usuario(
-        nombre = cursor.getString(cursor.getColumnIndexOrThrow(USU_NOMBRE)),
-        correo = cursor.getString(cursor.getColumnIndexOrThrow(USU_CORREO)),
-        contrasena = cursor.getString(cursor.getColumnIndexOrThrow(USU_CONTRASENA)),
-        id = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ID)),
-        rolId = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ROL)),
-        rolNombre = cursor.getString(cursor.getColumnIndexOrThrow(ROL_NOMBRE))
-    )
-
-    fun actualizarContrasena(correo: String, nuevaContrasena: String): Boolean {
-        val db = this.writableDatabase
-        val valores = ContentValues().apply {
-            put(USU_CONTRASENA, nuevaContrasena)
-        }
-        val filasAfectadas = db.update(
-            TABLA_USUARIOS,
-            valores,
-            "$USU_CORREO = ?",
+    // ¡NUEVO! Método para buscar un usuario completo por su correo
+    fun buscarPorCorreo(correo: String): Usuario? {
+        val db = this.readableDatabase
+        // Usamos INNER JOIN para traer el nombre del rol además de los datos del usuario
+        val cursor = db.rawQuery(
+            "SELECT u.*, r.$ROL_NOMBRE AS $ROL_NOMBRE " +
+                    "FROM $TABLA_USUARIOS u " +
+                    "INNER JOIN $TABLA_ROLES r ON u.$USU_ROL = r.$ROL_ID " +
+                    "WHERE u.$USU_CORREO = ?",
             arrayOf(correo)
         )
-        return filasAfectadas > 0
+
+        var usuario: Usuario? = null
+        if (cursor.moveToFirst()) {
+            usuario = Usuario(
+                id = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ID)),
+                nombre = cursor.getString(cursor.getColumnIndexOrThrow(USU_NOMBRE)),
+                correo = cursor.getString(cursor.getColumnIndexOrThrow(USU_CORREO)),
+                contrasena = cursor.getString(cursor.getColumnIndexOrThrow(USU_CONTRASENA)),
+                rolId = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ROL)),
+                rolNombre = cursor.getString(cursor.getColumnIndexOrThrow(ROL_NOMBRE))
+            )
+        }
+        cursor.close()
+        return usuario
     }
 }

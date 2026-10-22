@@ -1,14 +1,16 @@
 package com.example.rinconsur.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.model.LoginUiState
+import com.example.rinconsur.RinconDbHelper // Ojo con la ruta de tu DbHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class LoginViewModel : ViewModel() {
+
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
@@ -24,19 +26,35 @@ class LoginViewModel : ViewModel() {
         _uiState.update { it.copy(contrasenaVisible = !it.contrasenaVisible) }
     }
 
-    // Recibe la Base de Datos como parámetro
-    fun onIngresar(dbHelper: RinconDbHelper): Boolean {
+    fun onIngresar(contexto: Context): Boolean {
         val estado = _uiState.value
 
-        // 1. Validaciones básicas de que no vengan campos en blanco
-        var errorCorreo = if (estado.correo.isBlank()) "El correo es obligatorio" else null
-        var errorContrasena = if (estado.contrasena.isBlank()) "La contraseña es obligatoria" else null
+        // Pasamos el correo a minúsculas para que no importe cómo lo escriba el usuario
+        val correoLimpio = estado.correo.trim().lowercase()
+
+        // 1. Usamos 'var' para poder sobreescribir el error si la BD lo rechaza
+        var errorCorreo = if (correoLimpio.isBlank()) {
+            "El correo es obligatorio"
+        } else if (!correoLimpio.endsWith("@rinconsur.cl")) {
+            "Debe ingresar su correo corporativo (@RinconSur.cl)"
+        } else {
+            null
+        }
+
+        var errorContrasena = if (estado.contrasena.isBlank()) {
+            "La contraseña es obligatoria"
+        } else if (estado.contrasena.length < 6) {
+            "Mínimo 6 caracteres"
+        } else {
+            null
+        }
 
         var hayErrores = errorCorreo != null || errorContrasena != null
 
-        // 2. Si escribieron algo, consultamos la Base de Datos SQLite
+        // 2. Si escribieron algo válido, consultamos la Base de Datos SQLite
         if (!hayErrores) {
-            val usuarioEnBd = dbHelper.buscarPorCorreo(estado.correo)
+            val dbHelper = RinconDbHelper(contexto)
+            val usuarioEnBd = dbHelper.buscarPorCorreo(correoLimpio)
 
             if (usuarioEnBd == null) {
                 // El correo no existe en la BD
@@ -49,7 +67,7 @@ class LoginViewModel : ViewModel() {
             }
         }
 
-        // 3. Actualizamos la pantalla con los errores (o sin ellos si entró bien)
+        // 3. Actualizamos la vista con los errores finales (o éxito)
         _uiState.update {
             it.copy(
                 errorCorreo = errorCorreo,
