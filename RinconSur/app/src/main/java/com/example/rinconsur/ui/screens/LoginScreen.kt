@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
@@ -54,7 +53,6 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // 1. Obtenemos el contexto actual y preparamos el helper de la base de datos
     val contexto = LocalContext.current
     val dbHelper = remember { RinconDbHelper(contexto) }
 
@@ -64,7 +62,6 @@ fun LoginScreen(
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         onIngresar = {
-            // 2. Le pasamos dbHelper a la función onIngresar
             if (viewModel.onIngresar(dbHelper)) {
                 onLoginExitoso()
             }
@@ -116,16 +113,12 @@ fun LoginContent(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.espacioPantalla),
-
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
 
-
             TarjetaSeccion(titulo = "Credenciales de Acceso") {
-
                 CampoTexto(
                     valor = uiState.correo,
                     onValorCambia = onCorreoCambia,
@@ -135,9 +128,7 @@ fun LoginContent(
                     tipoTeclado = KeyboardType.Email
                 )
 
-
                 Spacer(modifier = Modifier.height(Dimens.espacioMedio))
-
 
                 CampoContrasena(
                     valor = uiState.contrasena,
@@ -148,9 +139,7 @@ fun LoginContent(
                     error = uiState.errorContrasena
                 )
 
-
                 Spacer(modifier = Modifier.height(Dimens.espacioChico))
-
 
                 Text(
                     text = "¿Olvidaste tu contraseña?",
@@ -164,13 +153,10 @@ fun LoginContent(
                         .padding(vertical = Dimens.espacioMini)
                 )
 
-
                 Spacer(modifier = Modifier.height(Dimens.espacioMini))
             }
 
-
             Spacer(modifier = Modifier.height(Dimens.espacioGrande))
-
 
             BotonPrincipal(
                 texto = "Iniciar Sesión",
@@ -179,13 +165,12 @@ fun LoginContent(
                     .fillMaxWidth(0.9f)
             )
 
-
             Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
         }
     }
 }
 
-
+// ----------------------------- PREVIEWS -----------------------------
 
 @Preview(showBackground = true, showSystemUi = true, name = "1. Login Limpio (Centrado)")
 @Composable

@@ -6,9 +6,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.rinconsur.ui.screens.CambiarContrasenaScreen
 import com.example.rinconsur.ui.screens.FormularioScreen
 import com.example.rinconsur.ui.screens.LoginScreen
 import com.example.rinconsur.ui.screens.MisSesionesScreen
+import com.example.rinconsur.ui.screens.OlvideContrasenaScreen
 import com.example.rinconsur.ui.screens.SesionEnCursoScreen
 
 @Composable
@@ -59,6 +61,36 @@ fun AppNavegacion() {
                     navController.navigateUp()
                 },
                 onVolver = { navController.navigateUp() }
+            )
+        }
+
+        composable("login") {
+            LoginScreen(
+                onLoginExitoso = { /* tu código */ },
+                onOlvidasteContrasena = {
+                    navController.navigate("olvide_contrasena") // <--- ¡Aquí se conectan!
+                },
+                onVolver = { navController.popBackStack() }
+            )
+        }
+
+        composable("olvide_contrasena") {
+            OlvideContrasenaScreen(
+                onCodigoVerificado = {
+                    navController.navigate("cambiar_contrasena")
+                },
+                onVolver = { navController.popBackStack() }
+            )
+        }
+
+        composable("cambiar_contrasena") {
+            CambiarContrasenaScreen(
+                onCambioExitoso = {
+                    navController.navigate("login") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
+                onVolver = { navController.popBackStack() }
             )
         }
     }
