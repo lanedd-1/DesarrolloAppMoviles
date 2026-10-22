@@ -139,7 +139,8 @@ fun LoginContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.End
                 ) {
-                    TextButton(onClick = { /* Acción para recuperar contraseña */ }) {
+                    // 🚀 Aquí conectamos el botón con la acción onOlvidasteContrasena que viene del NavHost
+                    TextButton(onClick = onOlvidasteContrasena) {
                         Text(
                             text = "¿Olvidaste tu contraseña?",
                             style = MaterialTheme.typography.bodySmall,

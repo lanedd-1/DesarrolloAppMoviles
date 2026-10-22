@@ -6,9 +6,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.rinconsur.ui.screens.CambiarContrasenaScreen
 import com.example.rinconsur.ui.screens.FormularioScreen
 import com.example.rinconsur.ui.screens.LoginScreen
 import com.example.rinconsur.ui.screens.MisSesionesScreen
+import com.example.rinconsur.ui.screens.OlvideContrasenaScreen
 import com.example.rinconsur.ui.screens.SesionEnCursoScreen
 
 @Composable
@@ -76,6 +78,38 @@ fun AppNavegacion() {
                 onCerrarSesion = {
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 }
+            )
+        }
+
+        composable("login") {
+            LoginScreen(
+                onLoginExitoso = {},
+                onOlvidasteContrasena = {
+                    navController.navigate("olvide_contrasena")
+                },
+                onVolver = { navController.popBackStack() }
+            )
+        }
+
+        composable("olvide_contrasena") {
+            OlvideContrasenaScreen(
+                onCodigoVerificado = {
+                    navController.navigate("cambiar_contrasena")
+                },
+                onVolver = { navController.popBackStack() }
+            )
+        }
+
+        composable("cambiar_contrasena") {
+            CambiarContrasenaScreen(
+                onCambioExitoso = {
+                    // Solución segura: Usamos popUpTo(0) para limpiar el historial
+                    // sin importar cómo se llame el nombre interno de la ruta inicial.
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onVolver = { navController.popBackStack() }
             )
         }
     }
