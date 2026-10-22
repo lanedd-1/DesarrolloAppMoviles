@@ -1,5 +1,6 @@
 package com.example.rinconsur.navigation
 
+import MisSesionesScreen
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -12,7 +13,6 @@ import androidx.navigation.navArgument
 import com.example.rinconsur.ui.screens.CambiarContrasenaScreen
 import com.example.rinconsur.ui.screens.FormularioScreen
 import com.example.rinconsur.ui.screens.LoginScreen
-import com.example.rinconsur.ui.screens.MisSesionesScreen
 import com.example.rinconsur.ui.screens.OlvideContrasenaScreen
 import com.example.rinconsur.ui.screens.SesionEnCursoScreen
 
