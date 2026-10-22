@@ -21,7 +21,7 @@ private val LightColorScheme = lightColorScheme(
     error = RojoAlerta
 )
 
-// 2. Esquema Oscuro
+
 private val DarkColorScheme = darkColorScheme(
     primary = BurdeoRincon,
     secondary = TerracotaRincon,
@@ -29,8 +29,8 @@ private val DarkColorScheme = darkColorScheme(
     surface = Color(0xFF1E1E1E),
     onPrimary = Color.White,
     onSecondary = Color.White,
-    onBackground = TextoPrincipal,
-    onSurface = TextoPrincipal,
+    onBackground = Color(0xFFE0E0E0),
+    onSurface = Color(0xFFFFFFFF),
     error = RojoAlerta
 )
 
