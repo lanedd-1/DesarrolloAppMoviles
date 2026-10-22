@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,6 +27,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -42,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
@@ -51,10 +54,13 @@ import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.BotonSecundario
 import com.example.rinconsur.ui.components.CampoContrasena
 import com.example.rinconsur.ui.components.CampoTexto
+import com.example.rinconsur.ui.components.DialogoCerrarSesion
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
+import com.example.rinconsur.ui.theme.RojoAlerta
+import com.example.rinconsur.ui.theme.VerdeExito
 import com.example.rinconsur.viewmodel.FormularioViewModel
 import kotlinx.coroutines.launch
 
@@ -105,6 +111,18 @@ fun FormularioContent(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    // Controla si se muestra el diálogo de confirmación al cerrar sesión
+    var mostrarDialogo by remember { mutableStateOf(false) }
+
+    if (mostrarDialogo) {
+        DialogoCerrarSesion(
+            onConfirmar = {
+                mostrarDialogo = false
+                onCerrarSesion()
+            },
+            onCancelar = { mostrarDialogo = false }
+        )
+    }
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -137,7 +155,7 @@ fun FormularioContent(
                 NavigationDrawerItem(
                     label = { Text("Cerrar sesión", color = MaterialTheme.colorScheme.error) },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() }; onCerrarSesion() },
+                    onClick = { scope.launch { drawerState.close() }; mostrarDialogo = true },
                     modifier = Modifier.padding(Dimens.espacioChico)
                 )
             }
@@ -157,7 +175,6 @@ fun FormularioContent(
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { innerPadding ->
-            // [AQUÍ QUEDA INTACTO TU CÓDIGO DE LAS CAJAS DE TEXTO Y BOTONES]
             Column(
                 modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()).padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
