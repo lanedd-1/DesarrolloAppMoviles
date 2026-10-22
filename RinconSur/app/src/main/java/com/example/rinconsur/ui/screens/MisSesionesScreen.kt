@@ -1,5 +1,6 @@
-package com.example.rinconsur.ui.screens
-
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.rinconsur.R
@@ -50,6 +52,7 @@ import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
+import com.example.rinconsur.permisos.Permisos
 import com.example.rinconsur.ui.components.AvatarCircular
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.BotonSecundario
@@ -83,6 +86,32 @@ fun MisSesionesScreen(
     // Controla si se muestra el diálogo de confirmación al cerrar sesión
     var mostrarDialogo by remember { mutableStateOf(false) }
 
+    // Controla el diálogo para agregar foto
+    var mostrarDialogoFoto by remember { mutableStateOf(false) }
+
+    // --- LANZADORES DE PERMISOS NATIVOS ---
+    val camaraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // El usuario aceptó el permiso de la cámara
+        } else {
+            // Si lo rechaza, lo mandamos a los ajustes usando tu objeto Permisos
+            Permisos.abrirAjustes(contexto)
+        }
+    }
+
+    val galeriaLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // El usuario aceptó el permiso de la galería
+        } else {
+            // Si lo rechaza, lo mandamos a los ajustes usando tu objeto Permisos
+            Permisos.abrirAjustes(contexto)
+        }
+    }
+
     // Al cargar la pantalla, leemos el ID de la sesión y buscamos al usuario en SQLite
     LaunchedEffect(Unit) {
         val idUsuarioLogueado = SesionPreferencias(contexto).obtenerIdUsuario()
@@ -99,6 +128,45 @@ fun MisSesionesScreen(
                 onCerrarSesion()
             },
             onCancelar = { mostrarDialogo = false }
+        )
+    }
+
+    // Diálogo de selección: Si no tiene el permiso, lo pide con el Launcher; si ya lo tiene, procede
+    if (mostrarDialogoFoto) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoFoto = false },
+            title = { Text(text = "Seleccionar Foto de Perfil") },
+            text = { Text(text = "¿De dónde deseas obtener la imagen?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mostrarDialogoFoto = false
+                        if (Permisos.tiene(contexto, Permisos.CAMARA)) {
+                            // Ya tiene el permiso concedido
+                        } else {
+                            // Pide el permiso al sistema nativamente
+                            camaraLauncher.launch(Permisos.CAMARA)
+                        }
+                    }
+                ) {
+                    Text("Cámara")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        mostrarDialogoFoto = false
+                        if (Permisos.tiene(contexto, Permisos.IMAGENES)) {
+                            // Ya tiene el permiso concedido
+                        } else {
+                            // Pide el permiso al sistema nativamente
+                            galeriaLauncher.launch(Permisos.IMAGENES)
+                        }
+                    }
+                ) {
+                    Text("Galería")
+                }
+            }
         )
     }
 
@@ -208,6 +276,20 @@ fun MisSesionesScreen(
                                 text = "${usuarioActual?.rolNombre ?: ""} · Turno",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+
+                            Spacer(modifier = Modifier.height(Dimens.espacioMini))
+
+                            // Texto interactivo "Agregar foto" abajo del rol
+                            Text(
+                                text = "Agregar foto",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                                textDecoration = TextDecoration.Underline,
+                                modifier = Modifier.clickable {
+                                    mostrarDialogoFoto = true
+                                }
                             )
                         }
                     }
