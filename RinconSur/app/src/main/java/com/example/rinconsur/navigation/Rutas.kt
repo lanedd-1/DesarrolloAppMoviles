@@ -1,18 +1,23 @@
 package com.example.rinconsur.navigation
 
 // =====================================================================
-//  Rutas.kt — Rincón Sur
-//  ---------------------------------------------------------------------
-//  Sealed class con data objects para rutas type-safe en Compose.
+//  Ruta.kt — Identificadores de pantalla para el NavHost
 // =====================================================================
 
 sealed class Ruta(val ruta: String) {
+
+    // Pantalla inicial de inicio de sesión
     data object Login : Ruta("login")
+
+    // Pantalla principal del observador (con el menú hamburguesa)
     data object MisSesiones : Ruta("mis_sesiones")
+
+    // Pantalla para crear un nuevo usuario/colaborador
     data object Formulario : Ruta("formulario")
 
-    // Ruta parametrizada por código de acceso (ej: A1, A2, A3, A4)
+    // Pantalla de conteo que recibe qué puerta/acceso se seleccionó
     data object SesionEnCurso : Ruta("sesion_en_curso/{acceso}") {
+        // Función helper para construir la ruta con el parámetro real
         fun crear(acceso: String) = "sesion_en_curso/$acceso"
     }
 }

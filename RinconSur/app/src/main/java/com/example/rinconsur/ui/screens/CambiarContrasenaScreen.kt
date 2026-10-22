@@ -1,0 +1,197 @@
+package com.example.rinconsur.ui.screens
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.rinconsur.R
+import com.example.rinconsur.data.RinconDbHelper
+import com.example.rinconsur.ui.components.BotonPrincipal
+import com.example.rinconsur.ui.components.CampoContrasena
+import com.example.rinconsur.ui.components.TarjetaSeccion
+import com.example.rinconsur.ui.theme.BurdeoRincon
+import com.example.rinconsur.ui.theme.Dimens
+import com.example.rinconsur.ui.theme.RinconSurTheme
+import com.example.rinconsur.viewmodel.CambiarContrasenaUiState
+import com.example.rinconsur.viewmodel.CambiarContrasenaViewModel
+
+@Composable
+fun CambiarContrasenaScreen(
+    correoUsuario: String = "",
+    onCambioExitoso: () -> Unit = {},
+    onVolver: () -> Unit = {},
+    viewModel: CambiarContrasenaViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val contexto = LocalContext.current
+    val dbHelper = remember { RinconDbHelper(contexto) }
+
+    CambiarContrasenaContent(
+        uiState = uiState,
+        onContrasenaNuevaCambia = viewModel::onContrasenaNuevaCambia,
+        onConfirmarContrasenaCambia = viewModel::onConfirmarContrasenaCambia,
+        onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
+        onGuardarContrasena = {
+            if (viewModel.onGuardarContrasena(correoUsuario, dbHelper)) {
+                onCambioExitoso()
+            }
+        },
+        onVolver = onVolver
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CambiarContrasenaContent(
+    uiState: CambiarContrasenaUiState,
+    onContrasenaNuevaCambia: (String) -> Unit,
+    onConfirmarContrasenaCambia: (String) -> Unit,
+    onAlternarVisibilidad: () -> Unit,
+    onGuardarContrasena: () -> Unit,
+    onVolver: () -> Unit = {}
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Nueva Contraseña",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onVolver) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_menu),
+                            contentDescription = "Volver",
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(Dimens.espacioPantalla),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
+
+            TarjetaSeccion(titulo = "Actualizar Clave de Acceso") {
+                Text(
+                    text = "Crea una nueva contraseña segura para tu cuenta institucional.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+
+                Spacer(modifier = Modifier.height(Dimens.espacioMedio))
+
+
+                CampoContrasena(
+                    valor = uiState.contrasenaNueva,
+                    onValorCambia = onContrasenaNuevaCambia,
+                    etiqueta = "Nueva contraseña",
+                    visible = uiState.contrasenaVisible,
+                    onAlternarVisible = onAlternarVisibilidad,
+                    error = uiState.errorContrasenaNueva
+                )
+
+                Spacer(modifier = Modifier.height(Dimens.espacioMedio))
+
+
+                CampoContrasena(
+                    valor = uiState.confirmarContrasena,
+                    onValorCambia = onConfirmarContrasenaCambia,
+                    etiqueta = "Confirmar nueva contraseña",
+                    visible = uiState.contrasenaVisible,
+                    onAlternarVisible = onAlternarVisibilidad,
+                    error = uiState.errorConfirmarContrasena
+                )
+
+                Spacer(modifier = Modifier.height(Dimens.espacioMini))
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.espacioGrande))
+
+
+            BotonPrincipal(
+                texto = "Guardar Nueva Contraseña",
+                onClick = onGuardarContrasena,
+                modifier = Modifier.fillMaxWidth(0.9f)
+            )
+
+            Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
+        }
+    }
+}
+
+
+
+@Preview(showBackground = true, showSystemUi = true, name = "1. Cambiar Clave Limpio")
+@Composable
+private fun CambiarContrasenaLimpioPreview() {
+    RinconSurTheme {
+        CambiarContrasenaContent(
+            uiState = CambiarContrasenaUiState(),
+            onContrasenaNuevaCambia = {},
+            onConfirmarContrasenaCambia = {},
+            onAlternarVisibilidad = {},
+            onGuardarContrasena = {},
+            onVolver = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "2. Cambiar Clave Errores")
+@Composable
+private fun CambiarContrasenaErroresPreview() {
+    RinconSurTheme {
+        CambiarContrasenaContent(
+            uiState = CambiarContrasenaUiState(
+                contrasenaNueva = "123",
+                confirmarContrasena = "12345",
+                errorContrasenaNueva = "Mínimo 6 caracteres",
+                errorConfirmarContrasena = "Las contraseñas no coinciden"
+            ),
+            onContrasenaNuevaCambia = {},
+            onConfirmarContrasenaCambia = {},
+            onAlternarVisibilidad = {},
+            onGuardarContrasena = {},
+            onVolver = {}
+        )
+    }
+}

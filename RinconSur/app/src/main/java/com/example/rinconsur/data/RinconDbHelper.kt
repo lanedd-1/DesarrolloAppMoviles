@@ -1,16 +1,18 @@
-package com.example.rinconsur // Cambia esto si lo metiste en una carpeta 'database'
+package com.example.rinconsur.data // Revisa si lo tienes en otra carpeta como .data o .database
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.example.rinconsur.model.Rol
+import com.example.rinconsur.model.Usuario
 
 class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_NAME = "rinconsur.db"
-        // Subimos a versión 2 para forzar a que se borre la BD mala y se cree la buena
-        private const val DATABASE_VERSION = 2
+        // Subimos a versión 3 para que refresque los cambios automáticamente
+        private const val DATABASE_VERSION = 3
 
         // Tabla Roles
         private const val TABLA_ROLES = "roles"
@@ -31,13 +33,13 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     "$ROL_ID INTEGER PRIMARY KEY, " +
                     "$ROL_NOMBRE TEXT NOT NULL)"
 
-        // Query: Crear tabla Usuarios (Ahora incluye la contraseña)
+        // Query: Crear tabla Usuarios
         private const val SQL_CREAR_USUARIOS =
             "CREATE TABLE $TABLA_USUARIOS (" +
                     "$USU_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "$USU_NOMBRE TEXT NOT NULL, " +
                     "$USU_CORREO TEXT NOT NULL UNIQUE, " +
-                    "$USU_CONTRASENA TEXT NOT NULL, " + // <-- COLUMNA NUEVA
+                    "$USU_CONTRASENA TEXT NOT NULL, " +
                     "$USU_ROL INTEGER NOT NULL REFERENCES $TABLA_ROLES($ROL_ID))"
 
         // Query: Precargar Roles
@@ -47,7 +49,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     "(${Rol.ID_JEFE_TIENDA}, 'Jefe de Tienda'), " +
                     "(${Rol.ID_ADMINISTRADOR}, 'Administrador')"
 
-        // Query: Precargar Usuarios (Ahora se inserta '123456' para todos)
+        // Query: Precargar Usuarios (Las claves iniciales son 123456)
         private const val SQL_PRECARGAR_USUARIOS =
             "INSERT INTO $TABLA_USUARIOS ($USU_NOMBRE, $USU_CORREO, $USU_CONTRASENA, $USU_ROL) VALUES " +
                     "('Tamara Ramírez', 'observador@rinconsur.cl', '123456', ${Rol.ID_OBSERVADOR}), " +
@@ -69,24 +71,68 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // Borra las tablas viejas y las vuelve a crear con las columnas nuevas
         db.execSQL("DROP TABLE IF EXISTS $TABLA_USUARIOS")
         db.execSQL("DROP TABLE IF EXISTS $TABLA_ROLES")
         onCreate(db)
     }
 
-    // Método que usa el LoginViewModel para validar en la BD
+    // ---------------------------------------------------------
+    // METODOS DE CONSULTA Y ACTUALIZACION
+    // ---------------------------------------------------------
+
+    // 1. Método para Login (solo verifica si el par correo/clave existe)
     fun validarLogin(correo: String, contrasena: String): Boolean {
         val db = this.readableDatabase
-
         val cursor = db.rawQuery(
             "SELECT * FROM $TABLA_USUARIOS WHERE $USU_CORREO = ? AND $USU_CONTRASENA = ?",
             arrayOf(correo, contrasena)
         )
-
         val existe = cursor.count > 0
         cursor.close()
-
         return existe
+    }
+
+    // 2. Método para buscar un usuario trayendo todos sus datos (para los errores específicos)
+    fun buscarPorCorreo(correo: String): Usuario? {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT u.*, r.$ROL_NOMBRE AS $ROL_NOMBRE " +
+                    "FROM $TABLA_USUARIOS u " +
+                    "INNER JOIN $TABLA_ROLES r ON u.$USU_ROL = r.$ROL_ID " +
+                    "WHERE u.$USU_CORREO = ?",
+            arrayOf(correo)
+        )
+
+        var usuario: Usuario? = null
+        if (cursor.moveToFirst()) {
+            usuario = Usuario(
+                id = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ID)),
+                nombre = cursor.getString(cursor.getColumnIndexOrThrow(USU_NOMBRE)),
+                correo = cursor.getString(cursor.getColumnIndexOrThrow(USU_CORREO)),
+                contrasena = cursor.getString(cursor.getColumnIndexOrThrow(USU_CONTRASENA)),
+                rolId = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ROL)),
+                rolNombre = cursor.getString(cursor.getColumnIndexOrThrow(ROL_NOMBRE))
+            )
+        }
+        cursor.close()
+        return usuario
+    }
+
+    // 3. ¡NUEVO! Método para actualizar la contraseña desde "Olvidé mi contraseña"
+    fun actualizarContrasena(correo: String, nuevaContrasena: String) {
+        val db = this.writableDatabase
+
+        val valores = ContentValues().apply {
+            put(USU_CONTRASENA, nuevaContrasena)
+        }
+
+        db.update(
+            TABLA_USUARIOS,
+            valores,
+            "$USU_CORREO = ?",
+            arrayOf(correo)
+        )
+
+        db.close()
     }
 }

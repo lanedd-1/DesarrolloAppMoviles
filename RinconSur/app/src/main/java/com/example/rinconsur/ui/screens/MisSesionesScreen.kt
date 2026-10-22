@@ -14,15 +14,22 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,117 +46,165 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MisSesionesScreen(
     onIniciarSesionConteo: (String) -> Unit = {},
-    onAbrirMenu: () -> Unit = {}
+    onIrCrearCuenta: () -> Unit = {},
+    onCerrarSesion: () -> Unit = {}
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Mis Sesiones",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onAbrirMenu) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_menu),
-                            contentDescription = "Abrir menú",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BurdeoRincon
+    // Estado del Drawer (abierto/cerrado) y corrutinas para animarlo
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    text = "Rincón Sur",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(Dimens.espacioMedio)
                 )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(Dimens.espacioPantalla),
-            verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
-        ) {
-            // Encabezado con foto y datos del colaborador
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Row(
-                    modifier = Modifier.padding(Dimens.espacioMedio),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AvatarCircular(
-                        imagen = R.drawable.ic_persona,
-                        descripcion = "Foto de perfil Tamara"
-                    )
-                    Spacer(modifier = Modifier.width(Dimens.espacioMedio))
-                    Column {
+                HorizontalDivider()
+
+                NavigationDrawerItem(
+                    label = { Text("Mis Sesiones") },
+                    selected = true, // Está en esta pantalla
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                    },
+                    modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Registrar Colaborador") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onIrCrearCuenta()
+                    },
+                    modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+                HorizontalDivider()
+
+                NavigationDrawerItem(
+                    label = { Text("Cerrar sesión", color = MaterialTheme.colorScheme.error) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        onCerrarSesion()
+                    },
+                    modifier = Modifier.padding(Dimens.espacioChico)
+                )
+            }
+        }
+    ) {
+        // Todo el contenido original del Scaffold va dentro del Drawer
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
                         Text(
-                            text = "Tamara R.",
+                            text = "Mis Sesiones",
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
-                        Text(
-                            text = "Observador de Pasillo · Turno Mañana",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_menu),
+                                contentDescription = "Abrir menú",
+                                tint = Color.White
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(Dimens.espacioPantalla),
+                verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
+            ) {
+                // Encabezado con foto y datos del colaborador
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(Dimens.espacioMedio),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AvatarCircular(
+                            imagen = R.drawable.ic_persona,
+                            descripcion = "Foto de perfil Tamara"
+                        )
+                        Spacer(modifier = Modifier.width(Dimens.espacioMedio))
+                        Column {
+                            Text(
+                                text = "Tamara R.",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Observador de Pasillo · Turno Mañana",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                }
+
+                // Indicadores rápidos del día (TarjetaEstadistica x2)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        TarjetaEstadistica(
+                            valor = "2 / 4",
+                            etiqueta = "Sesiones Hoy"
+                        )
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        TarjetaEstadistica(
+                            valor = "142",
+                            etiqueta = "Muestras Registradas"
                         )
                     }
                 }
-            }
 
-            // Indicadores rápidos del día (TarjetaEstadistica x2)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
-            ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    TarjetaEstadistica(
-                        valor = "2 / 4",
-                        etiqueta = "Sesiones Hoy"
+                // Lista de Sesiones Programadas
+                TarjetaSeccion(titulo = "Sesiones Asignadas") {
+                    ItemSesion(
+                        puerta = "Acceso 3 - Estacionamiento",
+                        horario = "11:00 - 11:30 hrs",
+                        estado = "Pendiente",
+                        esActiva = true,
+                        onIniciar = { onIniciarSesionConteo("Acceso 3") }
+                    )
+                    Spacer(modifier = Modifier.height(Dimens.espacioMedio))
+                    ItemSesion(
+                        puerta = "Acceso 1 - Galería Principal",
+                        horario = "09:30 - 10:00 hrs",
+                        estado = "Finalizada",
+                        esActiva = false,
+                        onIniciar = {}
                     )
                 }
-                Box(modifier = Modifier.weight(1f)) {
-                    TarjetaEstadistica(
-                        valor = "142",
-                        etiqueta = "Muestras Registradas"
-                    )
-                }
-            }
-
-            // Lista de Sesiones Programadas
-            TarjetaSeccion(titulo = "Sesiones Asignadas") {
-                // Item de Sesión 1: Activa / Pendiente
-                ItemSesion(
-                    puerta = "Acceso 3 - Estacionamiento",
-                    horario = "11:00 - 11:30 hrs",
-                    estado = "Pendiente",
-                    esActiva = true,
-                    onIniciar = { onIniciarSesionConteo("Acceso 3") }
-                )
-
-                Spacer(modifier = Modifier.height(Dimens.espacioMedio))
-
-                // Item de Sesión 2: Finalizada
-                ItemSesion(
-                    puerta = "Acceso 1 - Galería Principal",
-                    horario = "09:30 - 10:00 hrs",
-                    estado = "Finalizada",
-                    esActiva = false,
-                    onIniciar = {}
-                )
             }
         }
     }
@@ -190,13 +245,11 @@ private fun ItemSesion(
                     colorTexto = if (esActiva) BurdeoRincon else Color.DarkGray
                 )
             }
-
             Text(
                 text = "Bloque: $horario",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
-
             if (esActiva) {
                 Spacer(modifier = Modifier.height(Dimens.espacioChico))
                 BotonPrincipal(
@@ -208,8 +261,6 @@ private fun ItemSesion(
         }
     }
 }
-
-// ----------------------------- PREVIEW -----------------------------
 
 @Preview(showBackground = true, showSystemUi = true, heightDp = 800)
 @Composable

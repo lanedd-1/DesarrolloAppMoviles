@@ -3,7 +3,7 @@ package com.example.rinconsur.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.rinconsur.model.LoginUiState
-import com.example.rinconsur.RinconDbHelper // Revisa que este import coincida con la ubicación de tu DbHelper
+import com.example.rinconsur.data.RinconDbHelper // Ojo con la ruta de tu DbHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,11 +29,11 @@ class LoginViewModel : ViewModel() {
     fun onIngresar(contexto: Context): Boolean {
         val estado = _uiState.value
 
-        // 1. Transformamos el correo a minúsculas para que no importe cómo lo escriban
+        // Pasamos el correo a minúsculas para que no importe cómo lo escriba el usuario
         val correoLimpio = estado.correo.trim().lowercase()
 
-        // 2. Validaciones básicas de formato usando el correo limpio
-        val errorCorreo = if (correoLimpio.isBlank()) {
+        // 1. Usamos 'var' para poder sobreescribir el error si la BD lo rechaza
+        var errorCorreo = if (correoLimpio.isBlank()) {
             "El correo es obligatorio"
         } else if (!correoLimpio.endsWith("@rinconsur.cl")) {
             "Debe ingresar su correo corporativo (@RinconSur.cl)"
@@ -41,7 +41,7 @@ class LoginViewModel : ViewModel() {
             null
         }
 
-        val errorContrasena = if (estado.contrasena.isBlank()) {
+        var errorContrasena = if (estado.contrasena.isBlank()) {
             "La contraseña es obligatoria"
         } else if (estado.contrasena.length < 6) {
             "Mínimo 6 caracteres"
@@ -49,40 +49,34 @@ class LoginViewModel : ViewModel() {
             null
         }
 
-        val hayErroresFormato = errorCorreo != null || errorContrasena != null
+        var hayErrores = errorCorreo != null || errorContrasena != null
 
-        // Si hay errores de formato, avisa a la pantalla y corta la ejecución
-        if (hayErroresFormato) {
-            _uiState.update {
-                it.copy(
-                    errorCorreo = errorCorreo,
-                    errorContrasena = errorContrasena,
-                    loginExitoso = false
-                )
+        // 2. Si escribieron algo válido, consultamos la Base de Datos SQLite
+        if (!hayErrores) {
+            val dbHelper = RinconDbHelper(contexto)
+            val usuarioEnBd = dbHelper.buscarPorCorreo(correoLimpio)
+
+            if (usuarioEnBd == null) {
+                // El correo no existe en la BD
+                errorCorreo = "Esta cuenta no está registrada"
+                hayErrores = true
+            } else if (usuarioEnBd.contrasena != estado.contrasena) {
+                // El correo existe, pero la clave está mal
+                errorContrasena = "Contraseña incorrecta"
+                hayErrores = true
             }
-            return false
         }
 
-        // 3. Validación Real contra tu SQLite
-        val dbHelper = RinconDbHelper(contexto)
-
-        // Usamos el correo en minúsculas para que haga "match" exacto con tu SQLite
-        val credencialesCorrectas = dbHelper.validarLogin(correoLimpio, estado.contrasena)
-
-        return if (credencialesCorrectas) {
-            // ¡Todo correcto! El usuario existe en la BD
-            _uiState.update { it.copy(loginExitoso = true) }
-            true
-        } else {
-            // Error: No existe en SQLite o la clave es incorrecta
-            _uiState.update {
-                it.copy(
-                    errorContrasena = "Correo o contraseña incorrectos",
-                    loginExitoso = false
-                )
-            }
-            false
+        // 3. Actualizamos la vista con los errores finales (o éxito)
+        _uiState.update {
+            it.copy(
+                errorCorreo = errorCorreo,
+                errorContrasena = errorContrasena,
+                loginExitoso = !hayErrores
+            )
         }
+
+        return !hayErrores
     }
 
     fun onLimpiar() {
