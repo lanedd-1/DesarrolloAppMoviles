@@ -17,23 +17,23 @@ class FormularioViewModel : ViewModel() {
     val uiState: StateFlow<FormularioUiState> = _uiState.asStateFlow()
 
     fun onNombreCambia(valor: String) {
-        _uiState.update { it.copy(nombre = valor, errorNombre = null, registroExitoso = false) }
+        _uiState.update { it.copy(nombre = valor, errorNombre = null, registroExitoso = false, mensajeExito = null) }
     }
 
     fun onCorreoCambia(valor: String) {
-        _uiState.update { it.copy(correo = valor.trim(), errorCorreo = null, registroExitoso = false) }
+        _uiState.update { it.copy(correo = valor.trim().lowercase(), errorCorreo = null, registroExitoso = false, mensajeExito = null) }
     }
 
     fun onRolSeleccionado(rol: String) {
-        _uiState.update { it.copy(rolSeleccionado = rol, errorRol = null, registroExitoso = false) }
+        _uiState.update { it.copy(rolSeleccionado = rol, errorRol = null, registroExitoso = false, mensajeExito = null) }
     }
 
     fun onContrasenaCambia(valor: String) {
-        _uiState.update { it.copy(contrasena = valor, errorContrasena = null, registroExitoso = false) }
+        _uiState.update { it.copy(contrasena = valor, errorContrasena = null, registroExitoso = false, mensajeExito = null) }
     }
 
     fun onConfirmarContrasenaCambia(valor: String) {
-        _uiState.update { it.copy(confirmarContrasena = valor, errorConfirmarContrasena = null, registroExitoso = false) }
+        _uiState.update { it.copy(confirmarContrasena = valor, errorConfirmarContrasena = null, registroExitoso = false, mensajeExito = null) }
     }
 
     fun onAlternarVisibilidad() {
@@ -58,7 +58,7 @@ class FormularioViewModel : ViewModel() {
         } else if (!correoLimpio.contains("@")) {
             "Ingresa un correo válido"
         } else if (!correoLimpio.endsWith("@rinconsur.cl")) {
-            "Debe ser un correo institucional (@RinconSur.cl)"
+            "Debe ser un correo institucional (@rinconsur.cl)"
         } else {
             null
         }
@@ -118,6 +118,8 @@ class FormularioViewModel : ViewModel() {
             }
         }
 
+        val nombreIngresado = estado.nombre.trim()
+
         _uiState.update {
             it.copy(
                 errorNombre = errorNombre,
@@ -125,11 +127,16 @@ class FormularioViewModel : ViewModel() {
                 errorRol = errorRol,
                 errorContrasena = errorContrasena,
                 errorConfirmarContrasena = errorConfirmarContrasena,
-                registroExitoso = !hayErrores
+                registroExitoso = !hayErrores,
+                mensajeExito = if (!hayErrores) "Cuenta creada para $nombreIngresado con éxito!" else null
             )
         }
 
         return if (hayErrores) null else usuarioCreado
+    }
+
+    fun limpiarMensaje() {
+        _uiState.update { it.copy(mensajeExito = null) }
     }
 
     fun onLimpiar() {
