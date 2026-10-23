@@ -41,35 +41,24 @@ fun DialogoNuevaSesion(
                 val accesosDisponibles = listOf("Acceso A1", "Acceso A2", "Acceso A3", "Acceso A4")
 
                 accesosDisponibles.forEach { acceso ->
-                    // Solo se deshabilita si el Jefe de Tienda lo cerró explícitamente
                     val estaCerrado = accesosCerrados.contains(acceso)
 
-                    Row(
+                    TextButton(
+                        onClick = { if (!estaCerrado) onSeleccionarAcceso(acceso) },
+                        enabled = !estaCerrado,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(vertical = 2.dp)
                     ) {
-                        TextButton(
-                            onClick = { if (!estaCerrado) onSeleccionarAcceso(acceso) },
-                            enabled = !estaCerrado,
-                            modifier = Modifier.weight(1f)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = acceso,
+                                text = if (estaCerrado) "$acceso (No disponible)" else acceso,
                                 color = if (estaCerrado) Color.Gray else BurdeoRincon,
                                 fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                        // ÚNICAMENTE si está cerrado por el Jefe de Tienda muestra la etiqueta
-                        if (estaCerrado) {
-                            Text(
-                                text = "No disponible",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray,
-                                fontWeight = FontWeight.Medium
                             )
                         }
                     }

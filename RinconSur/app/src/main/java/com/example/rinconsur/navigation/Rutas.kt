@@ -8,6 +8,8 @@ sealed class Ruta(val ruta: String) {
         fun crear(correo: String) = "cambiar_contrasena/$correo"
     }
     data object ResumenDiario : Ruta("resumen_diario")
+
+    data object GestionAccesos : Ruta("gestion_accesos")
     data object MisSesiones : Ruta("mis_sesiones")
     data object Formulario : Ruta("formulario")
 

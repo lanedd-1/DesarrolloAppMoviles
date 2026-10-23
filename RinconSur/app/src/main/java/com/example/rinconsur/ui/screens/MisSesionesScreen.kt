@@ -62,7 +62,6 @@ import com.example.rinconsur.ui.components.AvatarCircular
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.BotonSecundario
 import com.example.rinconsur.ui.components.DialogoCerrarSesion
-import com.example.rinconsur.ui.components.DialogoGestionAccesos
 import com.example.rinconsur.ui.components.DialogoMostrarFoto
 import com.example.rinconsur.ui.components.DialogoNuevaSesion
 import com.example.rinconsur.ui.components.EtiquetaEstado
@@ -81,6 +80,7 @@ fun MisSesionesScreen(
     onIniciarSesionConteo: (Long, String) -> Unit = { _, _ -> },
     onIrCrearCuenta: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {},
+    onIrGestionAccesos: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
     val contexto = LocalContext.current
@@ -122,6 +122,7 @@ fun MisSesionesScreen(
         onIniciarSesionConteo = onIniciarSesionConteo,
         onIrCrearCuenta = onIrCrearCuenta,
         onIrResumenDiario = onIrResumenDiario,
+        onIrGestionAccesos = onIrGestionAccesos,
         onCerrarSesion = onCerrarSesion,
         onCrearNuevaSesion = { accesoSeleccionado ->
             if (usuarioActual != null) {
@@ -160,6 +161,7 @@ fun MisSesionesContent(
     onIniciarSesionConteo: (Long, String) -> Unit,
     onIrCrearCuenta: () -> Unit,
     onIrResumenDiario: () -> Unit,
+    onIrGestionAccesos: () -> Unit,
     onCerrarSesion: () -> Unit,
     onCrearNuevaSesion: (String) -> Unit
 ) {
@@ -170,10 +172,8 @@ fun MisSesionesContent(
     var mostrarDialogoCerrar by remember { mutableStateOf(false) }
     var mostrarDialogoFoto by remember { mutableStateOf(false) }
     var mostrarDialogoNuevaSesion by remember { mutableStateOf(false) }
-    var mostrarDialogoGestionAccesos by remember { mutableStateOf(false) }
 
     var accesosCerrados by remember { mutableStateOf<List<String>>(emptyList()) }
-    var estadoAccesosMap by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
 
     val camaraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (!isGranted) Permisos.abrirAjustes(contexto)
@@ -217,18 +217,6 @@ fun MisSesionesContent(
         )
     }
 
-    if (mostrarDialogoGestionAccesos) {
-        DialogoGestionAccesos(
-            estadoAccesos = estadoAccesosMap,
-            onCambiarEstado = { acceso, estado ->
-                val dbHelper = RinconDbHelper(contexto)
-                dbHelper.cambiarDisponibilidadAcceso(acceso, estado)
-                estadoAccesosMap = dbHelper.obtenerEstadoTodosAccesos()
-            },
-            onCerrar = { mostrarDialogoGestionAccesos = false }
-        )
-    }
-
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -237,11 +225,7 @@ fun MisSesionesContent(
                 onCerrarMenu = { scope.launch { drawerState.close() } },
                 onIrResumenDiario = onIrResumenDiario,
                 onIrCrearCuenta = onIrCrearCuenta,
-                onGestionarAccesos = {
-                    val dbHelper = RinconDbHelper(contexto)
-                    estadoAccesosMap = dbHelper.obtenerEstadoTodosAccesos()
-                    mostrarDialogoGestionAccesos = true
-                },
+                onIrGestionAccesos = onIrGestionAccesos,
                 onMostrarCerrarSesion = { mostrarDialogoCerrar = true }
             )
         }
@@ -294,7 +278,7 @@ private fun MenuLateral(
     onCerrarMenu: () -> Unit,
     onIrResumenDiario: () -> Unit,
     onIrCrearCuenta: () -> Unit,
-    onGestionarAccesos: () -> Unit,
+    onIrGestionAccesos: () -> Unit,
     onMostrarCerrarSesion: () -> Unit
 ) {
     ModalDrawerSheet {
@@ -312,7 +296,7 @@ private fun MenuLateral(
             NavigationDrawerItem(
                 label = { Text("Gestionar Accesos (Puertas)") },
                 selected = false,
-                onClick = { onCerrarMenu(); onGestionarAccesos() },
+                onClick = { onCerrarMenu(); onIrGestionAccesos() },
                 modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
             )
         }
@@ -324,6 +308,7 @@ private fun MenuLateral(
                 onClick = { onCerrarMenu(); onIrResumenDiario() },
                 modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
             )
+
             NavigationDrawerItem(
                 label = { Text("Registrar Colaborador") },
                 selected = false,
@@ -331,8 +316,6 @@ private fun MenuLateral(
                 modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
             )
         }
-
-
 
         Spacer(modifier = Modifier.weight(1f))
         HorizontalDivider()
@@ -418,7 +401,7 @@ private fun ItemSesion(codigo: String, acceso: String, fecha: String, estado: St
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(text = acceso, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 EtiquetaEstado(
-                    texto = estado.replace("_"," "),
+                    texto = estado.replace("_", " "),
                     colorFondo = if (esActiva) BurdeoRincon.copy(alpha = 0.15f) else Color.LightGray.copy(alpha = 0.3f),
                     colorTexto = if (esActiva) BurdeoRincon else Color.DarkGray
                 )
@@ -441,7 +424,7 @@ private fun MisSesionesPreview() {
             listaSesiones = emptyList(),
             totalMuestras = 0, sesionesCompletadas = 0, sesionesTotales = 0,
             onIniciarSesionConteo = { _, _ -> },
-            onIrCrearCuenta = {}, onIrResumenDiario = {}, onCerrarSesion = {}, onCrearNuevaSesion = {}
+            onIrCrearCuenta = {}, onIrResumenDiario = {}, onIrGestionAccesos = {}, onCerrarSesion = {}, onCrearNuevaSesion = {}
         )
     }
 }

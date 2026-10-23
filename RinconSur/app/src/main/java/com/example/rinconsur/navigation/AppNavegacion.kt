@@ -16,6 +16,7 @@ import androidx.navigation.navArgument
 import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.ui.screens.CambiarContrasenaScreen
 import com.example.rinconsur.ui.screens.FormularioScreen
+import com.example.rinconsur.ui.screens.GestionAccesosScreen
 import com.example.rinconsur.ui.screens.LoginScreen
 import com.example.rinconsur.ui.screens.MisSesionesScreen
 import com.example.rinconsur.ui.screens.OlvideContrasenaScreen
@@ -85,13 +86,19 @@ fun AppNavegacion() {
                     navController.navigate(Ruta.SesionEnCurso.crear(id, acceso))
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
-                // ¡AQUÍ ESTÁ LA CONEXIÓN QUE FALTABA!
                 onIrResumenDiario = { navController.navigate(Ruta.ResumenDiario.ruta) },
+                onIrGestionAccesos = { navController.navigate(Ruta.GestionAccesos.ruta) }, // <-- NUEVA CONEXIÓN
                 onCerrarSesion = {
                     sesionViewModel.cerrarSesion()
                     SesionPreferencias(contexto).limpiar()
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 }
+            )
+        }
+
+        composable(Ruta.GestionAccesos.ruta) {
+            GestionAccesosScreen(
+                onVolver = { navController.navigateUp() }
             )
         }
 
