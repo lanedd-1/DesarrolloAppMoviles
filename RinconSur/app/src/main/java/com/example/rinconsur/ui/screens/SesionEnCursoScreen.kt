@@ -1,5 +1,6 @@
 package com.example.rinconsur.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -33,7 +33,6 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -67,6 +66,9 @@ import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.components.AvatarCircular
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.BotonSecundario
+import com.example.rinconsur.ui.components.DialogoCerrarSesion
+import com.example.rinconsur.ui.components.DialogoPausarSesion
+import com.example.rinconsur.ui.components.DialogoFinalizarSesion
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
@@ -103,7 +105,7 @@ fun SesionEnCursoScreen(
         onDestinoSeleccionado = viewModel::onDestinoSeleccionado,
         onGuardarRegistro = { viewModel.onGuardarRegistro(contexto) },
         onAnularUltimoRegistro = { viewModel.onAnularUltimoRegistro(contexto) },
-        onPausarSesion = onVolver, // Pausar simplemente vuelve sin cambiar el estado en BD
+        onPausarSesion = onVolver,
         onFinalizarSesion = {
             viewModel.finalizarSesionConteo(contexto)
             onVolver()
@@ -114,7 +116,7 @@ fun SesionEnCursoScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SesionEnCursoContent(
     uiState: SesionEnCursoUiState,
@@ -135,28 +137,31 @@ fun SesionEnCursoContent(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Estado para el popup de pausa
     var mostrarDialogoPausa by remember { mutableStateOf(false) }
+    var mostrarDialogoFinalizar by remember { mutableStateOf(false) }
+    var mostrarDialogoCerrar by remember { mutableStateOf(false) }
 
-    // Diálogo de confirmación para pausar
+    // atajamos si el loco le da atras con los botones del celu
+    BackHandler { mostrarDialogoPausa = true }
+
+    if (mostrarDialogoCerrar) {
+        DialogoCerrarSesion(
+            onConfirmar = { mostrarDialogoCerrar = false; onCerrarSesion() },
+            onCancelar = { mostrarDialogoCerrar = false }
+        )
+    }
+
     if (mostrarDialogoPausa) {
-        AlertDialog(
-            onDismissRequest = { mostrarDialogoPausa = false },
-            title = { Text(text = "Pausar Conteo", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Deseas pausar esta sesión? Podrás retomarla más tarde desde la pantalla de Mis Sesiones.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    mostrarDialogoPausa = false
-                    onPausarSesion()
-                }) {
-                    Text("Sí, pausar", color = BurdeoRincon, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { mostrarDialogoPausa = false }) {
-                    Text("Cancelar", color = Color.Gray)
-                }
-            }
+        DialogoPausarSesion(
+            onConfirmar = { mostrarDialogoPausa = false; onPausarSesion() },
+            onCancelar = { mostrarDialogoPausa = false }
+        )
+    }
+
+    if (mostrarDialogoFinalizar) {
+        DialogoFinalizarSesion(
+            onConfirmar = { mostrarDialogoFinalizar = false; onFinalizarSesion() },
+            onCancelar = { mostrarDialogoFinalizar = false }
         )
     }
 
@@ -189,7 +194,7 @@ fun SesionEnCursoContent(
                 NavigationDrawerItem(
                     label = { Text("Cerrar sesión", color = MaterialTheme.colorScheme.error) },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() }; onCerrarSesion() },
+                    onClick = { scope.launch { drawerState.close() }; mostrarDialogoCerrar = true },
                     modifier = Modifier.padding(Dimens.espacioChico)
                 )
             }
@@ -210,7 +215,7 @@ fun SesionEnCursoContent(
                         }
                     },
                     actions = {
-                        AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Observador", modifier = Modifier.padding(end = Dimens.espacioMedio).size(36.dp))
+                        AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Perfil", modifier = Modifier.padding(end = Dimens.espacioMedio).size(36.dp))
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
                 )
@@ -225,107 +230,155 @@ fun SesionEnCursoContent(
                     .padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(8.dp).clip(RoundedCornerShape(50)).background(Color(0xFFD32F2F)))
-                            Spacer(modifier = Modifier.width(Dimens.espacioMini))
-                            Text(text = "En curso · ${uiState.accesoNombre}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        }
-                        Text(
-                            text = "${uiState.ubicacionAcceso} · ${usuarioActual?.nombre ?: "Cargando..."}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+                CabeceraSesion(uiState, usuarioActual)
+
+                // aviso por si se cae el internet en terreno
+                if (uiState.guardadoLocalActivo) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(Dimens.cornerSmall)).background(Color(0xFFE8F5E9)).padding(horizontal = Dimens.espacioMedio, vertical = Dimens.espacioChico),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(painter = painterResource(R.drawable.ic_check), contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(Dimens.espacioChico))
+                        Text(text = "Guardado local activo · Sin conexión", style = MaterialTheme.typography.bodySmall, color = Color(0xFF2E7D32), fontWeight = FontWeight.SemiBold)
                     }
                 }
 
-                TarjetaSeccion(titulo = "Nuevo registro") {
-                    Text("Solo toca opciones", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
-                    Spacer(modifier = Modifier.height(Dimens.espacioMini))
+                FormularioRegistro(
+                    uiState = uiState,
+                    onClasificacion = onClasificacionSeleccionada,
+                    onRango = onRangoEtarioSeleccionado,
+                    onCompania = onCompaniaSeleccionada,
+                    onBolsas = onBolsasOtraTiendaCambia,
+                    onDestino = onDestinoSeleccionado,
+                    onGuardar = onGuardarRegistro,
+                    onPausar = { mostrarDialogoPausa = true },
+                    onFinalizar = { mostrarDialogoFinalizar = true }
+                )
 
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Clasificación", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        Text("Obligatoria", style = MaterialTheme.typography.bodySmall, color = BurdeoRincon, fontWeight = FontWeight.Bold)
-                    }
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        ClasificacionPersona.entries.forEach { opcion ->
-                            BotonOpcionTactil(texto = opcion.etiqueta, seleccionado = uiState.clasificacionSeleccionada == opcion, onClick = { onClasificacionSeleccionada(opcion) })
-                        }
-                    }
+                ResumenRegistros(uiState, onAnularUltimoRegistro)
 
-                    Spacer(modifier = Modifier.height(Dimens.espacioChico))
-                    Text("Rango etario", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        RangoEtarioEnum.entries.forEach { rango ->
-                            BotonOpcionTactil(texto = rango.etiqueta, seleccionado = uiState.rangoEtarioSeleccionado == rango, onClick = { onRangoEtarioSeleccionado(rango) })
-                        }
-                    }
+                Text(
+                    text = "Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    modifier = Modifier.padding(bottom = Dimens.espacioGrande)
+                )
+            }
+        }
+    }
+}
 
-                    Spacer(modifier = Modifier.height(Dimens.espacioChico))
-                    Text("Compañía", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        TipoCompaniaEnum.entries.forEach { comp ->
-                            BotonOpcionTactil(texto = comp.etiqueta, seleccionado = uiState.companiaSeleccionada == comp, onClick = { onCompaniaSeleccionada(comp) })
-                        }
-                    }
+// ----------------------------- COMPONENTES PRIVADOS -----------------------------
 
-                    Spacer(modifier = Modifier.height(Dimens.espacioChico))
-                    Text("¿Trae bolsas de otra tienda?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        BotonOpcionTactil(texto = "Sí", seleccionado = uiState.traeBolsasOtraTienda, onClick = { onBolsasOtraTiendaCambia(true) }, modifier = Modifier.weight(1f))
-                        BotonOpcionTactil(texto = "No", seleccionado = !uiState.traeBolsasOtraTienda, onClick = { onBolsasOtraTiendaCambia(false) }, modifier = Modifier.weight(1f))
-                    }
+@Composable
+private fun CabeceraSesion(uiState: SesionEnCursoUiState, usuarioActual: Usuario?) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.size(8.dp).clip(RoundedCornerShape(50)).background(Color(0xFFD32F2F)))
+                Spacer(modifier = Modifier.width(Dimens.espacioMini))
+                Text(text = "En curso · ${uiState.accesoNombre}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            }
+            Text(
+                text = "${uiState.ubicacionAcceso} · ${usuarioActual?.nombre ?: "Cargando..."}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
 
-                    if (uiState.clasificacionSeleccionada == ClasificacionPersona.TRANSITO) {
-                        Spacer(modifier = Modifier.height(Dimens.espacioChico))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text("Destino", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                            Text("Solo si es Tránsito", style = MaterialTheme.typography.bodySmall, color = TerracotaRincon)
-                        }
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                            AccesoDestinoEnum.entries.forEach { dest ->
-                                BotonOpcionTactil(texto = dest.codigo, seleccionado = uiState.destinoSeleccionado == dest, onClick = { onDestinoSeleccionado(dest) })
-                            }
-                        }
-                    }
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun FormularioRegistro(
+    uiState: SesionEnCursoUiState,
+    onClasificacion: (ClasificacionPersona) -> Unit,
+    onRango: (RangoEtarioEnum) -> Unit,
+    onCompania: (TipoCompaniaEnum) -> Unit,
+    onBolsas: (Boolean) -> Unit,
+    onDestino: (AccesoDestinoEnum) -> Unit,
+    onGuardar: () -> Unit,
+    onPausar: () -> Unit,
+    onFinalizar: () -> Unit
+) {
+    TarjetaSeccion(titulo = "Nuevo registro") {
+        Text("Solo toca opciones", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+        Spacer(modifier = Modifier.height(Dimens.espacioMini))
 
-                    Spacer(modifier = Modifier.height(Dimens.espacioMedio))
-                    BotonPrincipal(texto = "Guardar registro", onClick = onGuardarRegistro, modifier = Modifier.fillMaxWidth())
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text("Clasificación", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text("Obligatoria", style = MaterialTheme.typography.bodySmall, color = BurdeoRincon, fontWeight = FontWeight.Bold)
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+            ClasificacionPersona.entries.forEach { opcion ->
+                BotonOpcionTactil(texto = opcion.etiqueta, seleccionado = uiState.clasificacionSeleccionada == opcion, onClick = { onClasificacion(opcion) })
+            }
+        }
 
-                    Spacer(modifier = Modifier.height(Dimens.espacioChico))
-                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        // Botón de Pausa
-                        BotonSecundario(
-                            texto = "Pausar",
-                            onClick = { mostrarDialogoPausa = true },
-                            modifier = Modifier.weight(1f)
-                        )
-                        // Botón de Finalizar
-                        BotonSecundario(
-                            texto = "Finalizar",
-                            onClick = onFinalizarSesion,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+        Spacer(modifier = Modifier.height(Dimens.espacioChico))
+        Text("Rango etario", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+            RangoEtarioEnum.entries.forEach { rango ->
+                BotonOpcionTactil(texto = rango.etiqueta, seleccionado = uiState.rangoEtarioSeleccionado == rango, onClick = { onRango(rango) })
+            }
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.espacioChico))
+        Text("Compañía", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+            TipoCompaniaEnum.entries.forEach { comp ->
+                BotonOpcionTactil(texto = comp.etiqueta, seleccionado = uiState.companiaSeleccionada == comp, onClick = { onCompania(comp) })
+            }
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.espacioChico))
+        Text("¿Trae bolsas de otra tienda?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+            BotonOpcionTactil(texto = "Sí", seleccionado = uiState.traeBolsasOtraTienda, onClick = { onBolsas(true) }, modifier = Modifier.weight(1f))
+            BotonOpcionTactil(texto = "No", seleccionado = !uiState.traeBolsasOtraTienda, onClick = { onBolsas(false) }, modifier = Modifier.weight(1f))
+        }
+
+        if (uiState.clasificacionSeleccionada == ClasificacionPersona.TRANSITO) {
+            Spacer(modifier = Modifier.height(Dimens.espacioChico))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("Destino", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text("Solo si es Tránsito", style = MaterialTheme.typography.bodySmall, color = TerracotaRincon)
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+                AccesoDestinoEnum.entries.forEach { dest ->
+                    BotonOpcionTactil(texto = dest.codigo, seleccionado = uiState.destinoSeleccionado == dest, onClick = { onDestino(dest) })
                 }
+            }
+        }
 
-                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                    Column(modifier = Modifier.padding(Dimens.espacioMedio), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text("Registros en esta sesión", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                            Text("${uiState.totalRegistrosSesion}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
-                        }
-                        Text("Último: ${uiState.ultimoRegistroResumen}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-                        if (uiState.permiteAnular) {
-                            BotonSecundario(texto = "Anular último registro", onClick = onAnularUltimoRegistro, modifier = Modifier.fillMaxWidth())
-                        }
-                    }
-                }
+        Spacer(modifier = Modifier.height(Dimens.espacioMedio))
+        BotonPrincipal(texto = "Guardar registro", onClick = onGuardar, modifier = Modifier.fillMaxWidth())
+
+        Spacer(modifier = Modifier.height(Dimens.espacioChico))
+        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+            BotonSecundario(texto = "Pausar", onClick = onPausar, modifier = Modifier.weight(1f))
+            BotonSecundario(texto = "Finalizar", onClick = onFinalizar, modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun ResumenRegistros(uiState: SesionEnCursoUiState, onAnular: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+        Column(modifier = Modifier.padding(Dimens.espacioMedio), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("Registros en esta sesión", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text("${uiState.totalRegistrosSesion}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
+            }
+            Text("Último: ${uiState.ultimoRegistroResumen}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+
+            if (uiState.permiteAnular) {
+                BotonSecundario(texto = "Anular último registro", onClick = onAnular, modifier = Modifier.fillMaxWidth())
             }
         }
     }
