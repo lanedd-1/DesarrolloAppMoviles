@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -47,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
 import com.example.rinconsur.model.FormularioUiState
+import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.components.BannerNotificacion
 import com.example.rinconsur.ui.components.BotonPrincipal
@@ -59,15 +59,18 @@ import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
 import com.example.rinconsur.viewmodel.FormularioViewModel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun FormularioScreen(
+    usuarioActual: Usuario? = null,
     onRegistroExitoso: (Usuario) -> Unit = {},
     onVolver: () -> Unit = {},
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
+    onIrGestionAccesos: () -> Unit = {},
+    onIrResumenDiario: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
     viewModel: FormularioViewModel = viewModel()
 ) {
@@ -82,6 +85,7 @@ fun FormularioScreen(
     }
 
     FormularioContent(
+        usuarioActual = usuarioActual,
         uiState = uiState,
         onNombreCambia = viewModel::onNombreCambia,
         onCorreoCambia = viewModel::onCorreoCambia,
@@ -93,6 +97,8 @@ fun FormularioScreen(
         onLimpiar = viewModel::onLimpiar,
         onIrMisSesiones = onIrMisSesiones,
         onIrCrearCuenta = onIrCrearCuenta,
+        onIrGestionAccesos = onIrGestionAccesos,
+        onIrResumenDiario = onIrResumenDiario,
         onCerrarSesion = onCerrarSesion
     )
 }
@@ -100,6 +106,7 @@ fun FormularioScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormularioContent(
+    usuarioActual: Usuario?,
     uiState: FormularioUiState,
     onNombreCambia: (String) -> Unit,
     onCorreoCambia: (String) -> Unit,
@@ -111,6 +118,8 @@ fun FormularioContent(
     onLimpiar: () -> Unit,
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
+    onIrGestionAccesos: () -> Unit = {},
+    onIrResumenDiario: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -146,6 +155,24 @@ fun FormularioContent(
                     onClick = { scope.launch { drawerState.close() }; onIrMisSesiones() },
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                 )
+
+                if (usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
+                    NavigationDrawerItem(
+                        label = { Text("Gestionar Accesos (Puertas)") },
+                        selected = false,
+                        onClick = { scope.launch { drawerState.close() }; onIrGestionAccesos() },
+                        modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                    )
+                }
+
+                if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
+                    NavigationDrawerItem(
+                        label = { Text("Resumen del Día") },
+                        selected = false,
+                        onClick = { scope.launch { drawerState.close() }; onIrResumenDiario() },
+                        modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                    )
+                }
 
                 NavigationDrawerItem(
                     label = { Text("Registrar Colaborador") },
@@ -188,7 +215,6 @@ fun FormularioContent(
                     .padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
             ) {
-                // Notificación estilizada cuando se crea el usuario
                 if (uiState.mensajeExito != null) {
                     BannerNotificacion(
                         mensaje = uiState.mensajeExito,
@@ -230,11 +256,19 @@ fun FormularioContent(
 
 // ----------------------------- PREVIEWS -----------------------------
 
-@Preview(showBackground = true, showSystemUi = true, name = "1. Registro Limpio")
+@Preview(showBackground = true, showSystemUi = true, name = "1. Registro Limpio (Jefe de Tienda)")
 @Composable
 private fun FormularioLimpioPreview() {
     RinconSurTheme {
         FormularioContent(
+            usuarioActual = Usuario(
+                id = 1L,
+                nombre = "Rodrigo Saavedra",
+                correo = "supervisor@rinconsur.cl",
+                contrasena = "",
+                rolId = Rol.ID_JEFE_TIENDA,
+                rolNombre = "Jefe de Tienda"
+            ),
             uiState = FormularioUiState(
                 nombre = "Cristopher Bustamante",
                 correo = "cbustamante@rinconsur.cl",
@@ -250,6 +284,8 @@ private fun FormularioLimpioPreview() {
             onLimpiar = {},
             onIrMisSesiones = {},
             onIrCrearCuenta = {},
+            onIrGestionAccesos = {},
+            onIrResumenDiario = {},
             onCerrarSesion = {}
         )
     }
@@ -260,6 +296,14 @@ private fun FormularioLimpioPreview() {
 private fun FormularioExitosoPreview() {
     RinconSurTheme {
         FormularioContent(
+            usuarioActual = Usuario(
+                id = 1L,
+                nombre = "Rodrigo Saavedra",
+                correo = "supervisor@rinconsur.cl",
+                contrasena = "",
+                rolId = Rol.ID_JEFE_TIENDA,
+                rolNombre = "Jefe de Tienda"
+            ),
             uiState = FormularioUiState(
                 nombre = "Cristopher Bustamante",
                 correo = "cbustamante@rinconsur.cl",
@@ -276,6 +320,8 @@ private fun FormularioExitosoPreview() {
             onLimpiar = {},
             onIrMisSesiones = {},
             onIrCrearCuenta = {},
+            onIrGestionAccesos = {},
+            onIrResumenDiario = {},
             onCerrarSesion = {}
         )
     }
@@ -286,6 +332,14 @@ private fun FormularioExitosoPreview() {
 private fun FormularioConErroresPreview() {
     RinconSurTheme {
         FormularioContent(
+            usuarioActual = Usuario(
+                id = 1L,
+                nombre = "Rodrigo Saavedra",
+                correo = "supervisor@rinconsur.cl",
+                contrasena = "",
+                rolId = Rol.ID_JEFE_TIENDA,
+                rolNombre = "Jefe de Tienda"
+            ),
             uiState = FormularioUiState(
                 correo = "usuario@gmail.com",
                 errorNombre = "El nombre completo es obligatorio",
@@ -304,6 +358,8 @@ private fun FormularioConErroresPreview() {
             onLimpiar = {},
             onIrMisSesiones = {},
             onIrCrearCuenta = {},
+            onIrGestionAccesos = {},
+            onIrResumenDiario = {},
             onCerrarSesion = {}
         )
     }

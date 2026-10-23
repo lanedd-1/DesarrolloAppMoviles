@@ -73,7 +73,11 @@ fun AppNavegacion() {
             CambiarContrasenaScreen(
                 correoUsuario = correo,
                 onCambioExitoso = {
-                    Toast.makeText(contexto, "Contraseña actualizada. Inicia sesión.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        contexto,
+                        "Contraseña actualizada. Inicia sesión.",
+                        Toast.LENGTH_LONG
+                    ).show()
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 },
                 onVolver = { navController.navigateUp() }
@@ -87,7 +91,7 @@ fun AppNavegacion() {
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
                 onIrResumenDiario = { navController.navigate(Ruta.ResumenDiario.ruta) },
-                onIrGestionAccesos = { navController.navigate(Ruta.GestionAccesos.ruta) }, // <-- NUEVA CONEXIÓN
+                onIrGestionAccesos = { navController.navigate(Ruta.GestionAccesos.ruta) },
                 onCerrarSesion = {
                     sesionViewModel.cerrarSesion()
                     SesionPreferencias(contexto).limpiar()
@@ -126,7 +130,11 @@ fun AppNavegacion() {
                 usuarioActual = usuarioActual,
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
-                    navController.navigate(Ruta.MisSesiones.ruta) { popUpTo(Ruta.MisSesiones.ruta) { inclusive = true } }
+                    navController.navigate(Ruta.MisSesiones.ruta) {
+                        popUpTo(Ruta.MisSesiones.ruta) {
+                            inclusive = true
+                        }
+                    }
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
                 onCerrarSesion = {
@@ -139,13 +147,19 @@ fun AppNavegacion() {
 
         composable(Ruta.Formulario.ruta) {
             FormularioScreen(
-                onRegistroExitoso = { usuario ->
-                },
+                usuarioActual = usuarioActual,
+                onRegistroExitoso = { usuario -> },
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
-                    navController.navigate(Ruta.MisSesiones.ruta) { popUpTo(Ruta.MisSesiones.ruta) { inclusive = true } }
+                    navController.navigate(Ruta.MisSesiones.ruta) {
+                        popUpTo(Ruta.MisSesiones.ruta) {
+                            inclusive = true
+                        }
+                    }
                 },
                 onIrCrearCuenta = { },
+                onIrResumenDiario = { navController.navigate(Ruta.ResumenDiario.ruta) },
+                onIrGestionAccesos = { navController.navigate(Ruta.GestionAccesos.ruta) },
                 onCerrarSesion = {
                     sesionViewModel.cerrarSesion()
                     SesionPreferencias(contexto).limpiar()
