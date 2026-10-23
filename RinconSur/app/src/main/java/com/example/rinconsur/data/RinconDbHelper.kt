@@ -12,7 +12,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "rinconsur.db"
-        private const val DATABASE_VERSION = 8
+        private const val DATABASE_VERSION = 9 // Versión 9 con la tabla de configuración de accesos
 
         private const val BCRYPT_COSTO = 10
 
@@ -45,6 +45,11 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val REG_DESTINO = "reg_destino"
         private const val REG_HORA = "reg_hora"
 
+        // Configuración de disponibilidad de accesos (Jefe de Tienda)
+        private const val TABLA_ACCESOS_CONFIG = "accesos_config"
+        private const val ACC_NOMBRE = "acceso_nombre"
+        private const val ACC_DISPONIBLE = "disponible"
+
         private const val SQL_CREAR_ROLES =
             "CREATE TABLE $TABLA_ROLES ($ROL_ID INTEGER PRIMARY KEY, $ROL_NOMBRE TEXT NOT NULL)"
 
@@ -76,11 +81,23 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     "$REG_DESTINO TEXT, " +
                     "$REG_HORA TEXT NOT NULL)"
 
+        private const val SQL_CREAR_ACCESOS_CONFIG =
+            "CREATE TABLE $TABLA_ACCESOS_CONFIG (" +
+                    "$ACC_NOMBRE TEXT PRIMARY KEY, " +
+                    "$ACC_DISPONIBLE INTEGER NOT NULL DEFAULT 1)"
+
         private const val SQL_PRECARGAR_ROLES =
             "INSERT INTO $TABLA_ROLES ($ROL_ID, $ROL_NOMBRE) VALUES " +
                     "(${Rol.ID_OBSERVADOR}, 'Observador de Pasillo'), " +
                     "(${Rol.ID_JEFE_TIENDA}, 'Jefe de Tienda'), " +
                     "(${Rol.ID_ADMINISTRADOR}, 'Administrador')"
+
+        private const val SQL_PRECARGAR_ACCESOS =
+            "INSERT INTO $TABLA_ACCESOS_CONFIG ($ACC_NOMBRE, $ACC_DISPONIBLE) VALUES " +
+                    "('Acceso A1', 1), " +
+                    "('Acceso A2', 1), " +
+                    "('Acceso A3', 1), " +
+                    "('Acceso A4', 1)"
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -93,7 +110,10 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db.execSQL(SQL_CREAR_USUARIOS)
         db.execSQL(SQL_CREAR_SESIONES)
         db.execSQL(SQL_CREAR_REGISTROS)
+        db.execSQL(SQL_CREAR_ACCESOS_CONFIG)
+
         db.execSQL(SQL_PRECARGAR_ROLES)
+        db.execSQL(SQL_PRECARGAR_ACCESOS)
 
         val hashInicial = BCrypt.withDefaults().hashToString(BCRYPT_COSTO, "Rincor.2026!".toCharArray())
 
@@ -111,16 +131,13 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        db.execSQL("DROP TABLE IF EXISTS $TABLA_ACCESOS_CONFIG")
         db.execSQL("DROP TABLE IF EXISTS $TABLA_REGISTROS")
         db.execSQL("DROP TABLE IF EXISTS $TABLA_SESIONES")
         db.execSQL("DROP TABLE IF EXISTS $TABLA_USUARIOS")
         db.execSQL("DROP TABLE IF EXISTS $TABLA_ROLES")
         onCreate(db)
     }
-
-    // ---------------------------------------------------------
-    // METODOS DE CONSULTA Y ACTUALIZACION (USUARIOS)
-    // ---------------------------------------------------------
 
     fun crearUsuario(nombre: String, correo: String, contrasenaPlana: String, rolId: Long): Long {
         val db = this.writableDatabase
@@ -224,10 +241,6 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return usuario
     }
 
-    // ---------------------------------------------------------
-    // METODOS DE CONSULTA Y ACTUALIZACION (SESIONES Y REGISTROS)
-    // ---------------------------------------------------------
-
     fun crearSesion(codigo: String, acceso: String, fecha: String, usuarioId: Long): Long {
         val db = this.writableDatabase
         val valores = ContentValues().apply {
@@ -279,6 +292,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
         return false
     }
+
     fun obtenerMuestrasRegistradasUsuario(usuarioId: Long): Int {
         val db = this.readableDatabase
         val query = "SELECT COUNT(r.reg_id) FROM $TABLA_REGISTROS r INNER JOIN $TABLA_SESIONES s ON r.reg_sesion_id = s.ses_id WHERE s.ses_usu_id = ?"
@@ -311,10 +325,10 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             "SELECT ses_id, ses_codigo, ses_acceso, ses_fecha, ses_estado FROM $TABLA_SESIONES WHERE ses_usu_id = ? ORDER BY ses_id DESC",
             arrayOf(usuarioId.toString())
         )
-        val lista = mutableListOf<SesionItem>()
+        val listaItems = mutableListOf<SesionItem>()
         if (cursor.moveToFirst()) {
             do {
-                lista.add(
+                listaItems.add(
                     SesionItem(
                         id = cursor.getLong(0),
                         codigo = cursor.getString(1),
@@ -326,11 +340,84 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             } while (cursor.moveToNext())
         }
         cursor.close()
-        return lista
+        return listaItems
+    }
+
+
+    fun obtenerAccesosNoDisponibles(): List<String> {
+        val db = this.readableDatabase
+        val noDisponibles = mutableSetOf<String>()
+
+        val cursorConfig = db.rawQuery("SELECT $ACC_NOMBRE FROM $TABLA_ACCESOS_CONFIG WHERE $ACC_DISPONIBLE = 0", null)
+        if (cursorConfig.moveToFirst()) {
+            do {
+                noDisponibles.add(cursorConfig.getString(0))
+            } while (cursorConfig.moveToNext())
+        }
+        cursorConfig.close()
+
+        val cursorSesiones = db.rawQuery("SELECT $SES_ACCESO FROM $TABLA_SESIONES WHERE $SES_ESTADO != 'FINALIZADA'", null)
+        if (cursorSesiones.moveToFirst()) {
+            do {
+                noDisponibles.add(cursorSesiones.getString(0))
+            } while (cursorSesiones.moveToNext())
+        }
+        cursorSesiones.close()
+
+        return noDisponibles.toList()
+    }
+
+    fun obtenerAccesosCerrados(): List<String> {
+        val db = this.readableDatabase
+        val cerrados = mutableListOf<String>()
+        val cursor = db.rawQuery("SELECT $ACC_NOMBRE FROM $TABLA_ACCESOS_CONFIG WHERE $ACC_DISPONIBLE = 0", null)
+        if (cursor.moveToFirst()) {
+            do {
+                cerrados.add(cursor.getString(0))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return cerrados
+    }
+
+    // Accesos que tienen una sesión activa (EN_CURSO)
+    fun obtenerAccesosEnUso(): List<String> {
+        val db = this.readableDatabase
+        val enUso = mutableListOf<String>()
+        val cursor = db.rawQuery("SELECT $SES_ACCESO FROM $TABLA_SESIONES WHERE $SES_ESTADO != 'FINALIZADA'", null)
+        if (cursor.moveToFirst()) {
+            do {
+                enUso.add(cursor.getString(0))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return enUso
+    }
+
+    fun obtenerEstadoTodosAccesos(): Map<String, Boolean> {
+        val db = this.readableDatabase
+        val mapa = LinkedHashMap<String, Boolean>() // Mantiene el orden estricto
+        // Ordenamos explícitamente por nombre para que los switches nunca cambien de posición
+        val cursor = db.rawQuery("SELECT $ACC_NOMBRE, $ACC_DISPONIBLE FROM $TABLA_ACCESOS_CONFIG ORDER BY $ACC_NOMBRE ASC", null)
+        if (cursor.moveToFirst()) {
+            do {
+                mapa[cursor.getString(0)] = cursor.getInt(1) == 1
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return mapa
+    }
+
+    fun cambiarDisponibilidadAcceso(accesoNombre: String, disponible: Boolean): Boolean {
+        val db = this.writableDatabase
+        val valores = ContentValues().apply {
+            put(ACC_DISPONIBLE, if (disponible) 1 else 0)
+        }
+        val filas = db.update(TABLA_ACCESOS_CONFIG, valores, "$ACC_NOMBRE = ?", arrayOf(accesoNombre))
+        return filas > 0
     }
 }
 
-// Data class para mapear lo que leemos de la base de datos a la UI
 data class SesionItem(
     val id: Long,
     val codigo: String,

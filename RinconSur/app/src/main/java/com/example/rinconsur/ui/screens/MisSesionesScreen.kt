@@ -62,6 +62,7 @@ import com.example.rinconsur.ui.components.AvatarCircular
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.BotonSecundario
 import com.example.rinconsur.ui.components.DialogoCerrarSesion
+import com.example.rinconsur.ui.components.DialogoGestionAccesos
 import com.example.rinconsur.ui.components.DialogoMostrarFoto
 import com.example.rinconsur.ui.components.DialogoNuevaSesion
 import com.example.rinconsur.ui.components.EtiquetaEstado
@@ -125,20 +126,24 @@ fun MisSesionesScreen(
         onCrearNuevaSesion = { accesoSeleccionado ->
             if (usuarioActual != null) {
                 val dbHelper = RinconDbHelper(contexto)
-                val codigoAleatorio = "SES-${(100..999).random()}"
-                val fechaHoy = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+                val cerrados = dbHelper.obtenerAccesosCerrados()
 
-                dbHelper.crearSesion(
-                    codigo = codigoAleatorio,
-                    acceso = accesoSeleccionado,
-                    fecha = fechaHoy,
-                    usuarioId = usuarioActual!!.id
-                )
+                if (!cerrados.contains(accesoSeleccionado)) {
+                    val codigoAleatorio = "SES-${(100..999).random()}"
+                    val fechaHoy = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
 
-                listaSesiones = dbHelper.obtenerSesionesPorUsuario(usuarioActual!!.id)
-                val stats = dbHelper.obtenerEstadisticasSesiones(usuarioActual!!.id)
-                sesionesCompletadas = stats.first
-                sesionesTotales = stats.second
+                    dbHelper.crearSesion(
+                        codigo = codigoAleatorio,
+                        acceso = accesoSeleccionado,
+                        fecha = fechaHoy,
+                        usuarioId = usuarioActual!!.id
+                    )
+
+                    listaSesiones = dbHelper.obtenerSesionesPorUsuario(usuarioActual!!.id)
+                    val stats = dbHelper.obtenerEstadisticasSesiones(usuarioActual!!.id)
+                    sesionesCompletadas = stats.first
+                    sesionesTotales = stats.second
+                }
             }
         }
     )
@@ -165,6 +170,10 @@ fun MisSesionesContent(
     var mostrarDialogoCerrar by remember { mutableStateOf(false) }
     var mostrarDialogoFoto by remember { mutableStateOf(false) }
     var mostrarDialogoNuevaSesion by remember { mutableStateOf(false) }
+    var mostrarDialogoGestionAccesos by remember { mutableStateOf(false) }
+
+    var accesosCerrados by remember { mutableStateOf<List<String>>(emptyList()) }
+    var estadoAccesosMap by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
 
     val camaraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
         if (!isGranted) Permisos.abrirAjustes(contexto)
@@ -197,11 +206,26 @@ fun MisSesionesContent(
 
     if (mostrarDialogoNuevaSesion) {
         DialogoNuevaSesion(
+            accesosCerrados = accesosCerrados,
             onSeleccionarAcceso = { acceso ->
                 mostrarDialogoNuevaSesion = false
-                onCrearNuevaSesion(acceso)
+                if (!accesosCerrados.contains(acceso)) {
+                    onCrearNuevaSesion(acceso)
+                }
             },
             onCancelar = { mostrarDialogoNuevaSesion = false }
+        )
+    }
+
+    if (mostrarDialogoGestionAccesos) {
+        DialogoGestionAccesos(
+            estadoAccesos = estadoAccesosMap,
+            onCambiarEstado = { acceso, estado ->
+                val dbHelper = RinconDbHelper(contexto)
+                dbHelper.cambiarDisponibilidadAcceso(acceso, estado)
+                estadoAccesosMap = dbHelper.obtenerEstadoTodosAccesos()
+            },
+            onCerrar = { mostrarDialogoGestionAccesos = false }
         )
     }
 
@@ -213,6 +237,11 @@ fun MisSesionesContent(
                 onCerrarMenu = { scope.launch { drawerState.close() } },
                 onIrResumenDiario = onIrResumenDiario,
                 onIrCrearCuenta = onIrCrearCuenta,
+                onGestionarAccesos = {
+                    val dbHelper = RinconDbHelper(contexto)
+                    estadoAccesosMap = dbHelper.obtenerEstadoTodosAccesos()
+                    mostrarDialogoGestionAccesos = true
+                },
                 onMostrarCerrarSesion = { mostrarDialogoCerrar = true }
             )
         }
@@ -243,7 +272,15 @@ fun MisSesionesContent(
 
                 EstadisticasResumen(sesionesCompletadas, sesionesTotales, totalMuestras)
 
-                ListaDeSesiones(listaSesiones, onIniciarSesionConteo, onCrearNueva = { mostrarDialogoNuevaSesion = true })
+                ListaDeSesiones(
+                    lista = listaSesiones,
+                    onIniciar = onIniciarSesionConteo,
+                    onCrearNueva = {
+                        val dbHelper = RinconDbHelper(contexto)
+                        accesosCerrados = dbHelper.obtenerAccesosCerrados()
+                        mostrarDialogoNuevaSesion = true
+                    }
+                )
             }
         }
     }
@@ -257,6 +294,7 @@ private fun MenuLateral(
     onCerrarMenu: () -> Unit,
     onIrResumenDiario: () -> Unit,
     onIrCrearCuenta: () -> Unit,
+    onGestionarAccesos: () -> Unit,
     onMostrarCerrarSesion: () -> Unit
 ) {
     ModalDrawerSheet {
@@ -269,6 +307,15 @@ private fun MenuLateral(
             onClick = onCerrarMenu,
             modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
         )
+
+        if (usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
+            NavigationDrawerItem(
+                label = { Text("Gestionar Accesos (Puertas)") },
+                selected = false,
+                onClick = { onCerrarMenu(); onGestionarAccesos() },
+                modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+            )
+        }
 
         if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
             NavigationDrawerItem(
@@ -284,6 +331,8 @@ private fun MenuLateral(
                 modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
             )
         }
+
+
 
         Spacer(modifier = Modifier.weight(1f))
         HorizontalDivider()
