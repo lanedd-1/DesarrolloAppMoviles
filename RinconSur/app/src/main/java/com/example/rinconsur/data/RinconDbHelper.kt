@@ -279,4 +279,62 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
         return false
     }
+    fun obtenerMuestrasRegistradasUsuario(usuarioId: Long): Int {
+        val db = this.readableDatabase
+        val query = "SELECT COUNT(r.reg_id) FROM $TABLA_REGISTROS r INNER JOIN $TABLA_SESIONES s ON r.reg_sesion_id = s.ses_id WHERE s.ses_usu_id = ?"
+        val cursor = db.rawQuery(query, arrayOf(usuarioId.toString()))
+        var total = 0
+        if (cursor.moveToFirst()) total = cursor.getInt(0)
+        cursor.close()
+        return total
+    }
+
+    fun obtenerEstadisticasSesiones(usuarioId: Long): Pair<Int, Int> {
+        val db = this.readableDatabase
+
+        var total = 0
+        val cursorTotal = db.rawQuery("SELECT COUNT(ses_id) FROM $TABLA_SESIONES WHERE ses_usu_id = ?", arrayOf(usuarioId.toString()))
+        if (cursorTotal.moveToFirst()) total = cursorTotal.getInt(0)
+        cursorTotal.close()
+
+        var completadas = 0
+        val cursorFin = db.rawQuery("SELECT COUNT(ses_id) FROM $TABLA_SESIONES WHERE ses_usu_id = ? AND ses_estado = 'FINALIZADA'", arrayOf(usuarioId.toString()))
+        if (cursorFin.moveToFirst()) completadas = cursorFin.getInt(0)
+        cursorFin.close()
+
+        return Pair(completadas, total)
+    }
+
+    fun obtenerSesionesPorUsuario(usuarioId: Long): List<SesionItem> {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT ses_id, ses_codigo, ses_acceso, ses_fecha, ses_estado FROM $TABLA_SESIONES WHERE ses_usu_id = ? ORDER BY ses_id DESC",
+            arrayOf(usuarioId.toString())
+        )
+        val lista = mutableListOf<SesionItem>()
+        if (cursor.moveToFirst()) {
+            do {
+                lista.add(
+                    SesionItem(
+                        id = cursor.getLong(0),
+                        codigo = cursor.getString(1),
+                        acceso = cursor.getString(2),
+                        fecha = cursor.getString(3),
+                        estado = cursor.getString(4)
+                    )
+                )
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return lista
+    }
 }
+
+// Data class para mapear lo que leemos de la base de datos a la UI
+data class SesionItem(
+    val id: Long,
+    val codigo: String,
+    val acceso: String,
+    val fecha: String,
+    val estado: String
+)

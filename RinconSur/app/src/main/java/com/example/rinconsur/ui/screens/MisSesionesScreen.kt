@@ -1,3 +1,5 @@
+package com.example.rinconsur.ui.screens
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -32,8 +34,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,8 +50,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
+import com.example.rinconsur.data.SesionItem
 import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
@@ -63,61 +70,62 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
-import com.example.rinconsur.ui.theme.RojoAlerta
-import com.example.rinconsur.ui.theme.VerdeExito
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MisSesionesScreen(
-    onIniciarSesionConteo: (String) -> Unit = {},
+    onIniciarSesionConteo: (Long, String) -> Unit = { _, _ -> }, // ¡AQUÍ RECIBE LOS 2 PARÁMETROS!
     onIrCrearCuenta: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
-    // Obtenemos el contexto para acceder a la BD y las SharedPreferences
     val contexto = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Estado para guardar el usuario que cargaremos de la base de datos
     var usuarioActual by remember { mutableStateOf<Usuario?>(null) }
-
-    // Controla si se muestra el diálogo de confirmación al cerrar sesión
     var mostrarDialogo by remember { mutableStateOf(false) }
-
-    // Controla el diálogo para agregar foto
     var mostrarDialogoFoto by remember { mutableStateOf(false) }
+    var mostrarDialogoNuevaSesion by remember { mutableStateOf(false) }
 
-    // --- LANZADORES DE PERMISOS NATIVOS ---
-    val camaraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            // El usuario aceptó el permiso de la cámara
-        } else {
-            // Si lo rechaza, lo mandamos a los ajustes usando tu objeto Permisos
-            Permisos.abrirAjustes(contexto)
-        }
+    var totalMuestras by remember { mutableIntStateOf(0) }
+    var sesionesCompletadas by remember { mutableIntStateOf(0) }
+    var sesionesTotales by remember { mutableIntStateOf(0) }
+
+    var listaSesiones by remember { mutableStateOf<List<SesionItem>>(emptyList()) }
+
+    val camaraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (!isGranted) Permisos.abrirAjustes(contexto)
     }
 
-    val galeriaLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            // El usuario aceptó el permiso de la galería
-        } else {
-            // Si lo rechaza, lo mandamos a los ajustes usando tu objeto Permisos
-            Permisos.abrirAjustes(contexto)
-        }
+    val galeriaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (!isGranted) Permisos.abrirAjustes(contexto)
     }
 
-    // Al cargar la pantalla, leemos el ID de la sesión y buscamos al usuario en SQLite
-    LaunchedEffect(Unit) {
-        val idUsuarioLogueado = SesionPreferencias(contexto).obtenerIdUsuario()
-        if (idUsuarioLogueado != -1L) {
-            val dbHelper = RinconDbHelper(contexto)
-            usuarioActual = dbHelper.buscarPorId(idUsuarioLogueado)
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val idUsuarioLogueado = SesionPreferencias(contexto).obtenerIdUsuario()
+                if (idUsuarioLogueado != -1L) {
+                    val dbHelper = RinconDbHelper(contexto)
+                    usuarioActual = dbHelper.buscarPorId(idUsuarioLogueado)
+
+                    totalMuestras = dbHelper.obtenerMuestrasRegistradasUsuario(idUsuarioLogueado)
+                    val (completadas, totales) = dbHelper.obtenerEstadisticasSesiones(idUsuarioLogueado)
+                    sesionesCompletadas = completadas
+                    sesionesTotales = totales
+
+                    listaSesiones = dbHelper.obtenerSesionesPorUsuario(idUsuarioLogueado)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -131,41 +139,66 @@ fun MisSesionesScreen(
         )
     }
 
-    // Diálogo de selección: Si no tiene el permiso, lo pide con el Launcher; si ya lo tiene, procede
     if (mostrarDialogoFoto) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoFoto = false },
             title = { Text(text = "Seleccionar Foto de Perfil") },
             text = { Text(text = "¿De dónde deseas obtener la imagen?") },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoFoto = false
-                        if (Permisos.tiene(contexto, Permisos.CAMARA)) {
-                            // Ya tiene el permiso concedido
-                        } else {
-                            // Pide el permiso al sistema nativamente
-                            camaraLauncher.launch(Permisos.CAMARA)
-                        }
-                    }
-                ) {
-                    Text("Cámara")
-                }
+                TextButton(onClick = {
+                    mostrarDialogoFoto = false
+                    if (!Permisos.tiene(contexto, Permisos.CAMARA)) camaraLauncher.launch(Permisos.CAMARA)
+                }) { Text("Cámara") }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoFoto = false
-                        if (Permisos.tiene(contexto, Permisos.IMAGENES)) {
-                            // Ya tiene el permiso concedido
-                        } else {
-                            // Pide el permiso al sistema nativamente
-                            galeriaLauncher.launch(Permisos.IMAGENES)
+                TextButton(onClick = {
+                    mostrarDialogoFoto = false
+                    if (!Permisos.tiene(contexto, Permisos.IMAGENES)) galeriaLauncher.launch(Permisos.IMAGENES)
+                }) { Text("Galería") }
+            }
+        )
+    }
+
+    if (mostrarDialogoNuevaSesion) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoNuevaSesion = false },
+            title = { Text(text = "Nueva Sesión de Conteo", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text(text = "Selecciona el acceso asignado:", modifier = Modifier.padding(bottom = Dimens.espacioMedio))
+                    val accesosDisponibles = listOf("Acceso A1", "Acceso A2", "Acceso A3", "Acceso A4")
+
+                    accesosDisponibles.forEach { nombreAcceso ->
+                        TextButton(
+                            onClick = {
+                                if (usuarioActual != null) {
+                                    val dbHelper = RinconDbHelper(contexto)
+                                    val codigoAleatorio = "SES-${(100..999).random()}"
+                                    val fechaHoy = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+
+                                    dbHelper.crearSesion(
+                                        codigo = codigoAleatorio,
+                                        acceso = nombreAcceso,
+                                        fecha = fechaHoy,
+                                        usuarioId = usuarioActual!!.id
+                                    )
+
+                                    listaSesiones = dbHelper.obtenerSesionesPorUsuario(usuarioActual!!.id)
+                                    val (completadas, totales) = dbHelper.obtenerEstadisticasSesiones(usuarioActual!!.id)
+                                    sesionesCompletadas = completadas
+                                    sesionesTotales = totales
+                                }
+                                mostrarDialogoNuevaSesion = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = nombreAcceso, color = BurdeoRincon, fontWeight = FontWeight.SemiBold)
                         }
                     }
-                ) {
-                    Text("Galería")
                 }
+            },
+            confirmButton = {
+                TextButton(onClick = { mostrarDialogoNuevaSesion = false }) { Text("Cancelar", color = Color.Gray) }
             }
         )
     }
@@ -184,20 +217,16 @@ fun MisSesionesScreen(
 
                 NavigationDrawerItem(
                     label = { Text("Mis Sesiones") },
-                    selected = true, // Está en esta pantalla
+                    selected = true,
                     onClick = { scope.launch { drawerState.close() } },
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                 )
 
-                // Se muestra si el rol es Administrador O Jefe de Tienda
                 if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
                     NavigationDrawerItem(
                         label = { Text("Registrar Colaborador") },
                         selected = false,
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            onIrCrearCuenta()
-                        },
+                        onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() },
                         modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                     )
                 }
@@ -208,10 +237,7 @@ fun MisSesionesScreen(
                 NavigationDrawerItem(
                     label = { Text("Cerrar sesión", color = MaterialTheme.colorScheme.error) },
                     selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        mostrarDialogo = true // abre el diálogo, NO cierra la sesión todavía
-                    },
+                    onClick = { scope.launch { drawerState.close() }; mostrarDialogo = true },
                     modifier = Modifier.padding(Dimens.espacioChico)
                 )
             }
@@ -221,20 +247,11 @@ fun MisSesionesScreen(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(
-                            text = "Mis Sesiones",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Text(text = "Mis Sesiones", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
                     },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_volver),
-                                contentDescription = "Abrir menú",
-                                tint = Color.White
-                            )
+                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = "Abrir menú", tint = Color.White)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
@@ -250,7 +267,6 @@ fun MisSesionesScreen(
                     .padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
             ) {
-                // Encabezado con foto y datos del colaborador dinámicos
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -259,77 +275,67 @@ fun MisSesionesScreen(
                         modifier = Modifier.padding(Dimens.espacioMedio),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        AvatarCircular(
-                            imagen = R.drawable.ic_persona,
-                            descripcion = "Foto de perfil"
-                        )
+                        AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Foto de perfil")
                         Spacer(modifier = Modifier.width(Dimens.espacioMedio))
                         Column {
-                            // Mostramos el nombre real del usuario de la BD
-                            Text(
-                                text = usuarioActual?.nombre ?: "Cargando...",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            // Mostramos el rol real de la BD
-                            Text(
-                                text = "${usuarioActual?.rolNombre ?: ""} · Turno",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                            )
-
+                            Text(text = usuarioActual?.nombre ?: "Cargando...", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                            Text(text = "${usuarioActual?.rolNombre ?: ""} · Turno", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
                             Spacer(modifier = Modifier.height(Dimens.espacioMini))
-
-                            // Texto interactivo "Agregar foto" abajo del rol
                             Text(
                                 text = "Agregar foto",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
                                 textDecoration = TextDecoration.Underline,
-                                modifier = Modifier.clickable {
-                                    mostrarDialogoFoto = true
-                                }
+                                modifier = Modifier.clickable { mostrarDialogoFoto = true }
                             )
                         }
                     }
                 }
 
-                // Indicadores rápidos del día
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
                 ) {
                     Box(modifier = Modifier.weight(1f)) {
                         TarjetaEstadistica(
-                            valor = "2 / 4",
+                            valor = "$sesionesCompletadas / $sesionesTotales",
                             etiqueta = "Sesiones Hoy"
                         )
                     }
                     Box(modifier = Modifier.weight(1f)) {
                         TarjetaEstadistica(
-                            valor = "142",
+                            valor = totalMuestras.toString(),
                             etiqueta = "Muestras Registradas"
                         )
                     }
                 }
 
-                // Lista de Sesiones Programadas
                 TarjetaSeccion(titulo = "Sesiones Asignadas") {
-                    ItemSesion(
-                        puerta = "Acceso 3 - Estacionamiento",
-                        horario = "11:00 - 11:30 hrs",
-                        estado = "Pendiente",
-                        esActiva = true,
-                        onIniciar = { onIniciarSesionConteo("Acceso 3") }
-                    )
-                    Spacer(modifier = Modifier.height(Dimens.espacioMedio))
-                    ItemSesion(
-                        puerta = "Acceso 1 - Galería Principal",
-                        horario = "09:30 - 10:00 hrs",
-                        estado = "Finalizada",
-                        esActiva = false,
-                        onIniciar = {}
+                    if (listaSesiones.isEmpty()) {
+                        Text(
+                            text = "No tienes sesiones registradas.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(Dimens.espacioMedio)
+                        )
+                    } else {
+                        listaSesiones.forEach { sesion ->
+                            ItemSesion(
+                                puerta = sesion.acceso,
+                                horario = "Código: ${sesion.codigo} ·${sesion.fecha}",
+                                estado = sesion.estado,
+                                esActiva = sesion.estado != "FINALIZADA",
+                                onIniciar = { onIniciarSesionConteo(sesion.id, sesion.acceso) } // ¡SE ENVÍA EL ID Y EL ACCESO!
+                            )
+                            Spacer(modifier = Modifier.height(Dimens.espacioMedio))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimens.espacioChico))
+                    BotonSecundario(
+                        texto = "+ Crear nueva sesión",
+                        onClick = { mostrarDialogoNuevaSesion = true },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -389,7 +395,7 @@ private fun ItemSesion(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, heightDp = 800)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun MisSesionesScreenPreview() {
     RinconSurTheme {

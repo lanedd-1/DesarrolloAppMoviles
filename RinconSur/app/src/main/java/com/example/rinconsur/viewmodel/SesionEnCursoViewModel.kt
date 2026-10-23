@@ -22,6 +22,15 @@ class SesionEnCursoViewModel : ViewModel() {
     val uiState: StateFlow<SesionEnCursoUiState> = _uiState.asStateFlow()
 
     private val historialRegistros = mutableListOf<String>()
+    
+    fun inicializarSesion(idSesion: Long, nombreAcceso: String) {
+        _uiState.update {
+            it.copy(
+                idSesionActual = idSesion,
+                accesoNombre = nombreAcceso
+            )
+        }
+    }
 
     fun onClasificacionSeleccionada(opcion: ClasificacionPersona) {
         _uiState.update { it.copy(clasificacionSeleccionada = opcion) }
@@ -45,7 +54,7 @@ class SesionEnCursoViewModel : ViewModel() {
 
     fun onGuardarRegistro(context: Context) {
         val estado = _uiState.value
-        val resumen = "${estado.clasificacionSeleccionada.etiqueta} · ${estado.rangoEtarioSeleccionado.etiqueta} · ${estado.companiaSeleccionada.etiqueta}"
+        val resumen = "${estado.clasificacionSeleccionada.etiqueta} · ${estado.rangoEtarioSeleccionado.etiqueta} ·${estado.companiaSeleccionada.etiqueta}"
         val horaActual = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
 
         val destinoFinal = if (estado.clasificacionSeleccionada == ClasificacionPersona.TRANSITO) {
@@ -56,7 +65,7 @@ class SesionEnCursoViewModel : ViewModel() {
 
         val dbHelper = RinconDbHelper(context)
         dbHelper.guardarRegistroConteo(
-            sesionId = estado.idSesionActual,
+            sesionId = estado.idSesionActual, // Ahora sí tiene un ID válido
             clasificacion = estado.clasificacionSeleccionada.name,
             rangoEtario = estado.rangoEtarioSeleccionado.name,
             compania = estado.companiaSeleccionada.name,
@@ -79,7 +88,7 @@ class SesionEnCursoViewModel : ViewModel() {
     fun finalizarSesionConteo(context: Context) {
         val estado = _uiState.value
         val dbHelper = RinconDbHelper(context)
-        dbHelper.finalizarSesion(estado.idSesionActual)
+        dbHelper.finalizarSesion(estado.idSesionActual) // Actualiza el estado a "FINALIZADA"
     }
 
     fun onAnularUltimoRegistro(context: Context) {

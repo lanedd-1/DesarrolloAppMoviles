@@ -1,58 +1,69 @@
 package com.example.rinconsur.navigation
 
-import MisSesionesScreen
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.ui.screens.CambiarContrasenaScreen
 import com.example.rinconsur.ui.screens.FormularioScreen
 import com.example.rinconsur.ui.screens.LoginScreen
+import com.example.rinconsur.ui.screens.MisSesionesScreen
 import com.example.rinconsur.ui.screens.OlvideContrasenaScreen
 import com.example.rinconsur.ui.screens.SesionEnCursoScreen
+import com.example.rinconsur.viewmodel.SesionViewModel
 
 @Composable
 fun AppNavegacion() {
     val navController = rememberNavController()
     val contexto = LocalContext.current
 
+    val sesionViewModel: SesionViewModel = viewModel()
+
+    // Si ya había una sesión guardada, la carga al abrir la app
+    LaunchedEffect(Unit) {
+        sesionViewModel.cargarUsuario(contexto)
+    }
+
+    val usuarioActual by sesionViewModel.usuarioActual.collectAsStateWithLifecycle()
+
     NavHost(
         navController = navController,
         startDestination = Ruta.Login.ruta
     ) {
-        // 1. Pantalla de Inicio de Sesión (Sin Menú Lateral)
         composable(Ruta.Login.ruta) {
             LoginScreen(
                 onLoginExitoso = {
+                    // Actualiza la variable global tras el login exitoso
+                    sesionViewModel.cargarUsuario(contexto)
                     navController.navigate(Ruta.MisSesiones.ruta) {
                         popUpTo(Ruta.Login.ruta) { inclusive = true }
                     }
                 },
-                onOlvidasteContrasena = {
-                    navController.navigate(Ruta.OlvideContrasena.ruta)
-                }
+                onOlvidasteContrasena = { navController.navigate(Ruta.OlvideContrasena.ruta) }
             )
         }
 
-        // 2. Recuperar contraseña: correo + código de verificación
-        composable(route = Ruta.OlvideContrasena.ruta) {
+        composable(Ruta.OlvideContrasena.ruta) {
             OlvideContrasenaScreen(
-                onCodigoVerificado = { correoUsuario ->
-                    // Le pasamos el correo verificado a la siguiente pantalla
-                    navController.navigate(route = Ruta.CambiarContrasena.crear(correoUsuario)) {
-                        popUpTo(route = Ruta.OlvideContrasena.ruta) { inclusive = true }
+                onCodigoVerificado = { correo ->
+                    navController.navigate(Ruta.CambiarContrasena.crear(correo)) {
+                        popUpTo(Ruta.OlvideContrasena.ruta) { inclusive = true }
                     }
                 },
                 onVolver = { navController.navigateUp() }
             )
         }
 
-        // 3. Nueva contraseña (recibe el correo verificado)
         composable(
             route = Ruta.CambiarContrasena.ruta,
             arguments = listOf(navArgument("correo") { type = NavType.StringType })
@@ -68,39 +79,47 @@ fun AppNavegacion() {
             )
         }
 
-        // 4. Mis Sesiones
         composable(Ruta.MisSesiones.ruta) {
             MisSesionesScreen(
-                onIniciarSesionConteo = { acceso ->
-                    navController.navigate(Ruta.SesionEnCurso.crear(acceso))
+                onIniciarSesionConteo = { id, acceso ->
+                    navController.navigate(Ruta.SesionEnCurso.crear(id, acceso))
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
                 onCerrarSesion = {
+                    sesionViewModel.cerrarSesion()
+                    SesionPreferencias(contexto).limpiar()
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 }
             )
         }
 
-        // 5. Sesión en Curso (con acceso al Menú Lateral)
         composable(
             route = Ruta.SesionEnCurso.ruta,
-            arguments = listOf(navArgument("acceso") { type = NavType.StringType })
-        ) {
+            arguments = listOf(
+                navArgument("id") { type = NavType.LongType },
+                navArgument("acceso") { type = NavType.StringType }
+            )
+        ) { entrada ->
+            val idSesion = entrada.arguments?.getLong("id") ?: 0L
+            val acceso = entrada.arguments?.getString("acceso") ?: ""
+
             SesionEnCursoScreen(
+                idSesion = idSesion,
+                acceso = acceso,
+                usuarioActual = usuarioActual,
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
-                    navController.navigate(Ruta.MisSesiones.ruta) {
-                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true }
-                    }
+                    navController.navigate(Ruta.MisSesiones.ruta) { popUpTo(Ruta.MisSesiones.ruta) { inclusive = true } }
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
                 onCerrarSesion = {
+                    sesionViewModel.cerrarSesion()
+                    SesionPreferencias(contexto).limpiar()
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 }
             )
         }
 
-        // 6. Formulario (con acceso al Menú Lateral)
         composable(Ruta.Formulario.ruta) {
             FormularioScreen(
                 onRegistroExitoso = { usuario ->
@@ -109,12 +128,12 @@ fun AppNavegacion() {
                 },
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
-                    navController.navigate(Ruta.MisSesiones.ruta) {
-                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true }
-                    }
+                    navController.navigate(Ruta.MisSesiones.ruta) { popUpTo(Ruta.MisSesiones.ruta) { inclusive = true } }
                 },
-                onIrCrearCuenta = { /* Ya estamos aquí */ },
+                onIrCrearCuenta = { },
                 onCerrarSesion = {
+                    sesionViewModel.cerrarSesion()
+                    SesionPreferencias(contexto).limpiar()
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 }
             )
