@@ -1,7 +1,10 @@
 package com.example.rinconsur.ui.screens
 
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,8 +15,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -41,7 +46,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -173,14 +181,30 @@ fun MisSesionesContent(
     var mostrarDialogoFoto by remember { mutableStateOf(false) }
     var mostrarDialogoNuevaSesion by remember { mutableStateOf(false) }
 
+    // Estado para almacenar temporalmente la foto de perfil capturada con la cámara
+    var fotoPerfilBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
     var accesosCerrados by remember { mutableStateOf<List<String>>(emptyList()) }
 
-    val camaraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (!isGranted) Permisos.abrirAjustes(contexto)
+    val camaraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+        if (bitmap != null) {
+            fotoPerfilBitmap = rotarBitmapSiEsNecesario(bitmap)
+        }
     }
 
-    val galeriaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (!isGranted) Permisos.abrirAjustes(contexto)
+    val galeriaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            try {
+                val inputStream = contexto.contentResolver.openInputStream(uri)
+                val bitmapOriginal = android.graphics.BitmapFactory.decodeStream(inputStream)
+                inputStream?.close()
+                if (bitmapOriginal != null) {
+                    fotoPerfilBitmap = bitmapOriginal
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     if (mostrarDialogoCerrar) {
@@ -195,12 +219,11 @@ fun MisSesionesContent(
             onDismiss = { mostrarDialogoFoto = false },
             onCamara = {
                 mostrarDialogoFoto = false
-                // Lanzamos directamente; el sistema decide si muestra el popup o abre ajustes si fue denegado por completo
-                camaraLauncher.launch(Permisos.CAMARA)
+                camaraLauncher.launch(null)
             },
             onGaleria = {
                 mostrarDialogoFoto = false
-                galeriaLauncher.launch(Permisos.IMAGENES)
+                galeriaLauncher.launch("image/*")
             }
         )
     }
@@ -253,7 +276,11 @@ fun MisSesionesContent(
                     .padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
             ) {
-                TarjetaPerfil(usuarioActual) { mostrarDialogoFoto = true }
+                TarjetaPerfil(
+                    usuarioActual = usuarioActual,
+                    fotoBitmap = fotoPerfilBitmap,
+                    onCambiarFoto = { mostrarDialogoFoto = true }
+                )
 
                 EstadisticasResumen(sesionesCompletadas, sesionesTotales, totalMuestras)
 
@@ -271,7 +298,6 @@ fun MisSesionesContent(
     }
 }
 
-// ----------------------------- COMPONENTES PRIVADOS -----------------------------
 
 @Composable
 private fun MenuLateral(
@@ -331,10 +357,27 @@ private fun MenuLateral(
 }
 
 @Composable
-private fun TarjetaPerfil(usuarioActual: Usuario?, onCambiarFoto: () -> Unit) {
+private fun TarjetaPerfil(
+    usuarioActual: Usuario?,
+    fotoBitmap: Bitmap?,
+    onCambiarFoto: () -> Unit
+) {
     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Row(modifier = Modifier.padding(Dimens.espacioMedio), verticalAlignment = Alignment.CenterVertically) {
-            AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Foto de perfil")
+
+            if (fotoBitmap != null) {
+                Image(
+                    bitmap = fotoBitmap.asImageBitmap(),
+                    contentDescription = "Foto de perfil",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Foto de perfil")
+            }
+
             Spacer(modifier = Modifier.width(Dimens.espacioMedio))
             Column {
                 Text(text = usuarioActual?.nombre ?: "Cargando...", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -428,4 +471,13 @@ private fun MisSesionesPreview() {
             onIrCrearCuenta = {}, onIrResumenDiario = {}, onIrGestionAccesos = {}, onCerrarSesion = {}, onCrearNuevaSesion = {}
         )
     }
+}
+
+private fun rotarBitmapSiEsNecesario(bitmap: Bitmap): Bitmap {
+    val matriz = Matrix()
+    if (bitmap.width > bitmap.height) {
+        matriz.postRotate(270f)
+    }
+
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matriz, true)
 }
