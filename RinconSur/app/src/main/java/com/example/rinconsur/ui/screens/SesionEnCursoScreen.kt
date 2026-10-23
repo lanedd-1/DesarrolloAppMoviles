@@ -56,7 +56,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
-import com.example.rinconsur.model.AccesoDestinoEnum
 import com.example.rinconsur.model.ClasificacionPersona
 import com.example.rinconsur.model.RangoEtarioEnum
 import com.example.rinconsur.model.Rol
@@ -73,7 +72,6 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
-import com.example.rinconsur.ui.theme.TerracotaRincon
 import com.example.rinconsur.viewmodel.SesionEnCursoViewModel
 import kotlinx.coroutines.launch
 
@@ -102,7 +100,6 @@ fun SesionEnCursoScreen(
         onRangoEtarioSeleccionado = viewModel::onRangoEtarioSeleccionado,
         onCompaniaSeleccionada = viewModel::onCompaniaSeleccionada,
         onBolsasOtraTiendaCambia = viewModel::onBolsasOtraTiendaCambia,
-        onDestinoSeleccionado = viewModel::onDestinoSeleccionado,
         onGuardarRegistro = { viewModel.onGuardarRegistro(contexto) },
         onAnularUltimoRegistro = { viewModel.onAnularUltimoRegistro(contexto) },
         onPausarSesion = onVolver,
@@ -125,7 +122,6 @@ fun SesionEnCursoContent(
     onRangoEtarioSeleccionado: (RangoEtarioEnum) -> Unit,
     onCompaniaSeleccionada: (TipoCompaniaEnum) -> Unit,
     onBolsasOtraTiendaCambia: (Boolean) -> Unit,
-    onDestinoSeleccionado: (AccesoDestinoEnum) -> Unit,
     onGuardarRegistro: () -> Unit,
     onAnularUltimoRegistro: () -> Unit,
     onPausarSesion: () -> Unit = {},
@@ -250,7 +246,6 @@ fun SesionEnCursoContent(
                     onRango = onRangoEtarioSeleccionado,
                     onCompania = onCompaniaSeleccionada,
                     onBolsas = onBolsasOtraTiendaCambia,
-                    onDestino = onDestinoSeleccionado,
                     onGuardar = onGuardarRegistro,
                     onPausar = { mostrarDialogoPausa = true },
                     onFinalizar = { mostrarDialogoFinalizar = true }
@@ -301,7 +296,6 @@ private fun FormularioRegistro(
     onRango: (RangoEtarioEnum) -> Unit,
     onCompania: (TipoCompaniaEnum) -> Unit,
     onBolsas: (Boolean) -> Unit,
-    onDestino: (AccesoDestinoEnum) -> Unit,
     onGuardar: () -> Unit,
     onPausar: () -> Unit,
     onFinalizar: () -> Unit
@@ -341,19 +335,6 @@ private fun FormularioRegistro(
         Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
             BotonOpcionTactil(texto = "Sí", seleccionado = uiState.traeBolsasOtraTienda, onClick = { onBolsas(true) }, modifier = Modifier.weight(1f))
             BotonOpcionTactil(texto = "No", seleccionado = !uiState.traeBolsasOtraTienda, onClick = { onBolsas(false) }, modifier = Modifier.weight(1f))
-        }
-
-        if (uiState.clasificacionSeleccionada == ClasificacionPersona.TRANSITO) {
-            Spacer(modifier = Modifier.height(Dimens.espacioChico))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Destino", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text("Solo si es Tránsito", style = MaterialTheme.typography.bodySmall, color = TerracotaRincon)
-            }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-                AccesoDestinoEnum.entries.forEach { dest ->
-                    BotonOpcionTactil(texto = dest.codigo, seleccionado = uiState.destinoSeleccionado == dest, onClick = { onDestino(dest) })
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(Dimens.espacioMedio))
