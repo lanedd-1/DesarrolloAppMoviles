@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -32,13 +33,17 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,8 +77,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SesionEnCursoScreen(
-    idSesion: Long = 0L, // ¡AQUÍ DECLARAMOS QUE RECIBE EL ID!
-    acceso: String = "", // ¡AQUÍ DECLARAMOS QUE RECIBE EL ACCESO!
+    idSesion: Long = 0L,
+    acceso: String = "",
     usuarioActual: Usuario?,
     onVolver: () -> Unit = {},
     onIrMisSesiones: () -> Unit = {},
@@ -98,6 +103,7 @@ fun SesionEnCursoScreen(
         onDestinoSeleccionado = viewModel::onDestinoSeleccionado,
         onGuardarRegistro = { viewModel.onGuardarRegistro(contexto) },
         onAnularUltimoRegistro = { viewModel.onAnularUltimoRegistro(contexto) },
+        onPausarSesion = onVolver, // Pausar simplemente vuelve sin cambiar el estado en BD
         onFinalizarSesion = {
             viewModel.finalizarSesionConteo(contexto)
             onVolver()
@@ -120,6 +126,7 @@ fun SesionEnCursoContent(
     onDestinoSeleccionado: (AccesoDestinoEnum) -> Unit,
     onGuardarRegistro: () -> Unit,
     onAnularUltimoRegistro: () -> Unit,
+    onPausarSesion: () -> Unit = {},
     onFinalizarSesion: () -> Unit = {},
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
@@ -127,6 +134,31 @@ fun SesionEnCursoContent(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    // Estado para el popup de pausa
+    var mostrarDialogoPausa by remember { mutableStateOf(false) }
+
+    // Diálogo de confirmación para pausar
+    if (mostrarDialogoPausa) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoPausa = false },
+            title = { Text(text = "Pausar Conteo", fontWeight = FontWeight.Bold) },
+            text = { Text("¿Deseas pausar esta sesión? Podrás retomarla más tarde desde la pantalla de Mis Sesiones.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    mostrarDialogoPausa = false
+                    onPausarSesion()
+                }) {
+                    Text("Sí, pausar", color = BurdeoRincon, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogoPausa = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            }
+        )
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -266,11 +298,20 @@ fun SesionEnCursoContent(
                     BotonPrincipal(texto = "Guardar registro", onClick = onGuardarRegistro, modifier = Modifier.fillMaxWidth())
 
                     Spacer(modifier = Modifier.height(Dimens.espacioChico))
-                    BotonSecundario(
-                        texto = "Finalizar registro",
-                        onClick = onFinalizarSesion,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
+                        // Botón de Pausa
+                        BotonSecundario(
+                            texto = "Pausar",
+                            onClick = { mostrarDialogoPausa = true },
+                            modifier = Modifier.weight(1f)
+                        )
+                        // Botón de Finalizar
+                        BotonSecundario(
+                            texto = "Finalizar",
+                            onClick = onFinalizarSesion,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
