@@ -140,8 +140,6 @@ fun AppNavegacion() {
         composable(Ruta.Formulario.ruta) {
             FormularioScreen(
                 onRegistroExitoso = { usuario ->
-                    Toast.makeText(contexto, "Cuenta creada para ${usuario.nombre}", Toast.LENGTH_LONG).show()
-                    navController.navigateUp()
                 },
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
