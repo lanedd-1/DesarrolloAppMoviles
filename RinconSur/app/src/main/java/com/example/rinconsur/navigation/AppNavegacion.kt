@@ -19,6 +19,7 @@ import com.example.rinconsur.ui.screens.FormularioScreen
 import com.example.rinconsur.ui.screens.LoginScreen
 import com.example.rinconsur.ui.screens.MisSesionesScreen
 import com.example.rinconsur.ui.screens.OlvideContrasenaScreen
+import com.example.rinconsur.ui.screens.ResumenDiarioScreen
 import com.example.rinconsur.ui.screens.SesionEnCursoScreen
 import com.example.rinconsur.viewmodel.SesionViewModel
 
@@ -43,7 +44,6 @@ fun AppNavegacion() {
         composable(Ruta.Login.ruta) {
             LoginScreen(
                 onLoginExitoso = {
-                    // Actualiza la variable global tras el login exitoso
                     sesionViewModel.cargarUsuario(contexto)
                     navController.navigate(Ruta.MisSesiones.ruta) {
                         popUpTo(Ruta.Login.ruta) { inclusive = true }
@@ -85,11 +85,21 @@ fun AppNavegacion() {
                     navController.navigate(Ruta.SesionEnCurso.crear(id, acceso))
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
+                // ¡AQUÍ ESTÁ LA CONEXIÓN QUE FALTABA!
+                onIrResumenDiario = { navController.navigate(Ruta.ResumenDiario.ruta) },
                 onCerrarSesion = {
                     sesionViewModel.cerrarSesion()
                     SesionPreferencias(contexto).limpiar()
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 }
+            )
+        }
+
+        // PANTALLA DE RESUMEN DIARIO
+        composable(Ruta.ResumenDiario.ruta) {
+            ResumenDiarioScreen(
+                usuarioActual = usuarioActual,
+                onVolver = { navController.navigateUp() } // Para volver a Mis Sesiones
             )
         }
 

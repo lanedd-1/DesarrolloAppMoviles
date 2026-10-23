@@ -78,8 +78,9 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MisSesionesScreen(
-    onIniciarSesionConteo: (Long, String) -> Unit = { _, _ -> }, // ¡AQUÍ RECIBE LOS 2 PARÁMETROS!
+    onIniciarSesionConteo: (Long, String) -> Unit = { _, _ -> },
     onIrCrearCuenta: () -> Unit = {},
+    onIrResumenDiario: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -106,6 +107,7 @@ fun MisSesionesScreen(
         if (!isGranted) Permisos.abrirAjustes(contexto)
     }
 
+    // Actualiza los datos de SQLite cada vez que la pantalla se vuelve a mostrar
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -159,6 +161,7 @@ fun MisSesionesScreen(
         )
     }
 
+    // Diálogo para seleccionar el acceso al crear una nueva sesión
     if (mostrarDialogoNuevaSesion) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoNuevaSesion = false },
@@ -183,6 +186,7 @@ fun MisSesionesScreen(
                                         usuarioId = usuarioActual!!.id
                                     )
 
+                                    // Refresca la lista y los contadores en tiempo real
                                     listaSesiones = dbHelper.obtenerSesionesPorUsuario(usuarioActual!!.id)
                                     val (completadas, totales) = dbHelper.obtenerEstadisticasSesiones(usuarioActual!!.id)
                                     sesionesCompletadas = completadas
@@ -223,6 +227,17 @@ fun MisSesionesScreen(
                 )
 
                 if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
+
+                    NavigationDrawerItem(
+                        label = { Text("Resumen del Día") },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            onIrResumenDiario()
+                        },
+                        modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                    )
+
                     NavigationDrawerItem(
                         label = { Text("Registrar Colaborador") },
                         selected = false,
@@ -322,10 +337,10 @@ fun MisSesionesScreen(
                         listaSesiones.forEach { sesion ->
                             ItemSesion(
                                 puerta = sesion.acceso,
-                                horario = "Código: ${sesion.codigo} ·${sesion.fecha}",
+                                horario = "Código: ${sesion.codigo} · ${sesion.fecha}",
                                 estado = sesion.estado,
                                 esActiva = sesion.estado != "FINALIZADA",
-                                onIniciar = { onIniciarSesionConteo(sesion.id, sesion.acceso) } // ¡SE ENVÍA EL ID Y EL ACCESO!
+                                onIniciar = { onIniciarSesionConteo(sesion.id, sesion.acceso) }
                             )
                             Spacer(modifier = Modifier.height(Dimens.espacioMedio))
                         }
