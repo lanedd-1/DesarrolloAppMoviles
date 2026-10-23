@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,11 +26,11 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,12 +43,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
 import com.example.rinconsur.model.FormularioUiState
 import com.example.rinconsur.model.Usuario
+import com.example.rinconsur.ui.components.BannerNotificacion
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.BotonSecundario
 import com.example.rinconsur.ui.components.CampoContrasena
@@ -59,10 +58,9 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
-import com.example.rinconsur.ui.theme.RojoAlerta
-import com.example.rinconsur.ui.theme.VerdeExito
 import com.example.rinconsur.viewmodel.FormularioViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @Composable
 fun FormularioScreen(
@@ -75,6 +73,13 @@ fun FormularioScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
+
+    LaunchedEffect(uiState.mensajeExito) {
+        if (uiState.mensajeExito != null) {
+            delay(6000)
+            viewModel.limpiarMensaje()
+        }
+    }
 
     FormularioContent(
         uiState = uiState,
@@ -111,7 +116,6 @@ fun FormularioContent(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Controla si se muestra el diálogo de confirmación al cerrar sesión
     var mostrarDialogo by remember { mutableStateOf(false) }
 
     if (mostrarDialogo) {
@@ -123,6 +127,7 @@ fun FormularioContent(
             onCancelar = { mostrarDialogo = false }
         )
     }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -144,7 +149,7 @@ fun FormularioContent(
 
                 NavigationDrawerItem(
                     label = { Text("Registrar Colaborador") },
-                    selected = true, // Marcado activo porque estamos en esta pantalla
+                    selected = true,
                     onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() },
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                 )
@@ -176,9 +181,21 @@ fun FormularioContent(
             containerColor = MaterialTheme.colorScheme.background
         ) { innerPadding ->
             Column(
-                modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState()).padding(Dimens.espacioPantalla),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
             ) {
+                // Notificación estilizada cuando se crea el usuario
+                if (uiState.mensajeExito != null) {
+                    BannerNotificacion(
+                        mensaje = uiState.mensajeExito,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 TarjetaSeccion(titulo = "Datos del Nuevo Usuario") {
                     CampoTexto(valor = uiState.nombre, onValorCambia = onNombreCambia, etiqueta = "Nombre completo", icono = R.drawable.ic_persona, error = uiState.errorNombre)
                     CampoTexto(valor = uiState.correo, onValorCambia = onCorreoCambia, etiqueta = "Correo corporativo", icono = R.drawable.ic_correo, error = uiState.errorCorreo, tipoTeclado = KeyboardType.Email)
@@ -210,6 +227,7 @@ fun FormularioContent(
         }
     }
 }
+
 // ----------------------------- PREVIEWS -----------------------------
 
 @Preview(showBackground = true, showSystemUi = true, name = "1. Registro Limpio")
@@ -219,7 +237,7 @@ private fun FormularioLimpioPreview() {
         FormularioContent(
             uiState = FormularioUiState(
                 nombre = "Cristopher Bustamante",
-                correo = "cbustamante@RinconSur.cl",
+                correo = "cbustamante@rinconsur.cl",
                 rolSeleccionado = "Observador de Pasillo"
             ),
             onNombreCambia = {},
@@ -237,7 +255,33 @@ private fun FormularioLimpioPreview() {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, name = "2. Registro Con Errores")
+@Preview(showBackground = true, showSystemUi = true, name = "2. Registro Exitoso con Banner")
+@Composable
+private fun FormularioExitosoPreview() {
+    RinconSurTheme {
+        FormularioContent(
+            uiState = FormularioUiState(
+                nombre = "Cristopher Bustamante",
+                correo = "cbustamante@rinconsur.cl",
+                rolSeleccionado = "Observador de Pasillo",
+                mensajeExito = "Cuenta creada para Cristopher Bustamante con éxito!"
+            ),
+            onNombreCambia = {},
+            onCorreoCambia = {},
+            onRolSeleccionado = {},
+            onContrasenaCambia = {},
+            onConfirmarContrasenaCambia = {},
+            onAlternarVisibilidad = {},
+            onRegistrar = {},
+            onLimpiar = {},
+            onIrMisSesiones = {},
+            onIrCrearCuenta = {},
+            onCerrarSesion = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, name = "3. Registro Con Errores")
 @Composable
 private fun FormularioConErroresPreview() {
     RinconSurTheme {
@@ -245,9 +289,9 @@ private fun FormularioConErroresPreview() {
             uiState = FormularioUiState(
                 correo = "usuario@gmail.com",
                 errorNombre = "El nombre completo es obligatorio",
-                errorCorreo = "Debe ser un correo institucional (@RinconSur.cl)",
+                errorCorreo = "Debe ser un correo institucional (@rinconsur.cl)",
                 errorRol = "Debes seleccionar un rol para el colaborador",
-                errorContrasena = "Mínimo 6 caracteres",
+                errorContrasena = "Mínimo 8 caracteres",
                 errorConfirmarContrasena = "Las contraseñas no coinciden"
             ),
             onNombreCambia = {},

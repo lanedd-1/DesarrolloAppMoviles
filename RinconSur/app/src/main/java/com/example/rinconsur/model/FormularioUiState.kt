@@ -20,5 +20,6 @@ data class FormularioUiState(
     val errorContrasena: String? = null,
     val errorConfirmarContrasena: String? = null,
 
-    val registroExitoso: Boolean = false
+    val registroExitoso: Boolean = false,
+    val mensajeExito: String? = null
 )
