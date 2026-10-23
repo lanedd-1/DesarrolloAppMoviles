@@ -195,11 +195,12 @@ fun MisSesionesContent(
             onDismiss = { mostrarDialogoFoto = false },
             onCamara = {
                 mostrarDialogoFoto = false
-                if (!Permisos.tiene(contexto, Permisos.CAMARA)) camaraLauncher.launch(Permisos.CAMARA)
+                // Lanzamos directamente; el sistema decide si muestra el popup o abre ajustes si fue denegado por completo
+                camaraLauncher.launch(Permisos.CAMARA)
             },
             onGaleria = {
                 mostrarDialogoFoto = false
-                if (!Permisos.tiene(contexto, Permisos.IMAGENES)) galeriaLauncher.launch(Permisos.IMAGENES)
+                galeriaLauncher.launch(Permisos.IMAGENES)
             }
         )
     }

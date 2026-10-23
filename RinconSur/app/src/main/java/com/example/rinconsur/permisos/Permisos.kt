@@ -1,3 +1,4 @@
+// Permisos.kt
 package com.example.rinconsur.permisos
 
 import android.Manifest
@@ -11,9 +12,7 @@ import androidx.core.content.ContextCompat
 
 object Permisos {
 
-
     val CAMARA: String = Manifest.permission.CAMERA
-
 
     val IMAGENES: String =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -22,7 +21,6 @@ object Permisos {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
 
-
     val NOTIFICACIONES: String =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.POST_NOTIFICATIONS
@@ -30,12 +28,19 @@ object Permisos {
             ""
         }
 
+    // Lista consolidada de permisos requeridos al iniciar la app
+    val LISTA_PERMISOS_INICIALES: Array<String> = buildList {
+        add(CAMARA)
+        add(IMAGENES)
+        if (NOTIFICACIONES.isNotEmpty()) {
+            add(NOTIFICACIONES)
+        }
+    }.toTypedArray()
 
     fun tiene(context: Context, permiso: String): Boolean {
         if (permiso.isEmpty()) return true
         return ContextCompat.checkSelfPermission(context, permiso) == PackageManager.PERMISSION_GRANTED
     }
-
 
     fun abrirAjustes(context: Context) {
         val intent = Intent(
