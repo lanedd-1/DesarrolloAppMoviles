@@ -5,20 +5,18 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
@@ -70,13 +68,13 @@ fun ResumenDiarioContent(
             TopAppBar(
                 title = {
                     Column {
-                        Text("Métricas Rincón Sur", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("Rincón Sur", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.8f))
+                        Text(stringResource(R.string.resumen_diario_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(stringResource(R.string.resumen_diario_subtitulo), style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.8f))
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
-                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = "Volver", tint = Color.White)
+                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.resumen_diario_cd_volver), tint = Color.White)
                     }
                 },
                 actions = {
@@ -101,7 +99,7 @@ fun ResumenDiarioContent(
                     Text(text = uiState.nombreUsuario, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 }
                 Box(modifier = Modifier.background(Color(0xFFE8F5E9), RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                    Text(text = "Sincronizado", style = MaterialTheme.typography.labelSmall, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.resumen_diario_sincronizado), style = MaterialTheme.typography.labelSmall, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -140,32 +138,41 @@ fun ResumenDiarioContent(
                 }
             }
 
-            EtiquetaSeccion(etiqueta = "P-01", titulo = "Conversión total")
+            EtiquetaSeccion(
+                etiqueta = stringResource(R.string.resumen_diario_p01_etiqueta),
+                titulo = stringResource(R.string.resumen_diario_p01_titulo)
+            )
             Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White), border = null) {
                 Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(text = "${uiState.totalIngresos}", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.width(Dimens.espacioChico))
                         Column(modifier = Modifier.padding(bottom = 6.dp)) {
-                            Text(text = "Ingresos · ${uiState.totalAccesos} accesos", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            Text(
+                                text = stringResource(R.string.resumen_diario_p01_ingresos, uiState.totalAccesos),
+                                style = MaterialTheme.typography.bodySmall, color = Color.Gray
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(Dimens.espacioChico))
                     Text(
-                        text = "Ingresos de sensores. Las boletas son de toda la tienda, no de una puerta.",
+                        text = stringResource(R.string.resumen_diario_p01_nota),
                         style = MaterialTheme.typography.bodySmall, color = Color.Gray
                     )
                 }
             }
 
-            EtiquetaSeccion(etiqueta = "P-02", titulo = "Estimación por accesos")
+            EtiquetaSeccion(
+                etiqueta = stringResource(R.string.resumen_diario_p02_etiqueta),
+                titulo = stringResource(R.string.resumen_diario_p02_titulo)
+            )
             Text(
-                text = "Sensores: ingresos medidos. Tránsito: proyección a partir de muestras validadas, no conteo exacto.",
+                text = stringResource(R.string.resumen_diario_p02_nota),
                 style = MaterialTheme.typography.bodySmall, color = Color.Gray, modifier = Modifier.padding(bottom = Dimens.espacioChico)
             )
 
             if (uiState.flujos.isEmpty()) {
-                Text("No hay registros para esta fecha.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(Dimens.espacioMedio))
+                Text(stringResource(R.string.resumen_diario_sin_registros), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(Dimens.espacioMedio))
             } else {
                 uiState.flujos.forEach { flujo ->
                     TarjetaAcceso(
@@ -187,8 +194,8 @@ fun ResumenDiarioContent(
                     Icon(painter = painterResource(android.R.drawable.ic_dialog_info), contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(Dimens.espacioChico))
                     Column {
-                        Text(text = "La conversión depurada requiere más datos", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                        Text(text = "Debe descontar el tránsito estimado en todos los accesos. No se calcula con solo A4 y A1.", style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
+                        Text(text = stringResource(R.string.resumen_diario_nota_conversion_titulo), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        Text(text = stringResource(R.string.resumen_diario_nota_conversion_desc), style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
                     }
                 }
             }
@@ -217,11 +224,11 @@ private fun TarjetaAcceso(
 ) {
     val sigla = flujo.acceso.replace("Acceso ", "")
     val nombrePuerta = when(sigla) {
-        "A1" -> "Pasillo Mall"
-        "A2" -> "Entrada Norte"
-        "A3" -> "Estacionamiento"
-        "A4" -> "Conexión Ferretería"
-        else -> "Puerta Principal"
+        "A1" -> stringResource(R.string.puerta_pasillo_mall)
+        "A2" -> stringResource(R.string.puerta_entrada_norte)
+        "A3" -> stringResource(R.string.puerta_estacionamiento)
+        "A4" -> stringResource(R.string.puerta_conexion_ferreteria)
+        else -> stringResource(R.string.puerta_principal)
     }
 
     Card(
@@ -241,7 +248,7 @@ private fun TarjetaAcceso(
             Spacer(modifier = Modifier.height(Dimens.espacioMedio))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Ingresos de sensor", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                Text(text = stringResource(R.string.resumen_diario_ingresos_sensor), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
                 Text(text = "${flujo.cantidad}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             }
 
@@ -254,7 +261,7 @@ private fun TarjetaAcceso(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Ver resumen", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.resumen_diario_boton_ver), color = Color.White, fontWeight = FontWeight.Bold)
                 }
 
                 OutlinedButton(
@@ -264,7 +271,7 @@ private fun TarjetaAcceso(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Editar resumen", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.resumen_diario_boton_editar), fontWeight = FontWeight.Bold)
                 }
             }
         }

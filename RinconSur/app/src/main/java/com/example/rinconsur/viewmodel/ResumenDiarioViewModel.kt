@@ -2,6 +2,7 @@ package com.example.rinconsur.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.example.rinconsur.R
 import com.example.rinconsur.data.FlujoAcceso
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.model.Rol
@@ -37,13 +38,11 @@ class ResumenDiarioViewModel : ViewModel() {
         val dbHelper = RinconDbHelper(context)
         val fechaHoy = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
 
-        // Obtenemos las fechas históricas
         var fechas = dbHelper.obtenerFechasDisponibles()
         if (fechas.isEmpty()) {
             fechas = listOf(fechaHoy)
         }
 
-        // Si no hay una fecha seleccionada previamente, usamos la más reciente o la de hoy
         val fechaActiva = if (_uiState.value.fechaSeleccionada.isEmpty()) fechas.first() else _uiState.value.fechaSeleccionada
 
         actualizarMetricasPorFecha(context, fechaActiva, fechas, fechaHoy)
@@ -71,9 +70,17 @@ class ResumenDiarioViewModel : ViewModel() {
             else usuarioMemoria!!.nombre
         } else "Cargando..."
 
-        val rolStr = if (usuarioMemoria?.rolId == Rol.ID_ADMINISTRADOR) "ADMINISTRACIÓN" else "JEFATURA"
+        val rolStr = if (usuarioMemoria?.rolId == Rol.ID_ADMINISTRADOR) {
+            context.getString(R.string.rol_resumen_admin)
+        } else {
+            context.getString(R.string.rol_resumen_jefatura)
+        }
 
-        val label = if (fechaConsulta == fechaHoy) "Hoy · $fechaConsulta" else fechaConsulta
+        val label = if (fechaConsulta == fechaHoy) {
+            context.getString(R.string.resumen_diario_label_hoy, fechaConsulta)
+        } else {
+            fechaConsulta
+        }
 
         _uiState.update {
             it.copy(

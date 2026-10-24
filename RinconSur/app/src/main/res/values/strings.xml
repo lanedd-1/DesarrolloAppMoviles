@@ -127,6 +127,42 @@
     <string name="sesion_curso_boton_anular">Anular último registro</string>
     <string name="sesion_curso_pie_sincronizacion">Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.</string>
 
+    <!-- Textos Resumen Diario / Métricas -->
+    <string name="resumen_diario_titulo">Métricas Rincón Sur</string>
+    <string name="resumen_diario_subtitulo">Rincón Sur</string>
+    <string name="resumen_diario_cd_volver">Volver</string>
+    <string name="resumen_diario_sincronizado">Sincronizado</string>
+    <string name="resumen_diario_label_hoy">Hoy · %1$s</string>
+
+    <string name="resumen_diario_p01_etiqueta">P-01</string>
+    <string name="resumen_diario_p01_titulo">Conversión total</string>
+    <string name="resumen_diario_p01_ingresos">Ingresos · %1$d accesos</string>
+    <string name="resumen_diario_p01_nota">Ingresos de sensores. Las boletas son de toda la tienda, no de una puerta.</string>
+
+    <string name="resumen_diario_p02_etiqueta">P-02</string>
+    <string name="resumen_diario_p02_titulo">Estimación por accesos</string>
+    <string name="resumen_diario_p02_nota">Sensores: ingresos medidos. Tránsito: proyección a partir de muestras validadas, no conteo exacto.</string>
+    <string name="resumen_diario_sin_registros">No hay registros para esta fecha.</string>
+
+    <string name="resumen_diario_nota_conversion_titulo">La conversión depurada requiere más datos</string>
+    <string name="resumen_diario_nota_conversion_desc">Debe descontar el tránsito estimado en todos los accesos. No se calcula con solo A4 y A1.</string>
+
+    <string name="resumen_diario_ingresos_sensor">Ingresos de sensor</string>
+    <string name="resumen_diario_boton_ver">Ver resumen</string>
+    <string name="resumen_diario_boton_editar">Editar resumen</string>
+
+    <!-- Nombres de Puertas -->
+    <string name="puerta_pasillo_mall">Pasillo Mall</string>
+    <string name="puerta_entrada_norte">Entrada Norte</string>
+    <string name="puerta_estacionamiento">Estacionamiento</string>
+    <string name="puerta_conexion_ferreteria">Conexión Ferretería</string>
+    <string name="puerta_principal">Puerta Principal</string>
+
+    <!-- Roles Resumen -->
+    <string name="rol_resumen_admin">ADMINISTRACIÓN</string>
+    <string name="rol_resumen_jefatura">JEFATURA</string>
+
+
 
 
     <!-- Accesibilidad Campo Contraseña -->
