@@ -32,14 +32,18 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,10 +63,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionItem
-import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.permisos.Permisos
@@ -79,6 +84,7 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
+import com.example.rinconsur.viewmodel.SesionViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -90,32 +96,17 @@ fun MisSesionesScreen(
     onIrCrearCuenta: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {},
     onIrGestionAccesos: () -> Unit = {},
-    onCerrarSesion: () -> Unit = {}
+    onCerrarSesion: () -> Unit = {},
+    viewModel: SesionViewModel = viewModel()
 ) {
     val contexto = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-
-    var usuarioActual by remember { mutableStateOf<Usuario?>(null) }
-    var listaSesiones by remember { mutableStateOf<List<SesionItem>>(emptyList()) }
-    var totalMuestras by remember { mutableIntStateOf(0) }
-    var sesionesCompletadas by remember { mutableIntStateOf(0) }
-    var sesionesTotales by remember { mutableIntStateOf(0) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                val idLogueado = SesionPreferencias(contexto).obtenerIdUsuario()
-                if (idLogueado != -1L) {
-                    val dbHelper = RinconDbHelper(contexto)
-                    usuarioActual = dbHelper.buscarPorId(idLogueado)
-                    totalMuestras = dbHelper.obtenerMuestrasRegistradasUsuario(idLogueado)
-
-                    val estadisticas = dbHelper.obtenerEstadisticasSesiones(idLogueado)
-                    sesionesCompletadas = estadisticas.first
-                    sesionesTotales = estadisticas.second
-
-                    listaSesiones = dbHelper.obtenerSesionesPorUsuario(idLogueado)
-                }
+                viewModel.cargarDatos(contexto)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -123,18 +114,23 @@ fun MisSesionesScreen(
     }
 
     MisSesionesContent(
-        usuarioActual = usuarioActual,
-        listaSesiones = listaSesiones,
-        totalMuestras = totalMuestras,
-        sesionesCompletadas = sesionesCompletadas,
-        sesionesTotales = sesionesTotales,
+        usuarioActual = uiState.usuarioActual,
+        listaSesiones = uiState.listaSesiones,
+        totalMuestras = uiState.totalMuestras,
+        sesionesCompletadas = uiState.sesionesCompletadas,
+        sesionesTotales = uiState.sesionesTotales,
+        fotoPerfilBitmap = uiState.fotoPerfilBitmap,
+        mensajeExito = uiState.mensajeExito,
+        onLimpiarMensaje = viewModel::limpiarMensaje,
+        onGuardarFotoBitmap = { bitmap -> viewModel.guardarFotoBitmap(contexto, bitmap) },
+        onGuardarFotoUri = { uri -> viewModel.guardarFotoUri(contexto, uri) },
         onIniciarSesionConteo = onIniciarSesionConteo,
         onIrCrearCuenta = onIrCrearCuenta,
         onIrResumenDiario = onIrResumenDiario,
         onIrGestionAccesos = onIrGestionAccesos,
         onCerrarSesion = onCerrarSesion,
         onCrearNuevaSesion = { accesoSeleccionado ->
-            if (usuarioActual != null) {
+            if (uiState.usuarioActual != null) {
                 val dbHelper = RinconDbHelper(contexto)
                 val cerrados = dbHelper.obtenerAccesosCerrados()
 
@@ -146,13 +142,9 @@ fun MisSesionesScreen(
                         codigo = codigoAleatorio,
                         acceso = accesoSeleccionado,
                         fecha = fechaHoy,
-                        usuarioId = usuarioActual!!.id
+                        usuarioId = uiState.usuarioActual!!.id
                     )
-
-                    listaSesiones = dbHelper.obtenerSesionesPorUsuario(usuarioActual!!.id)
-                    val stats = dbHelper.obtenerEstadisticasSesiones(usuarioActual!!.id)
-                    sesionesCompletadas = stats.first
-                    sesionesTotales = stats.second
+                    viewModel.cargarDatos(contexto)
                 }
             }
         }
@@ -167,6 +159,11 @@ fun MisSesionesContent(
     totalMuestras: Int,
     sesionesCompletadas: Int,
     sesionesTotales: Int,
+    fotoPerfilBitmap: Bitmap?,
+    mensajeExito: String?,
+    onLimpiarMensaje: () -> Unit,
+    onGuardarFotoBitmap: (Bitmap) -> Unit,
+    onGuardarFotoUri: (android.net.Uri) -> Unit,
     onIniciarSesionConteo: (Long, String) -> Unit,
     onIrCrearCuenta: () -> Unit,
     onIrResumenDiario: () -> Unit,
@@ -177,57 +174,39 @@ fun MisSesionesContent(
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val contexto = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var mostrarDialogoCerrar by remember { mutableStateOf(false) }
     var mostrarDialogoFoto by remember { mutableStateOf(false) }
     var mostrarDialogoNuevaSesion by remember { mutableStateOf(false) }
-
-
-    var fotoPerfilBitmap by remember { mutableStateOf<Bitmap?>(null) }
-
     var accesosCerrados by remember { mutableStateOf<List<String>>(emptyList()) }
 
+    LaunchedEffect(mensajeExito) {
+        mensajeExito?.let { mensaje ->
+            snackbarHostState.showSnackbar(mensaje, duration = SnackbarDuration.Short)
+            onLimpiarMensaje()
+        }
+    }
 
     val camaraFotoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
         if (bitmap != null) {
-            fotoPerfilBitmap = rotarBitmapSiEsNecesario(bitmap)
+            val rotado = rotarBitmapSiEsNecesario(bitmap)
+            onGuardarFotoBitmap(rotado)
         }
     }
 
     val galeriaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
-            try {
-                val inputStream = contexto.contentResolver.openInputStream(uri)
-                val bitmapOriginal = android.graphics.BitmapFactory.decodeStream(inputStream)
-                inputStream?.close()
-                if (bitmapOriginal != null) {
-                    fotoPerfilBitmap = bitmapOriginal
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            onGuardarFotoUri(uri)
         }
     }
 
-    // --- LANZADORES DE SOLICITUD DE PERMISOS ---
-    val camaraPermisoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            camaraFotoLauncher.launch(null)
-        } else {
-            Permisos.abrirAjustes(contexto)
-        }
+    val camaraPermisoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) camaraFotoLauncher.launch(null) else Permisos.abrirAjustes(contexto)
     }
 
-    val galeriaPermisoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            galeriaLauncher.launch("image/*")
-        } else {
-            Permisos.abrirAjustes(contexto)
-        }
+    val galeriaPermisoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) galeriaLauncher.launch("image/*") else Permisos.abrirAjustes(contexto)
     }
 
     if (mostrarDialogoCerrar) {
@@ -242,21 +221,11 @@ fun MisSesionesContent(
             onDismiss = { mostrarDialogoFoto = false },
             onCamara = {
                 mostrarDialogoFoto = false
-
-                if (Permisos.tiene(contexto, Permisos.CAMARA)) {
-                    camaraFotoLauncher.launch(null)
-                } else {
-                    camaraPermisoLauncher.launch(Permisos.CAMARA)
-                }
+                if (Permisos.tiene(contexto, Permisos.CAMARA)) camaraFotoLauncher.launch(null) else camaraPermisoLauncher.launch(Permisos.CAMARA)
             },
             onGaleria = {
                 mostrarDialogoFoto = false
-
-                if (Permisos.tiene(contexto, Permisos.IMAGENES)) {
-                    galeriaLauncher.launch("image/*")
-                } else {
-                    galeriaPermisoLauncher.launch(Permisos.IMAGENES)
-                }
+                if (Permisos.tiene(contexto, Permisos.IMAGENES)) galeriaLauncher.launch("image/*") else galeriaPermisoLauncher.launch(Permisos.IMAGENES)
             }
         )
     }
@@ -266,9 +235,7 @@ fun MisSesionesContent(
             accesosCerrados = accesosCerrados,
             onSeleccionarAcceso = { acceso ->
                 mostrarDialogoNuevaSesion = false
-                if (!accesosCerrados.contains(acceso)) {
-                    onCrearNuevaSesion(acceso)
-                }
+                if (!accesosCerrados.contains(acceso)) onCrearNuevaSesion(acceso)
             },
             onCancelar = { mostrarDialogoNuevaSesion = false }
         )
@@ -288,6 +255,15 @@ fun MisSesionesContent(
         }
     ) {
         Scaffold(
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState) { data ->
+                    Snackbar(
+                        snackbarData = data,
+                        containerColor = Color(0xFF2E7D32),
+                        contentColor = Color.White
+                    )
+                }
+            },
             topBar = {
                 TopAppBar(
                     title = { Text("Mis Sesiones", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White) },
@@ -333,7 +309,6 @@ fun MisSesionesContent(
         }
     }
 }
-
 
 @Composable
 private fun MenuLateral(
@@ -503,6 +478,11 @@ private fun MisSesionesPreview() {
             usuarioActual = null,
             listaSesiones = emptyList(),
             totalMuestras = 0, sesionesCompletadas = 0, sesionesTotales = 0,
+            fotoPerfilBitmap = null,
+            mensajeExito = null,
+            onLimpiarMensaje = {},
+            onGuardarFotoBitmap = {},
+            onGuardarFotoUri = {},
             onIniciarSesionConteo = { _, _ -> },
             onIrCrearCuenta = {}, onIrResumenDiario = {}, onIrGestionAccesos = {}, onCerrarSesion = {}, onCrearNuevaSesion = {}
         )
@@ -514,6 +494,5 @@ private fun rotarBitmapSiEsNecesario(bitmap: Bitmap): Bitmap {
     if (bitmap.width > bitmap.height) {
         matriz.postRotate(270f)
     }
-
     return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matriz, true)
 }

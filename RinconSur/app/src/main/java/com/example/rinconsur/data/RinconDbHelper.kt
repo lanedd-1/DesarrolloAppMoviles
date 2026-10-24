@@ -12,7 +12,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "rinconsur.db"
-        private const val DATABASE_VERSION = 10
+        private const val DATABASE_VERSION = 11
 
         private const val BCRYPT_COSTO = 10
 
@@ -26,6 +26,8 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val USU_CORREO = "usu_correo"
         private const val USU_CONTRASENA = "usu_contrasena"
         private const val USU_ROL = "usu_rol"
+
+        private const val USU_FOTO_PERFIL = "usu_foto_perfil"
 
         private const val TABLA_SESIONES = "sesiones"
         private const val SES_ID = "ses_id"
@@ -58,8 +60,8 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     "$USU_NOMBRE TEXT NOT NULL, " +
                     "$USU_CORREO TEXT NOT NULL UNIQUE, " +
                     "$USU_CONTRASENA TEXT NOT NULL, " +
-                    "$USU_ROL INTEGER NOT NULL REFERENCES $TABLA_ROLES($ROL_ID))"
-
+                    "$USU_ROL INTEGER NOT NULL REFERENCES $TABLA_ROLES($ROL_ID), " +
+                    "$USU_FOTO_PERFIL TEXT)"
         private const val SQL_CREAR_SESIONES =
             "CREATE TABLE $TABLA_SESIONES (" +
                     "$SES_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -206,13 +208,22 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 correo = cursor.getString(cursor.getColumnIndexOrThrow(USU_CORREO)),
                 contrasena = cursor.getString(cursor.getColumnIndexOrThrow(USU_CONTRASENA)),
                 rolId = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ROL)),
-                rolNombre = cursor.getString(cursor.getColumnIndexOrThrow(ROL_NOMBRE))
+                rolNombre = cursor.getString(cursor.getColumnIndexOrThrow(ROL_NOMBRE)),
+                fotoPerfilRuta = cursor.getString(cursor.getColumnIndexOrThrow(USU_FOTO_PERFIL))
             )
         }
         cursor.close()
         return usuario
     }
 
+    fun actualizarFotoPerfil(usuarioId: Long, rutaFoto: String): Boolean {
+        val db = this.writableDatabase
+        val valores = ContentValues().apply {
+            put(USU_FOTO_PERFIL, rutaFoto)
+        }
+        val filasAfectadas = db.update(TABLA_USUARIOS, valores, "$USU_ID = ?", arrayOf(usuarioId.toString()))
+        return filasAfectadas > 0
+    }
     fun actualizarContrasena(correo: String, nuevaContrasenaPlana: String) {
         val db = this.writableDatabase
         val hashNuevo = BCrypt.withDefaults().hashToString(BCRYPT_COSTO, nuevaContrasenaPlana.toCharArray())
@@ -234,7 +245,8 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 correo = cursor.getString(cursor.getColumnIndexOrThrow("usu_correo")),
                 contrasena = cursor.getString(cursor.getColumnIndexOrThrow("usu_contrasena")),
                 rolId = cursor.getLong(cursor.getColumnIndexOrThrow("usu_rol")),
-                rolNombre = cursor.getString(cursor.getColumnIndexOrThrow("rol_nombre"))
+                rolNombre = cursor.getString(cursor.getColumnIndexOrThrow("rol_nombre")),
+                fotoPerfilRuta = cursor.getString(cursor.getColumnIndexOrThrow("usu_foto_perfil"))
             )
         }
         cursor.close()
