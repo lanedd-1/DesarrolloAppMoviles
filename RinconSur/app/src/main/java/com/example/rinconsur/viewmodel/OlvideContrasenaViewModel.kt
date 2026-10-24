@@ -51,13 +51,13 @@ class OlvideContrasenaViewModel : ViewModel() {
     fun onEnviarCodigo(contexto: Context): Boolean {
         val correo = _uiState.value.correo
         var error = when {
-            correo.isBlank() -> "El correo es obligatorio"
-            !correo.endsWith("@rinconsur.cl") -> "Debe ser un correo institucional (@RinconSur.cl)"
+            correo.isBlank() -> contexto.getString(R.string.olvide_error_correo_obligatorio)
+            !correo.endsWith("@rinconsur.cl") -> contexto.getString(R.string.olvide_error_correo_institucional)
             else -> null
         }
 
         if (error == null && !RinconDbHelper(contexto).existeCorreo(correo)) {
-            error = "Esta cuenta no está registrada"
+            error = contexto.getString(R.string.olvide_error_cuenta_no_registrada)
         }
 
         if (error != null) {
@@ -65,43 +65,39 @@ class OlvideContrasenaViewModel : ViewModel() {
             return false
         }
 
-
         codigoGenerado = (100000..999999).random().toString()
-
 
         mostrarNotificacionCodigo(contexto, codigoGenerado)
 
         _uiState.update {
             it.copy(
                 codigoEnviado = true,
-                mensajeExito = "¡Revisa la notificación en tu dispositivo! Código enviado."
+                mensajeExito = contexto.getString(R.string.olvide_mensaje_codigo_enviado)
             )
         }
         return true
     }
 
-
     private fun mostrarNotificacionCodigo(contexto: Context, codigo: String) {
         val channelId = "canal_recuperacion_rincon"
         val notificationManager = contexto.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Recuperación de Contraseña",
+                contexto.getString(R.string.olvide_notificacion_canal_nombre),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Canal para enviar el código de verificación de Rincón Sur"
+                description = contexto.getString(R.string.olvide_notificacion_canal_descripcion)
             }
             notificationManager.createNotificationChannel(channel)
         }
 
         val notificacion = NotificationCompat.Builder(contexto, channelId)
-            .setSmallIcon(R.drawable.ic_correo) // Asegúrate de tener este ícono en res/drawable
-            .setContentTitle("Rincón Sur - Código de Verificación")
-            .setContentText("Tu código de recuperación es: $codigo")
-            .setStyle(NotificationCompat.BigTextStyle().bigText("Tu código institucional es: $codigo. Ingrésalo en la aplicación para continuar."))
+            .setSmallIcon(R.drawable.ic_correo)
+            .setContentTitle(contexto.getString(R.string.olvide_notificacion_titulo))
+            .setContentText(contexto.getString(R.string.olvide_notificacion_texto_corto, codigo))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(contexto.getString(R.string.olvide_notificacion_texto_largo, codigo)))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
@@ -109,14 +105,14 @@ class OlvideContrasenaViewModel : ViewModel() {
         notificationManager.notify(101, notificacion)
     }
 
-    fun onVerificarCodigo(): Boolean {
+    fun onVerificarCodigo(contexto: Context): Boolean {
         val codigo = _uiState.value.codigoCorreo
         if (codigo.length < 6) {
-            _uiState.update { it.copy(errorCodigo = "Ingresa el código completo de 6 dígitos") }
+            _uiState.update { it.copy(errorCodigo = contexto.getString(R.string.olvide_error_codigo_incompleto)) }
             return false
         }
         if (codigo != codigoGenerado) {
-            _uiState.update { it.copy(errorCodigo = "Código incorrecto") }
+            _uiState.update { it.copy(errorCodigo = contexto.getString(R.string.olvide_error_codigo_incorrecto)) }
             return false
         }
         return true

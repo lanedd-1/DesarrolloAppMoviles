@@ -1,18 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Rincón Sur</string>
         <!-- Textos de Login -->
-        <string name="login_titulo">Iniciar Sesión</string>
-        <string name="login_subtitulo">Rincón Sur</string>
-        <string name="login_seccion_credenciales">Credenciales de Acceso</string>
-        <string name="login_etiqueta_correo">Correo corporativo (@RinconSur.cl)</string>
-        <string name="login_etiqueta_contrasena">Contraseña</string>
-        <string name="login_olvidaste_contrasena">¿Olvidaste tu contraseña?</string>
-        <string name="login_boton_ingresar">Iniciar Sesión</string>
+    <string name="login_titulo">Iniciar Sesión</string>
+    <string name="login_subtitulo">Rincón Sur</string>
+    <string name="login_seccion_credenciales">Credenciales de Acceso</string>
+    <string name="login_etiqueta_correo">Correo corporativo (@RinconSur.cl)</string>
+    <string name="login_etiqueta_contrasena">Contraseña</string>
+    <string name="login_olvidaste_contrasena">¿Olvidaste tu contraseña?</string>
+    <string name="login_boton_ingresar">Iniciar Sesión</string>
 
-        <!-- Errores de Login -->
-        <string name="login_error_correo_obligatorio">El correo es obligatorio</string>
-        <string name="login_error_correo_institucional">Debe ingresar su correo corporativo (@RinconSur.cl)</string>
-        <string name="login_error_contrasena_obligatoria">La contraseña es obligatoria</string>
-        <string name="login_error_contrasena_corta">Mínimo 6 caracteres</string>
-        <string name="login_error_credenciales_incorrectas">Correo o contraseña incorrectos</string>
+    <!-- Errores de Login -->
+    <string name="login_error_correo_obligatorio">El correo es obligatorio</string>
+    <string name="login_error_correo_institucional">Debe ingresar su correo corporativo (@RinconSur.cl)</string>
+    <string name="login_error_contrasena_obligatoria">La contraseña es obligatoria</string>
+    <string name="login_error_contrasena_corta">Mínimo 6 caracteres</string>
+    <string name="login_error_credenciales_incorrectas">Correo o contraseña incorrectos</string>
+
+    <!-- Textos Olvidaste Contraseña -->
+    <string name="olvide_titulo">Recuperar Contraseña</string>
+    <string name="olvide_cd_volver">Volver</string>
+    <string name="olvide_seccion_validacion">Validación por Correo</string>
+    <string name="olvide_instrucciones">Ingresa tu correo corporativo para enviarte un código de verificación.</string>
+    <string name="olvide_etiqueta_correo">Correo corporativo (@RinconSur.cl)</string>
+    <string name="olvide_etiqueta_codigo">Ingresa código de 6 dígitos</string>
+    <string name="olvide_boton_enviar">Enviar Código al Correo</string>
+    <string name="olvide_boton_verificar">Verificar Código</string>
+
+    <!-- Errores y Mensajes de Olvidaste Contraseña -->
+    <string name="olvide_error_correo_obligatorio">El correo es obligatorio</string>
+    <string name="olvide_error_correo_institucional">Debe ser un correo institucional (@RinconSur.cl)</string>
+    <string name="olvide_error_cuenta_no_registrada">Esta cuenta no está registrada</string>
+    <string name="olvide_mensaje_codigo_enviado">¡Revisa la notificación en tu dispositivo! Código enviado.</string>
+    <string name="olvide_notificacion_canal_nombre">Recuperación de Contraseña</string>
+    <string name="olvide_notificacion_canal_descripcion">Canal para enviar el código de verificación de Rincón Sur</string>
+    <string name="olvide_notificacion_titulo">Rincón Sur - Código de Verificación</string>
+    <string name="olvide_notificacion_texto_corto">Tu código de recuperación es: %1$s</string>
+    <string name="olvide_notificacion_texto_largo">Tu código institucional es: %1$s. Ingrésalo en la aplicación para continuar.</string>
+    <string name="olvide_error_codigo_incompleto">Ingresa el código completo de 6 dígitos</string>
+    <string name="olvide_error_codigo_incorrecto">Código incorrecto</string>
+
+    <!-- Accesibilidad Campo Contraseña -->
+    <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
+    <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
 </resources>
