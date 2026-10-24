@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -77,6 +79,10 @@ fun FormularioScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
+
+    LaunchedEffect(usuarioActual) {
+        viewModel.inicializarRolesSegunUsuario(usuarioActual)
+    }
 
     LaunchedEffect(uiState.mensajeExito) {
         if (uiState.mensajeExito != null) {
@@ -215,6 +221,7 @@ fun FormularioContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
+                    .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(Dimens.espacioPantalla),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
@@ -253,6 +260,8 @@ fun FormularioContent(
                     BotonSecundario(texto = "Limpiar", onClick = onLimpiar, modifier = Modifier.weight(1f))
                     BotonPrincipal(texto = "Crear Cuenta", onClick = onRegistrar, modifier = Modifier.weight(1f))
                 }
+
+                Spacer(modifier = Modifier.height(Dimens.espacioGrande))
             }
         }
     }
@@ -276,6 +285,7 @@ private fun FormularioLimpioPreview() {
             uiState = FormularioUiState(
                 nombre = "Cristopher Bustamante",
                 correo = "cbustamante@rinconsur.cl",
+                rolesDisponibles = listOf("Observador de Pasillo", "Jefe de Tienda"),
                 rolSeleccionado = "Observador de Pasillo"
             ),
             onNombreCambia = {},
@@ -311,6 +321,7 @@ private fun FormularioExitosoPreview() {
             uiState = FormularioUiState(
                 nombre = "Cristopher Bustamante",
                 correo = "cbustamante@rinconsur.cl",
+                rolesDisponibles = listOf("Observador de Pasillo", "Jefe de Tienda"),
                 rolSeleccionado = "Observador de Pasillo",
                 mensajeExito = "Cuenta creada para Cristopher Bustamante con éxito!"
             ),

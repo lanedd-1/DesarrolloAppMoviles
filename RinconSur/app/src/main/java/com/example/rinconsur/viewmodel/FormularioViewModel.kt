@@ -16,6 +16,22 @@ class FormularioViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(FormularioUiState())
     val uiState: StateFlow<FormularioUiState> = _uiState.asStateFlow()
 
+    fun inicializarRolesSegunUsuario(usuarioActual: Usuario?) {
+        val roles = if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR) {
+            listOf("Observador de Pasillo", "Jefe de Tienda", "Administrador")
+        } else {
+            listOf("Observador de Pasillo", "Jefe de Tienda")
+        }
+
+        _uiState.update { estado ->
+            val rolValido = if (estado.rolSeleccionado in roles) estado.rolSeleccionado else roles.first()
+            estado.copy(
+                rolesDisponibles = roles,
+                rolSeleccionado = rolValido
+            )
+        }
+    }
+
     fun onNombreCambia(valor: String) {
         _uiState.update { it.copy(nombre = valor, errorNombre = null, registroExitoso = false, mensajeExito = null) }
     }
