@@ -27,6 +27,7 @@ import com.example.rinconsur.model.ClasificacionPersona
 import com.example.rinconsur.model.RangoEtarioEnum
 import com.example.rinconsur.model.TipoCompaniaEnum
 import com.example.rinconsur.model.Usuario
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
@@ -50,7 +51,7 @@ fun DetalleResumenScreen(
         viewModel.cargarDetalles(contexto, acceso, fecha)
     }
 
-    // Diálogo de Edición
+
     if (registroAEditar != null) {
         DialogoEditarRegistro(
             registro = registroAEditar!!,
@@ -66,7 +67,7 @@ fun DetalleResumenScreen(
         )
     }
 
-    // NUEVO: Diálogo de Confirmación para Eliminar
+
     if (registroAEliminar != null) {
         AlertDialog(
             onDismissRequest = { registroAEliminar = null },
@@ -109,15 +110,31 @@ fun DetalleResumenContent(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text("Detalle de Registros", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("${uiState.acceso} · ${uiState.fecha}", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.8f))
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Detalle de Registros",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "${uiState.acceso} · ${uiState.fecha}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.8f),
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
                         Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = "Volver", tint = Color.White)
                     }
+                },
+                actions = {
+                    LogoTopBarRinconSur()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )

@@ -54,6 +54,7 @@ import com.example.rinconsur.ui.components.BotonSecundario
 import com.example.rinconsur.ui.components.CampoContrasena
 import com.example.rinconsur.ui.components.CampoTexto
 import com.example.rinconsur.ui.components.DialogoCerrarSesion
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
@@ -201,6 +202,9 @@ fun FormularioContent(
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = "Menú", tint = Color.White)
                         }
+                    },
+                    actions = {
+                        LogoTopBarRinconSur()
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
                 )

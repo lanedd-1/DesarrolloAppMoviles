@@ -68,6 +68,7 @@ import com.example.rinconsur.ui.components.BotonSecundario
 import com.example.rinconsur.ui.components.DialogoCerrarSesion
 import com.example.rinconsur.ui.components.DialogoPausarSesion
 import com.example.rinconsur.ui.components.DialogoFinalizarSesion
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
@@ -211,7 +212,7 @@ fun SesionEnCursoContent(
                         }
                     },
                     actions = {
-                        AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Perfil", modifier = Modifier.padding(end = Dimens.espacioMedio).size(36.dp))
+                        LogoTopBarRinconSur()
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
                 )
