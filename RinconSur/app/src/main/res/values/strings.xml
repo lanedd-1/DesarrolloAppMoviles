@@ -1,67 +1,270 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--JOSE RECABARREN -->
 <resources>
-    <string name="app_name">Rincón Sur - Control</string>
+    <string name="app_name">Rincón Sur</string>
+        <!-- Textos de Login -->
+    <string name="login_titulo">Iniciar Sesión</string>
+    <string name="login_subtitulo">Rincón Sur</string>
+    <string name="login_seccion_credenciales">Credenciales de Acceso</string>
+    <string name="login_etiqueta_correo">Correo corporativo (@RinconSur.cl)</string>
+    <string name="login_etiqueta_contrasena">Contraseña</string>
+    <string name="login_olvidaste_contrasena">¿Olvidaste tu contraseña?</string>
+    <string name="login_boton_ingresar">Iniciar Sesión</string>
 
-    <!-- Pantalla 1: Mis Sesiones (Observador) -->
-    <string name="titulo_mis_sesiones">Mis Sesiones</string>
-    <string name="subtitulo_observador">Hola, %1$s.</string>
-    <string name="descripcion_sesiones">Tus sesiones de observación de hoy.</string>
-    <string name="etiqueta_hoy">Hoy · %1$s</string>
-    <string name="estado_programada">Programada</string>
-    <string name="estado_finalizada">Finalizada</string>
-    <string name="btn_iniciar_observacion">Iniciar Observación</string>
-    <string name="alerta_por_validar">Por validar por supervisor</string>
-    <string name="estado_guardado_local">Guardada localmente · Sincronización pendiente</string>
-    <string name="alerta_sin_conexion">Sin conexión · Guardado local activo</string>
-    <string name="texto_aviso_conexion">Puedes observar sin internet. Los registros se sincronizarán al recuperar la conexión.</string>
+    <!-- Errores de Login -->
+    <string name="login_error_correo_obligatorio">El correo es obligatorio</string>
+    <string name="login_error_correo_institucional">Debe ingresar su correo corporativo (@RinconSur.cl)</string>
+    <string name="login_error_contrasena_obligatoria">La contraseña es obligatoria</string>
+    <string name="login_error_contrasena_corta">Mínimo 6 caracteres</string>
+    <string name="login_error_credenciales_incorrectas">Correo o contraseña incorrectos</string>
 
-    <!-- Pantalla 2: Sesión en Curso (Registro de Pasillo) -->
-    <string name="titulo_sesion_en_curso">Sesión en Curso</string>
-    <string name="etiqueta_estado_curso">En curso · %1$s</string>
-    <string name="nuevo_registro_titulo">Nuevo registro</string>
-    <string name="aviso_solo_toca">Solo toca opciones</string>
-    <string name="etiqueta_clasificacion">Clasificación</string>
-    <string name="etiqueta_obligatoria">Obligatoria</string>
-    <string name="opcion_transito">Tránsito</string>
-    <string name="opcion_visita">Visita</string>
-    <string name="opcion_no_det">No det.</string>
-    <string name="etiqueta_rango_etario">Rango etario</string>
-    <string name="etiqueta_compania">Compañía</string>
-    <string name="opcion_solo">Solo</string>
-    <string name="opcion_pareja">Pareja</string>
-    <string name="opcion_con_ninos">Con niños</string>
-    <string name="opcion_grupo">Grupo 3+</string>
-    <string name="pregunta_bolsas">¿Trae bolsas de otra tienda?</string>
-    <string name="opcion_si">Sí</string>
-    <string name="opcion_no">No</string>
-    <string name="etiqueta_destino">Destino</string>
-    <string name="aviso_solo_si_transito">Solo si es Tránsito</string>
-    <string name="btn_guardar_registro">Guardar registro</string>
-    <string name="titulo_registros_sesion">Registros en esta sesión</string>
-    <string name="ultimo_registro_texto">Último: %1$s</string>
-    <string name="btn_anular_ultimo">Anular último registro</string>
-    <string name="aviso_sincronizacion_pendiente">Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.</string>
+    <!-- Textos Olvidaste Contraseña -->
+    <string name="olvide_titulo">Recuperar Contraseña</string>
+    <string name="olvide_cd_volver">Volver</string>
+    <string name="olvide_seccion_validacion">Validación por Correo</string>
+    <string name="olvide_instrucciones">Ingresa tu correo corporativo para enviarte un código de verificación.</string>
+    <string name="olvide_etiqueta_correo">Correo corporativo (@RinconSur.cl)</string>
+    <string name="olvide_etiqueta_codigo">Ingresa código de 6 dígitos</string>
+    <string name="olvide_boton_enviar">Enviar Código al Correo</string>
+    <string name="olvide_boton_verificar">Verificar Código</string>
 
-    <!-- Pantalla 3: Métricas Jefatura -->
-    <string name="titulo_metricas">Métricas Rincón Sur</string>
-    <string name="etiqueta_jefatura">JEFATURA</string>
-    <string name="titulo_conversion_total">Conversión total</string>
-    <string name="etiqueta_conversion_bruta">Conversión bruta</string>
-    <string name="etiqueta_boletas_globales">Boletas globales</string>
-    <string name="etiqueta_ingresos_accesos">Ingresos · 4 accesos</string>
-    <string name="texto_explicacion_conversion">497 / 5.735 ingresos de sensores. Las boletas son de toda la tienda, no de una puerta.</string>
-    <string name="titulo_estimacion_accesos">Estimación por accesos</string>
-    <string name="texto_explicacion_estimacion">Sensores: ingresos medidos. Tránsito: proyección a partir de muestras validadas, no conteo exacto.</string>
-    <string name="etiqueta_ingresos_sensor">Ingresos de sensor</string>
-    <string name="etiqueta_transito_estimado">Tránsito estimado</string>
-    <string name="etiqueta_perfil_transito">Perfil del tránsito</string>
-    <string name="aviso_conversion_depurada">La conversión depurada requiere más datos</string>
-    <string name="texto_aviso_conversion_depurada">Debe descontar el tránsito estimado en todos los accesos. No se calcula con solo A4 y A1.</string>
+    <!-- Errores y Mensajes de Olvidaste Contraseña -->
+    <string name="olvide_error_correo_obligatorio">El correo es obligatorio</string>
+    <string name="olvide_error_correo_institucional">Debe ser un correo institucional (@RinconSur.cl)</string>
+    <string name="olvide_error_cuenta_no_registrada">Esta cuenta no está registrada</string>
+    <string name="olvide_mensaje_codigo_enviado">¡Revisa la notificación en tu dispositivo! Código enviado.</string>
+    <string name="olvide_notificacion_canal_nombre">Recuperación de Contraseña</string>
+    <string name="olvide_notificacion_canal_descripcion">Canal para enviar el código de verificación de Rincón Sur</string>
+    <string name="olvide_notificacion_titulo">Rincón Sur - Código de Verificación</string>
+    <string name="olvide_notificacion_texto_corto">Tu código de recuperación es: %1$s</string>
+    <string name="olvide_notificacion_texto_largo">Tu código institucional es: %1$s. Ingrésalo en la aplicación para continuar.</string>
+    <string name="olvide_error_codigo_incompleto">Ingresa el código completo de 6 dígitos</string>
+    <string name="olvide_error_codigo_incorrecto">Código incorrecto</string>
 
-    <!-- Descripciones para accesibilidad (TalkBack) -->
-    <string name="cd_volver">Volver</string>
-    <string name="cd_icono_acceso">Ícono de acceso a tienda</string>
+    <!-- Textos Cambiar Contraseña -->
+    <string name="cambiar_titulo">Nueva Contraseña</string>
+    <string name="cambiar_cd_volver">Volver</string>
+    <string name="cambiar_seccion_titulo">Actualizar Clave de Acceso</string>
+    <string name="cambiar_instrucciones">Crea una nueva contraseña segura para tu cuenta institucional.</string>
+    <string name="cambiar_etiqueta_nueva">Nueva contraseña</string>
+    <string name="cambiar_etiqueta_confirmar">Confirmar nueva contraseña</string>
+    <string name="cambiar_boton_guardar">Guardar Nueva Contraseña</string>
+
+    <!-- Errores de Cambiar Contraseña -->
+    <string name="cambiar_error_obligatoria">La contraseña es obligatoria</string>
+    <string name="cambiar_error_formato">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 carácter especial</string>
+    <string name="cambiar_error_confirmar_obligatoria">Confirma la contraseña</string>
+    <string name="cambiar_error_no_coinciden">Las contraseñas no coinciden</string>
+    <string name="cambiar_error_cuenta_no_identificada">No se pudo identificar la cuenta, vuelve a iniciar el proceso</string>
+
+    <!-- Textos Gestión de Accesos -->
+    <string name="gestion_accesos_titulo">Gestión de Accesos</string>
+    <string name="gestion_accesos_cd_volver">Volver</string>
+    <string name="gestion_accesos_seccion_titulo">Control de Operatividad de Puertas</string>
+    <string name="gestion_accesos_instrucciones">Habilita o inhabilita las puertas de la tienda para restringir las sesiones de conteo de los observadores:</string>
+    <string name="gestion_accesos_estado_habilitado">Habilitado</string>
+    <string name="gestion_accesos_estado_cerrado">Cerrado / No disponible</string>
+
+    <!-- Vista Acceso Denegado -->
+    <string name="gestion_accesos_restringido_titulo">Acceso Restringido</string>
+    <string name="gestion_accesos_restringido_mensaje">Solo el Jefe de Tienda tiene permisos para gestionar los accesos operativos.</string>
+    <string name="gestion_accesos_boton_volver">Volver a Mis Sesiones</string>
+
+    <!-- Mensajes de Estado ViewModel -->
+    <string name="gestion_accesos_mensaje_exito">Estado de %1$s actualizado</string>
+
+    <!-- Textos Formulario / Registro Colaborador -->
+    <string name="formulario_titulo">Crear Cuenta Colaborador</string>
+    <string name="formulario_cd_menu">Menú</string>
+    <string name="formulario_seccion_datos">Datos del Nuevo Usuario</string>
+    <string name="formulario_etiqueta_nombre">Nombre completo</string>
+    <string name="formulario_etiqueta_correo">Correo corporativo</string>
+    <string name="formulario_etiqueta_rol">Cargo / Rol</string>
+    <string name="formulario_etiqueta_contrasena">Contraseña</string>
+    <string name="formulario_etiqueta_confirmar">Confirmar contraseña</string>
+    <string name="formulario_boton_limpiar">Limpiar</string>
+    <string name="formulario_boton_crear">Crear Cuenta</string>
+
+    <!-- Roles / Cargos -->
+    <string name="rol_observador">Observador de Pasillo</string>
+    <string name="rol_jefe_tienda">Jefe de Tienda</string>
+    <string name="rol_administrador">Administrador</string>
+
+    <!-- Errores y Mensajes de Formulario -->
+    <string name="formulario_error_nombre_obligatorio">El nombre completo es obligatorio</string>
+    <string name="formulario_error_correo_obligatorio">El correo es obligatorio</string>
+    <string name="formulario_error_correo_invalido">Ingresa un correo válido</string>
+    <string name="formulario_error_correo_institucional">Debe ser un correo institucional (@rinconsur.cl)</string>
+    <string name="formulario_error_rol_obligatorio">Debes seleccionar un rol para el colaborador</string>
+    <string name="formulario_error_contrasena_obligatoria">La contraseña es obligatoria</string>
+    <string name="formulario_error_contrasena_formato">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 carácter especial</string>
+    <string name="formulario_error_confirmar_obligatoria">Confirma la contraseña</string>
+    <string name="formulario_error_no_coinciden">Las contraseñas no coinciden</string>
+    <string name="formulario_error_correo_existente">Ya existe una cuenta con este correo</string>
+    <string name="formulario_error_creacion_fallida">No se pudo crear la cuenta, intenta nuevamente</string>
+    <string name="formulario_mensaje_exito">¡Cuenta creada para %1$s con éxito!</string>
+
+    <!-- Textos Mis Sesiones -->
+    <string name="mis_sesiones_titulo">Mis Sesiones</string>
+    <string name="mis_sesiones_cd_menu">Abrir menú</string>
+    <string name="mis_sesiones_cd_foto_perfil">Foto de perfil</string>
+    <string name="mis_sesiones_turno">Turno</string>
+    <string name="mis_sesiones_agregar_foto">Agregar foto</string>
+    <string name="mis_sesiones_stat_sesiones_hoy">Sesiones Hoy</string>
+    <string name="mis_sesiones_stat_muestras_registradas">Muestras Registradas</string>
+    <string name="mis_sesiones_seccion_asignadas">Sesiones Asignadas</string>
+    <string name="mis_sesiones_sin_sesiones">No tienes sesiones registradas.</string>
+
+    <string name="mis_sesiones_boton_crear_nueva">+ Crear nueva sesión</string>
+    <string name="mis_sesiones_item_codigo">Código: %1$s · \%2$s</string>
+    <string name="mis_sesiones_item_boton_iniciar">Iniciar conteo en puerta</string>
+
+    <!-- Menú Lateral Drawer -->
+    <string name="menu_lateral_gestionar_accesos">Gestionar Accesos (Puertas)</string>
+    <string name="menu_lateral_resumen_dia">Resumen del Día</string>
+    <string name="menu_lateral_registrar_colaborador">Registrar Colaborador</string>
+    <string name="menu_lateral_cerrar_sesion">Cerrar sesión</string>
+
+    <!-- Mensaje ViewModel -->
+    <string name="mis_sesiones_foto_actualizada_exito">¡Foto actualizada con éxito!</string>
+
+    <!-- Textos Sesión en Curso -->
+    <string name="sesion_curso_titulo">Sesión en Curso</string>
+    <string name="sesion_curso_subtitulo">Rincón Sur</string>
+    <string name="sesion_curso_cd_menu">Menú</string>
+    <string name="sesion_curso_estado_en_curso">En curso · %1$s</string>
+    <string name="sesion_curso_guardado_local">Guardado local activo · Sin conexión</string>
+    <string name="sesion_curso_seccion_nuevo">Nuevo registro</string>
+    <string name="sesion_curso_subtitulo_tactil">Solo toca opciones</string>
+    <string name="sesion_curso_clasificacion">Clasificación</string>
+    <string name="sesion_curso_obligatoria">Obligatoria</string>
+    <string name="sesion_curso_rango_etario">Rango etario</string>
+    <string name="sesion_curso_compania">Compañía</string>
+    <string name="sesion_curso_pregunta_bolsas">¿Trae bolsas de otra tienda?</string>
+    <string name="sesion_curso_opcion_si">Sí</string>
+    <string name="sesion_curso_opcion_no">No</string>
+    <string name="sesion_curso_boton_guardar">Guardar registro</string>
+    <string name="sesion_curso_boton_pausar">Pausar</string>
+    <string name="sesion_curso_boton_finalizar">Finalizar</string>
+    <string name="sesion_curso_resumen_titulo">Registros en esta sesión</string>
+    <string name="sesion_curso_resumen_ultimo">Último: %1$s</string>
+    <string name="sesion_curso_sin_registros">Sin registros previos</string>
+    <string name="sesion_curso_boton_anular">Anular último registro</string>
+    <string name="sesion_curso_pie_sincronizacion">Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.</string>
+
+    <!-- Textos Resumen Diario / Métricas -->
+    <string name="resumen_diario_titulo">Métricas Rincón Sur</string>
+    <string name="resumen_diario_subtitulo">Rincón Sur</string>
+    <string name="resumen_diario_cd_volver">Volver</string>
+    <string name="resumen_diario_sincronizado">Sincronizado</string>
+    <string name="resumen_diario_label_hoy">Hoy · %1$s</string>
+
+    <string name="resumen_diario_p01_etiqueta">P-01</string>
+    <string name="resumen_diario_p01_titulo">Conversión total</string>
+    <string name="resumen_diario_p01_ingresos">Ingresos · %1$d accesos</string>
+    <string name="resumen_diario_p01_nota">Ingresos de sensores. Las boletas son de toda la tienda, no de una puerta.</string>
+
+    <string name="resumen_diario_p02_etiqueta">P-02</string>
+    <string name="resumen_diario_p02_titulo">Estimación por accesos</string>
+    <string name="resumen_diario_p02_nota">Sensores: ingresos medidos. Tránsito: proyección a partir de muestras validadas, no conteo exacto.</string>
+    <string name="resumen_diario_sin_registros">No hay registros para esta fecha.</string>
+
+    <string name="resumen_diario_nota_conversion_titulo">La conversión depurada requiere más datos</string>
+    <string name="resumen_diario_nota_conversion_desc">Debe descontar el tránsito estimado en todos los accesos. No se calcula con solo A4 y A1.</string>
+
+    <string name="resumen_diario_ingresos_sensor">Ingresos de sensor</string>
+    <string name="resumen_diario_boton_ver">Ver resumen</string>
+    <string name="resumen_diario_boton_editar">Editar resumen</string>
+
+    <!-- Nombres de Puertas -->
+    <string name="puerta_pasillo_mall">Pasillo Mall</string>
+    <string name="puerta_entrada_norte">Entrada Norte</string>
+    <string name="puerta_estacionamiento">Estacionamiento</string>
+    <string name="puerta_conexion_ferreteria">Conexión Ferretería</string>
+    <string name="puerta_principal">Puerta Principal</string>
+
+    <!-- Roles Resumen -->
+    <string name="rol_resumen_admin">ADMINISTRACIÓN</string>
+    <string name="rol_resumen_jefatura">JEFATURA</string>
+
+    <!-- Textos Ver Resumen Gráfico -->
+    <string name="ver_resumen_titulo">Resumen Total</string>
+    <string name="ver_resumen_cd_volver">Volver</string>
+    <string name="ver_resumen_total_verificados">Total Verificados</string>
+    <string name="ver_resumen_titulo_barras">Distribución de Flujo (Barras)</string>
+    <string name="ver_resumen_titulo_torta">Distribución Porcentual (Torta)</string>
+    <string name="ver_resumen_sin_datos">No hay datos suficientes para graficar.</string>
+
+    <!-- Textos Detalle y Edición de Resumen -->
+    <string name="detalle_resumen_titulo">Detalle de Registros</string>
+    <string name="detalle_resumen_cd_volver">Volver</string>
+    <string name="detalle_resumen_total_muestras">Total Muestras</string>
+    <string name="detalle_resumen_validado">Validado</string>
+    <string name="detalle_resumen_historial_titulo">Historial de ingresos</string>
+    <string name="detalle_resumen_sin_registros">No hay registros para mostrar en esta fecha.</string>
+
+    <!-- Diálogo Eliminar -->
+    <string name="detalle_dialogo_eliminar_titulo">Eliminar Registro</string>
+    <string name="detalle_dialogo_eliminar_mensaje">¿Estás seguro que deseas eliminar este registro? Esta acción no se puede deshacer.</string>
+    <string name="detalle_dialogo_eliminar_confirmar">Eliminar</string>
+    <string name="detalle_dialogo_eliminar_cancelar">Cancelar</string>
+
+    <!-- Item Registro -->
+    <string name="detalle_item_hora">Hora: %1$s</string>
+    <string name="detalle_item_perfil">Perfil:</string>
+    <string name="detalle_item_bolsas_ext">Bolsas ext:</string>
+    <string name="detalle_item_destino">Destino:</string>
+    <string name="detalle_item_cd_editar">Editar</string>
+
+    <!-- Formatos de Edad -->
+    <string name="rango_menor_18">Menor 18</string>
+    <string name="rango_18_25">18-25 años</string>
+    <string name="rango_26_40">26-40 años</string>
+    <string name="rango_41_60">41-60 años</string>
+    <string name="rango_mayor_60">Mayor 60</string>
+
+    <!-- Formatos de Compañía -->
+    <string name="compania_solo">Solo</string>
+    <string name="compania_pareja">En pareja</string>
+    <string name="compania_con_ninos">Con niños</string>
+    <string name="compania_grupo">En grupo</string>
+
+    <!-- Diálogo Editar Registro -->
+    <string name="detalle_dialogo_editar_titulo">Editar Registro</string>
+    <string name="detalle_dialogo_editar_hora">Hora de ingreso: %1$s</string>
+    <string name="detalle_dialogo_editar_bolsas">Bolsas Externas</string>
+    <string name="detalle_dialogo_editar_guardar">Guardar Cambios</string>
+    <string name="detalle_dialogo_editar_cd_eliminar">Eliminar</string>
+
+    <!-- Accesibilidad Campo Contraseña -->
     <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
     <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
+
+    <!-- Textos de Diálogos Reutilizables -->
+
+    <!-- Diálogo Cerrar Sesión -->
+    <string name="dialogo_cerrar_titulo">¿Cerrar sesión?</string>
+    <string name="dialogo_cerrar_mensaje">Tendrás que ingresar nuevamente con tu correo para acceder a tus sesiones.</string>
+    <string name="dialogo_cerrar_confirmar">Sí, salir</string>
+    <string name="dialogo_cancelar">Cancelar</string>
+
+    <!-- Diálogo Finalizar Sesión -->
+    <string name="dialogo_finalizar_titulo">¿Finalizar registro?</string>
+    <string name="dialogo_finalizar_mensaje">Si cierras el registro no podrás volver a entrar. Asegúrate de haber completado tu bloque de conteo.</string>
+    <string name="dialogo_finalizar_confirmar">Sí, finalizar</string>
+
+    <!-- Diálogo Mostrar Foto -->
+    <string name="dialogo_foto_titulo">Seleccionar Foto de Perfil</string>
+    <string name="dialogo_foto_mensaje">¿De dónde deseas obtener la imagen?</string>
+    <string name="dialogo_foto_camara">Cámara</string>
+    <string name="dialogo_foto_galeria">Galería</string>
+
+    <!-- Diálogo Nueva Sesión -->
+    <string name="dialogo_nueva_sesion_titulo">Nueva Sesión de Conteo</string>
+    <string name="dialogo_nueva_sesion_mensaje">Selecciona el acceso asignado:</string>
+    <string name="dialogo_nueva_sesion_no_disponible">%1$s (No disponible)</string>
+
+    <!-- Diálogo Pausar Sesión -->
+    <string name="dialogo_pausar_titulo">¿Pausar sesión?</string>
+    <string name="dialogo_pausar_mensaje">Si vuelves atrás, la sesión quedará en curso y podrás retomarla más tarde desde Mis Sesiones. No perderás tus registros.</string>
+    <string name="dialogo_pausar_confirmar">Sí, pausar</string>
 </resources>

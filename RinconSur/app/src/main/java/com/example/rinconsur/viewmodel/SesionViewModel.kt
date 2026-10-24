@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.model.MisSesionesUiState
@@ -81,7 +82,7 @@ class SesionViewModel : ViewModel() {
                 _uiState.update {
                     it.copy(
                         fotoPerfilBitmap = bitmap,
-                        mensajeExito = "¡Foto actualizada con éxito!"
+                        mensajeExito = contexto.getString(R.string.mis_sesiones_foto_actualizada_exito)
                     )
                 }
             }

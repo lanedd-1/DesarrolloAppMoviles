@@ -6,15 +6,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.rinconsur.R
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 
@@ -28,14 +29,14 @@ fun DialogoNuevaSesion(
         onDismissRequest = onCancelar,
         title = {
             Text(
-                text = "Nueva Sesión de Conteo",
+                text = stringResource(R.string.dialogo_nueva_sesion_titulo),
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
             Column {
                 Text(
-                    text = "Selecciona el acceso asignado:",
+                    text = stringResource(R.string.dialogo_nueva_sesion_mensaje),
                     modifier = Modifier.padding(bottom = Dimens.espacioMedio)
                 )
                 val accesosDisponibles = listOf("Acceso A1", "Acceso A2", "Acceso A3", "Acceso A4")
@@ -56,7 +57,7 @@ fun DialogoNuevaSesion(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = if (estaCerrado) "$acceso (No disponible)" else acceso,
+                                text = if (estaCerrado) stringResource(R.string.dialogo_nueva_sesion_no_disponible, acceso) else acceso,
                                 color = if (estaCerrado) Color.Gray else BurdeoRincon,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -67,7 +68,7 @@ fun DialogoNuevaSesion(
         },
         confirmButton = {
             TextButton(onClick = onCancelar) {
-                Text(text = "Cancelar", color = Color.Gray)
+                Text(text = stringResource(R.string.dialogo_cancelar), color = Color.Gray)
             }
         }
     )

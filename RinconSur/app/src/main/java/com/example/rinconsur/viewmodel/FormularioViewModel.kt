@@ -2,6 +2,7 @@ package com.example.rinconsur.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.model.FormularioUiState
 import com.example.rinconsur.model.Rol
@@ -16,11 +17,15 @@ class FormularioViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(FormularioUiState())
     val uiState: StateFlow<FormularioUiState> = _uiState.asStateFlow()
 
-    fun inicializarRolesSegunUsuario(usuarioActual: Usuario?) {
+    fun inicializarRolesSegunUsuario(usuarioActual: Usuario?, contexto: Context) {
+        val obs = contexto.getString(R.string.rol_observador)
+        val jefe = contexto.getString(R.string.rol_jefe_tienda)
+        val admin = contexto.getString(R.string.rol_administrador)
+
         val roles = if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR) {
-            listOf("Observador de Pasillo", "Jefe de Tienda", "Administrador")
+            listOf(obs, jefe, admin)
         } else {
-            listOf("Observador de Pasillo", "Jefe de Tienda")
+            listOf(obs, jefe)
         }
 
         _uiState.update { estado ->
@@ -56,46 +61,52 @@ class FormularioViewModel : ViewModel() {
         _uiState.update { it.copy(contrasenaVisible = !it.contrasenaVisible) }
     }
 
-    private fun rolIdDesdeNombre(nombre: String): Long? = when (nombre) {
-        "Observador de Pasillo" -> Rol.ID_OBSERVADOR
-        "Jefe de Tienda" -> Rol.ID_JEFE_TIENDA
-        "Administrador" -> Rol.ID_ADMINISTRADOR
-        else -> null
+    private fun rolIdDesdeNombre(nombre: String, contexto: Context): Long? {
+        val obs = contexto.getString(R.string.rol_observador)
+        val jefe = contexto.getString(R.string.rol_jefe_tienda)
+        val admin = contexto.getString(R.string.rol_administrador)
+
+        return when (nombre) {
+            obs -> Rol.ID_OBSERVADOR
+            jefe -> Rol.ID_JEFE_TIENDA
+            admin -> Rol.ID_ADMINISTRADOR
+            else -> null
+        }
     }
 
     fun onRegistrar(contexto: Context): Usuario? {
         val estado = _uiState.value
         val correoLimpio = estado.correo.trim().lowercase()
 
-        val errorNombre = if (estado.nombre.isBlank()) "El nombre completo es obligatorio" else null
+        val errorNombre = if (estado.nombre.isBlank()) contexto.getString(R.string.formulario_error_nombre_obligatorio) else null
 
         var errorCorreo = if (correoLimpio.isBlank()) {
-            "El correo es obligatorio"
+            contexto.getString(R.string.formulario_error_correo_obligatorio)
         } else if (!correoLimpio.contains("@")) {
-            "Ingresa un correo válido"
+            contexto.getString(R.string.formulario_error_correo_invalido)
         } else if (!correoLimpio.endsWith("@rinconsur.cl")) {
-            "Debe ser un correo institucional (@rinconsur.cl)"
+            contexto.getString(R.string.formulario_error_correo_institucional)
         } else {
             null
         }
 
-        val rolId = rolIdDesdeNombre(estado.rolSeleccionado)
-        val errorRol = if (rolId == null) "Debes seleccionar un rol para el colaborador" else null
+        val rolId = rolIdDesdeNombre(estado.rolSeleccionado, contexto)
+        val errorRol = if (rolId == null) contexto.getString(R.string.formulario_error_rol_obligatorio) else null
 
         val patronContrasena = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._\\-]).{8,}$".toRegex()
 
         val errorContrasena = if (estado.contrasena.isBlank()) {
-            "La contraseña es obligatoria"
+            contexto.getString(R.string.formulario_error_contrasena_obligatoria)
         } else if (!estado.contrasena.matches(patronContrasena)) {
-            "Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 carácter especial"
+            contexto.getString(R.string.formulario_error_contrasena_formato)
         } else {
             null
         }
 
         val errorConfirmarContrasena = if (estado.confirmarContrasena.isBlank()) {
-            "Confirma la contraseña"
+            contexto.getString(R.string.formulario_error_confirmar_obligatoria)
         } else if (estado.confirmarContrasena != estado.contrasena) {
-            "Las contraseñas no coinciden"
+            contexto.getString(R.string.formulario_error_no_coinciden)
         } else {
             null
         }
@@ -110,7 +121,7 @@ class FormularioViewModel : ViewModel() {
             val dbHelper = RinconDbHelper(contexto)
 
             if (dbHelper.existeCorreo(correoLimpio)) {
-                errorCorreo = "Ya existe una cuenta con este correo"
+                errorCorreo = contexto.getString(R.string.formulario_error_correo_existente)
                 hayErrores = true
             } else {
                 val nuevoId = dbHelper.crearUsuario(
@@ -120,7 +131,7 @@ class FormularioViewModel : ViewModel() {
                     rolId = rolId
                 )
                 if (nuevoId == -1L) {
-                    errorCorreo = "No se pudo crear la cuenta, intenta nuevamente"
+                    errorCorreo = contexto.getString(R.string.formulario_error_creacion_fallida)
                     hayErrores = true
                 } else {
                     usuarioCreado = Usuario(
@@ -144,7 +155,7 @@ class FormularioViewModel : ViewModel() {
                 errorContrasena = errorContrasena,
                 errorConfirmarContrasena = errorConfirmarContrasena,
                 registroExitoso = !hayErrores,
-                mensajeExito = if (!hayErrores) "Cuenta creada para $nombreIngresado con éxito!" else null
+                mensajeExito = if (!hayErrores) contexto.getString(R.string.formulario_mensaje_exito, nombreIngresado) else null
             )
         }
 

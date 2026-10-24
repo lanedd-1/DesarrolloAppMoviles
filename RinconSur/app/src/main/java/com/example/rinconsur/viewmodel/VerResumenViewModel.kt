@@ -21,7 +21,6 @@ class VerResumenViewModel : ViewModel() {
 
     fun cargarDatos(context: Context, acceso: String, fecha: String) {
         val dbHelper = RinconDbHelper(context)
-        // Llama a la base de datos para armar el gráfico
         val distribucion = dbHelper.obtenerDistribucionClasificacion(acceso, fecha)
         val total = distribucion.sumOf { it.second }
 

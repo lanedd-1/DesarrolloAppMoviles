@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -266,10 +267,10 @@ fun MisSesionesContent(
             },
             topBar = {
                 TopAppBar(
-                    title = { Text("Mis Sesiones", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White) },
+                    title = { Text(stringResource(R.string.mis_sesiones_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(painterResource(R.drawable.ic_menu), "Abrir menú", tint = Color.White)
+                            Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.mis_sesiones_cd_menu), tint = Color.White)
                         }
                     },
                     actions = {
@@ -320,11 +321,11 @@ private fun MenuLateral(
     onMostrarCerrarSesion: () -> Unit
 ) {
     ModalDrawerSheet {
-        Text("Rincón Sur", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(Dimens.espacioMedio))
+        Text(stringResource(R.string.login_subtitulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(Dimens.espacioMedio))
         HorizontalDivider()
 
         NavigationDrawerItem(
-            label = { Text("Mis Sesiones") },
+            label = { Text(stringResource(R.string.mis_sesiones_titulo)) },
             selected = true,
             onClick = onCerrarMenu,
             modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
@@ -332,7 +333,7 @@ private fun MenuLateral(
 
         if (usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
             NavigationDrawerItem(
-                label = { Text("Gestionar Accesos (Puertas)") },
+                label = { Text(stringResource(R.string.menu_lateral_gestionar_accesos)) },
                 selected = false,
                 onClick = { onCerrarMenu(); onIrGestionAccesos() },
                 modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
@@ -341,14 +342,14 @@ private fun MenuLateral(
 
         if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
             NavigationDrawerItem(
-                label = { Text("Resumen del Día") },
+                label = { Text(stringResource(R.string.menu_lateral_resumen_dia)) },
                 selected = false,
                 onClick = { onCerrarMenu(); onIrResumenDiario() },
                 modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
             )
 
             NavigationDrawerItem(
-                label = { Text("Registrar Colaborador") },
+                label = { Text(stringResource(R.string.menu_lateral_registrar_colaborador)) },
                 selected = false,
                 onClick = { onCerrarMenu(); onIrCrearCuenta() },
                 modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
@@ -359,7 +360,7 @@ private fun MenuLateral(
         HorizontalDivider()
 
         NavigationDrawerItem(
-            label = { Text("Cerrar sesión", color = MaterialTheme.colorScheme.error) },
+            label = { Text(stringResource(R.string.menu_lateral_cerrar_sesion), color = MaterialTheme.colorScheme.error) },
             selected = false,
             onClick = { onCerrarMenu(); onMostrarCerrarSesion() },
             modifier = Modifier.padding(Dimens.espacioChico)
@@ -379,23 +380,23 @@ private fun TarjetaPerfil(
             if (fotoBitmap != null) {
                 Image(
                     bitmap = fotoBitmap.asImageBitmap(),
-                    contentDescription = "Foto de perfil",
+                    contentDescription = stringResource(R.string.mis_sesiones_cd_foto_perfil),
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
             } else {
-                AvatarCircular(imagen = R.drawable.ic_persona, descripcion = "Foto de perfil")
+                AvatarCircular(imagen = R.drawable.ic_persona, descripcion = stringResource(R.string.mis_sesiones_cd_foto_perfil))
             }
 
             Spacer(modifier = Modifier.width(Dimens.espacioMedio))
             Column {
                 Text(text = usuarioActual?.nombre ?: "Cargando...", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text(text = "${usuarioActual?.rolNombre ?: ""} · Turno", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                Text(text = "${usuarioActual?.rolNombre ?: ""} · ${stringResource(R.string.mis_sesiones_turno)}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
                 Spacer(modifier = Modifier.height(Dimens.espacioMini))
                 Text(
-                    text = "Agregar foto",
+                    text = stringResource(R.string.mis_sesiones_agregar_foto),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
@@ -411,10 +412,10 @@ private fun TarjetaPerfil(
 private fun EstadisticasResumen(completadas: Int, totales: Int, muestras: Int) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
         Box(modifier = Modifier.weight(1f)) {
-            TarjetaEstadistica(valor = "$completadas / $totales", etiqueta = "Sesiones Hoy")
+            TarjetaEstadistica(valor = "$completadas / $totales", etiqueta = stringResource(R.string.mis_sesiones_stat_sesiones_hoy))
         }
         Box(modifier = Modifier.weight(1f)) {
-            TarjetaEstadistica(valor = muestras.toString(), etiqueta = "Muestras Registradas")
+            TarjetaEstadistica(valor = muestras.toString(), etiqueta = stringResource(R.string.mis_sesiones_stat_muestras_registradas))
         }
     }
 }
@@ -425,9 +426,9 @@ private fun ListaDeSesiones(
     onIniciar: (Long, String) -> Unit,
     onCrearNueva: () -> Unit
 ) {
-    TarjetaSeccion(titulo = "Sesiones Asignadas") {
+    TarjetaSeccion(titulo = stringResource(R.string.mis_sesiones_seccion_asignadas)) {
         if (lista.isEmpty()) {
-            Text("No tienes sesiones registradas.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(Dimens.espacioMedio))
+            Text(stringResource(R.string.mis_sesiones_sin_sesiones), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(Dimens.espacioMedio))
         } else {
             lista.forEach { sesion ->
                 ItemSesion(
@@ -442,7 +443,7 @@ private fun ListaDeSesiones(
             }
         }
         Spacer(modifier = Modifier.height(Dimens.espacioChico))
-        BotonSecundario(texto = "+ Crear nueva sesión", onClick = onCrearNueva, modifier = Modifier.fillMaxWidth())
+        BotonSecundario(texto = stringResource(R.string.mis_sesiones_boton_crear_nueva), onClick = onCrearNueva, modifier = Modifier.fillMaxWidth())
     }
 }
 
@@ -461,10 +462,10 @@ private fun ItemSesion(codigo: String, acceso: String, fecha: String, estado: St
                     colorTexto = if (esActiva) BurdeoRincon else Color.DarkGray
                 )
             }
-            Text(text = "Código: $codigo · $fecha", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Text(text = stringResource(R.string.mis_sesiones_item_codigo, codigo, fecha), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
             if (esActiva) {
                 Spacer(modifier = Modifier.height(Dimens.espacioChico))
-                BotonPrincipal(texto = "Iniciar conteo en puerta", onClick = onIniciar, modifier = Modifier.fillMaxWidth())
+                BotonPrincipal(texto = stringResource(R.string.mis_sesiones_item_boton_iniciar), onClick = onIniciar, modifier = Modifier.fillMaxWidth())
             }
         }
     }

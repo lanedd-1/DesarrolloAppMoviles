@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -62,12 +63,11 @@ import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.SesionEnCursoUiState
 import com.example.rinconsur.model.TipoCompaniaEnum
 import com.example.rinconsur.model.Usuario
-import com.example.rinconsur.ui.components.AvatarCircular
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.BotonSecundario
 import com.example.rinconsur.ui.components.DialogoCerrarSesion
-import com.example.rinconsur.ui.components.DialogoPausarSesion
 import com.example.rinconsur.ui.components.DialogoFinalizarSesion
+import com.example.rinconsur.ui.components.DialogoPausarSesion
 import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
@@ -138,7 +138,6 @@ fun SesionEnCursoContent(
     var mostrarDialogoFinalizar by remember { mutableStateOf(false) }
     var mostrarDialogoCerrar by remember { mutableStateOf(false) }
 
-    // atajamos si el loco le da atras con los botones del celu
     BackHandler { mostrarDialogoPausa = true }
 
     if (mostrarDialogoCerrar) {
@@ -166,11 +165,11 @@ fun SesionEnCursoContent(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text("Rincón Sur", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(Dimens.espacioMedio))
+                Text(stringResource(R.string.login_subtitulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(Dimens.espacioMedio))
                 HorizontalDivider()
 
                 NavigationDrawerItem(
-                    label = { Text("Mis Sesiones") },
+                    label = { Text(stringResource(R.string.gestion_accesos_boton_volver)) },
                     selected = false,
                     onClick = { scope.launch { drawerState.close() }; onIrMisSesiones() },
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
@@ -178,7 +177,7 @@ fun SesionEnCursoContent(
 
                 if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
                     NavigationDrawerItem(
-                        label = { Text("Registrar Colaborador") },
+                        label = { Text(stringResource(R.string.formulario_titulo)) },
                         selected = false,
                         onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() },
                         modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
@@ -202,13 +201,13 @@ fun SesionEnCursoContent(
                 TopAppBar(
                     title = {
                         Column {
-                            Text("Sesión en Curso", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
-                            Text("Rincón Sur", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
+                            Text(stringResource(R.string.sesion_curso_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(stringResource(R.string.sesion_curso_subtitulo), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = "Menú", tint = Color.White)
+                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = stringResource(R.string.sesion_curso_cd_menu), tint = Color.White)
                         }
                     },
                     actions = {
@@ -229,7 +228,6 @@ fun SesionEnCursoContent(
             ) {
                 CabeceraSesion(uiState, usuarioActual)
 
-                // aviso por si se cae el internet en terreno
                 if (uiState.guardadoLocalActivo) {
                     Row(
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(Dimens.cornerSmall)).background(Color(0xFFE8F5E9)).padding(horizontal = Dimens.espacioMedio, vertical = Dimens.espacioChico),
@@ -237,7 +235,7 @@ fun SesionEnCursoContent(
                     ) {
                         Icon(painter = painterResource(R.drawable.ic_check), contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(Dimens.espacioChico))
-                        Text(text = "Guardado local activo · Sin conexión", style = MaterialTheme.typography.bodySmall, color = Color(0xFF2E7D32), fontWeight = FontWeight.SemiBold)
+                        Text(text = stringResource(R.string.sesion_curso_guardado_local), style = MaterialTheme.typography.bodySmall, color = Color(0xFF2E7D32), fontWeight = FontWeight.SemiBold)
                     }
                 }
 
@@ -255,7 +253,7 @@ fun SesionEnCursoContent(
                 ResumenRegistros(uiState, onAnularUltimoRegistro)
 
                 Text(
-                    text = "Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.",
+                    text = stringResource(R.string.sesion_curso_pie_sincronizacion),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                     modifier = Modifier.padding(bottom = Dimens.espacioGrande)
@@ -278,7 +276,7 @@ private fun CabeceraSesion(uiState: SesionEnCursoUiState, usuarioActual: Usuario
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(8.dp).clip(RoundedCornerShape(50)).background(Color(0xFFD32F2F)))
                 Spacer(modifier = Modifier.width(Dimens.espacioMini))
-                Text(text = "En curso · ${uiState.accesoNombre}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.sesion_curso_estado_en_curso, uiState.accesoNombre), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
             Text(
                 text = "${uiState.ubicacionAcceso} · ${usuarioActual?.nombre ?: "Cargando..."}",
@@ -301,13 +299,13 @@ private fun FormularioRegistro(
     onPausar: () -> Unit,
     onFinalizar: () -> Unit
 ) {
-    TarjetaSeccion(titulo = "Nuevo registro") {
-        Text("Solo toca opciones", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+    TarjetaSeccion(titulo = stringResource(R.string.sesion_curso_seccion_nuevo)) {
+        Text(stringResource(R.string.sesion_curso_subtitulo_tactil), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
         Spacer(modifier = Modifier.height(Dimens.espacioMini))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text("Clasificación", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text("Obligatoria", style = MaterialTheme.typography.bodySmall, color = BurdeoRincon, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.sesion_curso_clasificacion), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.sesion_curso_obligatoria), style = MaterialTheme.typography.bodySmall, color = BurdeoRincon, fontWeight = FontWeight.Bold)
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
             ClasificacionPersona.entries.forEach { opcion ->
@@ -316,7 +314,7 @@ private fun FormularioRegistro(
         }
 
         Spacer(modifier = Modifier.height(Dimens.espacioChico))
-        Text("Rango etario", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.sesion_curso_rango_etario), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
             RangoEtarioEnum.entries.forEach { rango ->
                 BotonOpcionTactil(texto = rango.etiqueta, seleccionado = uiState.rangoEtarioSeleccionado == rango, onClick = { onRango(rango) })
@@ -324,7 +322,7 @@ private fun FormularioRegistro(
         }
 
         Spacer(modifier = Modifier.height(Dimens.espacioChico))
-        Text("Compañía", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.sesion_curso_compania), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
             TipoCompaniaEnum.entries.forEach { comp ->
                 BotonOpcionTactil(texto = comp.etiqueta, seleccionado = uiState.companiaSeleccionada == comp, onClick = { onCompania(comp) })
@@ -332,19 +330,19 @@ private fun FormularioRegistro(
         }
 
         Spacer(modifier = Modifier.height(Dimens.espacioChico))
-        Text("¿Trae bolsas de otra tienda?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.sesion_curso_pregunta_bolsas), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-            BotonOpcionTactil(texto = "Sí", seleccionado = uiState.traeBolsasOtraTienda, onClick = { onBolsas(true) }, modifier = Modifier.weight(1f))
-            BotonOpcionTactil(texto = "No", seleccionado = !uiState.traeBolsasOtraTienda, onClick = { onBolsas(false) }, modifier = Modifier.weight(1f))
+            BotonOpcionTactil(texto = stringResource(R.string.sesion_curso_opcion_si), seleccionado = uiState.traeBolsasOtraTienda, onClick = { onBolsas(true) }, modifier = Modifier.weight(1f))
+            BotonOpcionTactil(texto = stringResource(R.string.sesion_curso_opcion_no), seleccionado = !uiState.traeBolsasOtraTienda, onClick = { onBolsas(false) }, modifier = Modifier.weight(1f))
         }
 
         Spacer(modifier = Modifier.height(Dimens.espacioMedio))
-        BotonPrincipal(texto = "Guardar registro", onClick = onGuardar, modifier = Modifier.fillMaxWidth())
+        BotonPrincipal(texto = stringResource(R.string.sesion_curso_boton_guardar), onClick = onGuardar, modifier = Modifier.fillMaxWidth())
 
         Spacer(modifier = Modifier.height(Dimens.espacioChico))
         Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
-            BotonSecundario(texto = "Pausar", onClick = onPausar, modifier = Modifier.weight(1f))
-            BotonSecundario(texto = "Finalizar", onClick = onFinalizar, modifier = Modifier.weight(1f))
+            BotonSecundario(texto = stringResource(R.string.sesion_curso_boton_pausar), onClick = onPausar, modifier = Modifier.weight(1f))
+            BotonSecundario(texto = stringResource(R.string.sesion_curso_boton_finalizar), onClick = onFinalizar, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -354,13 +352,13 @@ private fun ResumenRegistros(uiState: SesionEnCursoUiState, onAnular: () -> Unit
     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(modifier = Modifier.padding(Dimens.espacioMedio), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Registros en esta sesión", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.sesion_curso_resumen_titulo), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text("${uiState.totalRegistrosSesion}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
             }
-            Text("Último: ${uiState.ultimoRegistroResumen}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Text(stringResource(R.string.sesion_curso_resumen_ultimo, uiState.ultimoRegistroResumen), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
 
             if (uiState.permiteAnular) {
-                BotonSecundario(texto = "Anular último registro", onClick = onAnular, modifier = Modifier.fillMaxWidth())
+                BotonSecundario(texto = stringResource(R.string.sesion_curso_boton_anular), onClick = onAnular, modifier = Modifier.fillMaxWidth())
             }
         }
     }

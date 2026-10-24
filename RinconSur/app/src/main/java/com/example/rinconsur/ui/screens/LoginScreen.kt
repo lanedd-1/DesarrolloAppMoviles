@@ -22,11 +22,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.rinconsur.R
 import com.example.rinconsur.model.LoginUiState
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
@@ -47,7 +49,6 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
-    // Borramos el dbHelper de aquí porque el ViewModel ya se encarga de eso internamente usando el contexto
 
     LoginContent(
         uiState = uiState,
@@ -55,7 +56,6 @@ fun LoginScreen(
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         onIngresar = {
-            // ¡Solución al error rojo! Pasamos solo 'contexto' de forma directa
             if (viewModel.onIngresar(contexto)) {
                 onLoginExitoso()
             }
@@ -82,13 +82,13 @@ fun LoginContent(
                 title = {
                     Column {
                         Text(
-                            text = "Iniciar Sesión",
+                            text = stringResource(R.string.login_titulo),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                         Text(
-                            text = "Rincón Sur",
+                            text = stringResource(R.string.login_subtitulo),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.8f)
                         )
@@ -112,14 +112,14 @@ fun LoginContent(
         ) {
             Spacer(modifier = Modifier.height(Dimens.espacioGrande))
 
-            TarjetaSeccion(titulo = "Credenciales de Acceso") {
+            TarjetaSeccion(titulo = stringResource(R.string.login_seccion_credenciales)) {
                 Spacer(modifier = Modifier.height(Dimens.espacioMini))
 
                 CampoTexto(
                     valor = uiState.correo,
                     onValorCambia = onCorreoCambia,
-                    etiqueta = "Correo corporativo (@RinconSur.cl)",
-                    icono = com.example.rinconsur.R.drawable.ic_correo,
+                    etiqueta = stringResource(R.string.login_etiqueta_correo),
+                    icono = R.drawable.ic_correo,
                     error = uiState.errorCorreo,
                     tipoTeclado = KeyboardType.Email
                 )
@@ -129,7 +129,7 @@ fun LoginContent(
                 CampoContrasena(
                     valor = uiState.contrasena,
                     onValorCambia = onContrasenaCambia,
-                    etiqueta = "Contraseña",
+                    etiqueta = stringResource(R.string.login_etiqueta_contrasena),
                     visible = uiState.contrasenaVisible,
                     onAlternarVisible = onAlternarVisibilidad,
                     error = uiState.errorContrasena
@@ -139,10 +139,9 @@ fun LoginContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.End
                 ) {
-                    // ¡Corrección clave! Ahora sí llama a la función de navegación
                     TextButton(onClick = onOlvidasteContrasena) {
                         Text(
-                            text = "¿Olvidaste tu contraseña?",
+                            text = stringResource(R.string.login_olvidaste_contrasena),
                             style = MaterialTheme.typography.bodySmall,
                             color = BurdeoRincon,
                             fontWeight = FontWeight.Bold
@@ -153,7 +152,7 @@ fun LoginContent(
                 Spacer(modifier = Modifier.height(Dimens.espacioMini))
 
                 BotonPrincipal(
-                    texto = "Iniciar Sesión",
+                    texto = stringResource(R.string.login_boton_ingresar),
                     onClick = onIngresar,
                     modifier = Modifier.fillMaxWidth()
                 )

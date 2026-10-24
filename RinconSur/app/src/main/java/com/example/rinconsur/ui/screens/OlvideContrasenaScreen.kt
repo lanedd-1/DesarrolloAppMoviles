@@ -22,12 +22,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -55,7 +55,6 @@ fun OlvideContrasenaScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
 
-
     val permisoNoti = Permisos.NOTIFICACIONES
 
     val permisoLauncher = rememberLauncherForActivityResult(
@@ -64,7 +63,6 @@ fun OlvideContrasenaScreen(
         if (!isGranted) {
         }
     }
-
 
     LaunchedEffect(Unit) {
         if (permisoNoti.isNotEmpty() && !Permisos.tiene(contexto, permisoNoti)) {
@@ -84,7 +82,7 @@ fun OlvideContrasenaScreen(
             }
         },
         onVerificarCodigo = {
-            if (viewModel.onVerificarCodigo()) {
+            if (viewModel.onVerificarCodigo(contexto)) {
                 onCodigoVerificado(uiState.correo)
             }
         },
@@ -107,7 +105,7 @@ fun OlvideContrasenaContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Recuperar Contraseña",
+                        text = stringResource(R.string.olvide_titulo),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -117,7 +115,7 @@ fun OlvideContrasenaContent(
                     IconButton(onClick = onVolver) {
                         Icon(
                             painter = painterResource(R.drawable.ic_volver),
-                            contentDescription = "Volver",
+                            contentDescription = stringResource(R.string.olvide_cd_volver),
                             tint = Color.White
                         )
                     }
@@ -141,32 +139,30 @@ fun OlvideContrasenaContent(
         ) {
             Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
 
-            TarjetaSeccion(titulo = "Validación por Correo") {
+            TarjetaSeccion(titulo = stringResource(R.string.olvide_seccion_validacion)) {
                 Text(
-                    text = "Ingresa tu correo corporativo para enviarte un código de verificación.",
+                    text = stringResource(R.string.olvide_instrucciones),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
 
                 Spacer(modifier = Modifier.height(Dimens.espacioMedio))
 
-
                 CampoTexto(
                     valor = uiState.correo,
                     onValorCambia = onCorreoCambia,
-                    etiqueta = "Correo corporativo (@RinconSur.cl)",
+                    etiqueta = stringResource(R.string.olvide_etiqueta_correo),
                     icono = R.drawable.ic_correo,
                     error = uiState.errorCorreo,
                     tipoTeclado = KeyboardType.Email
                 )
-
 
                 if (uiState.codigoEnviado && uiState.mensajeExito != null) {
                     Spacer(modifier = Modifier.height(Dimens.espacioChico))
                     Text(
                         text = uiState.mensajeExito,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF2E7D32), // Verde éxito
+                        color = Color(0xFF2E7D32),
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -174,11 +170,10 @@ fun OlvideContrasenaContent(
 
                     Spacer(modifier = Modifier.height(Dimens.espacioMedio))
 
-
                     CampoTexto(
                         valor = uiState.codigoCorreo,
                         onValorCambia = onCodigoCambia,
-                        etiqueta = "Ingresa código de 6 dígitos",
+                        etiqueta = stringResource(R.string.olvide_etiqueta_codigo),
                         icono = R.drawable.ic_correo,
                         error = uiState.errorCodigo,
                         tipoTeclado = KeyboardType.Number
@@ -190,16 +185,15 @@ fun OlvideContrasenaContent(
 
             Spacer(modifier = Modifier.height(Dimens.espacioGrande))
 
-
             if (!uiState.codigoEnviado) {
                 BotonPrincipal(
-                    texto = "Enviar Código al Correo",
+                    texto = stringResource(R.string.olvide_boton_enviar),
                     onClick = onEnviarCodigo,
                     modifier = Modifier.fillMaxWidth(0.9f)
                 )
             } else {
                 BotonPrincipal(
-                    texto = "Verificar Código",
+                    texto = stringResource(R.string.olvide_boton_verificar),
                     onClick = onVerificarCodigo,
                     modifier = Modifier.fillMaxWidth(0.9f)
                 )
@@ -209,8 +203,6 @@ fun OlvideContrasenaContent(
         }
     }
 }
-
-
 
 @Preview(showBackground = true, showSystemUi = true, name = "1. Pantalla Inicial Correo")
 @Composable

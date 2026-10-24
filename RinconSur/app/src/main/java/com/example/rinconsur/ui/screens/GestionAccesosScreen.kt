@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -83,10 +84,10 @@ fun GestionAccesosContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestión de Accesos", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White) },
+                title = { Text(stringResource(R.string.gestion_accesos_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
-                        Icon(painterResource(R.drawable.ic_volver), contentDescription = "Volver", tint = Color.White)
+                        Icon(painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.gestion_accesos_cd_volver), tint = Color.White)
                     }
                 },
                 actions = {
@@ -116,12 +117,12 @@ fun GestionAccesosContent(
                 VistaAccesoDenegado(onVolver)
             } else {
                 Text(
-                    text = "Control de Operatividad de Puertas",
+                    text = stringResource(R.string.gestion_accesos_seccion_titulo),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Habilita o inhabilita las puertas de la tienda para restringir las sesiones de conteo de los observadores:",
+                    text = stringResource(R.string.gestion_accesos_instrucciones),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
@@ -162,7 +163,7 @@ private fun ItemOpcionAcceso(
             Column {
                 Text(text = accesoNombre, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(
-                    text = if (habilitado) "Habilitado" else "Cerrado / No disponible",
+                    text = if (habilitado) stringResource(R.string.gestion_accesos_estado_habilitado) else stringResource(R.string.gestion_accesos_estado_cerrado),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (habilitado) Color(0xFF2E7D32) else Color.Red,
                     fontWeight = FontWeight.SemiBold
@@ -192,17 +193,17 @@ private fun VistaAccesoDenegado(onVolver: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)
         ) {
             Text(
-                text = "Acceso Restringido",
+                text = stringResource(R.string.gestion_accesos_restringido_titulo),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onErrorContainer
             )
             Text(
-                text = "Solo el Jefe de Tienda tiene permisos para gestionar los accesos operativos.",
+                text = stringResource(R.string.gestion_accesos_restringido_mensaje),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer
             )
-            BotonPrincipal(texto = "Volver a Mis Sesiones", onClick = onVolver, modifier = Modifier.fillMaxWidth())
+            BotonPrincipal(texto = stringResource(R.string.gestion_accesos_boton_volver), onClick = onVolver, modifier = Modifier.fillMaxWidth())
         }
     }
 }
