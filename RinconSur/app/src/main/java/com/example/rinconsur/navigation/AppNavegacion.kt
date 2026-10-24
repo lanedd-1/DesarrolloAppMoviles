@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.ui.screens.CambiarContrasenaScreen
+import com.example.rinconsur.ui.screens.DetalleResumenScreen
 import com.example.rinconsur.ui.screens.FormularioScreen
 import com.example.rinconsur.ui.screens.GestionAccesosScreen
 import com.example.rinconsur.ui.screens.LoginScreen
@@ -110,7 +111,29 @@ fun AppNavegacion() {
         composable(Ruta.ResumenDiario.ruta) {
             ResumenDiarioScreen(
                 usuarioActual = usuarioActual,
-                onVolver = { navController.navigateUp() } // Para volver a Mis Sesiones
+                onVolver = { navController.navigateUp() },
+                onIrDetalle = { acceso, fecha ->
+                    navController.navigate(Ruta.DetalleResumen.crear(acceso, fecha))
+                }
+            )
+        }
+
+        // NUEVA PANTALLA: DETALLE DEL RESUMEN
+        composable(
+            route = Ruta.DetalleResumen.ruta,
+            arguments = listOf(
+                navArgument("acceso") { type = NavType.StringType },
+                navArgument("fecha") { type = NavType.StringType }
+            )
+        ) { entrada ->
+            val acceso = Uri.decode(entrada.arguments?.getString("acceso").orEmpty())
+            val fecha = Uri.decode(entrada.arguments?.getString("fecha").orEmpty())
+
+            DetalleResumenScreen(
+                acceso = acceso,
+                fecha = fecha,
+                usuarioActual = usuarioActual,
+                onVolver = { navController.navigateUp() }
             )
         }
 

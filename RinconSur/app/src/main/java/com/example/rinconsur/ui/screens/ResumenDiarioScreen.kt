@@ -33,6 +33,7 @@ import com.example.rinconsur.viewmodel.ResumenDiarioViewModel
 fun ResumenDiarioScreen(
     usuarioActual: Usuario?,
     onVolver: () -> Unit,
+    onIrDetalle: (String, String) -> Unit,
     viewModel: ResumenDiarioViewModel = viewModel()
 ) {
     val contexto = LocalContext.current
@@ -47,7 +48,8 @@ fun ResumenDiarioScreen(
         onVolver = onVolver,
         onFechaSeleccionada = { nuevaFecha ->
             viewModel.seleccionarFecha(contexto, nuevaFecha)
-        }
+        },
+        onIrDetalle = onIrDetalle
     )
 }
 
@@ -56,7 +58,8 @@ fun ResumenDiarioScreen(
 fun ResumenDiarioContent(
     uiState: ResumenDiarioUiState,
     onVolver: () -> Unit,
-    onFechaSeleccionada: (String) -> Unit
+    onFechaSeleccionada: (String) -> Unit,
+    onIrDetalle: (String, String) -> Unit
 ) {
     var desplegarMenuFechas by remember { mutableStateOf(false) }
 
@@ -109,7 +112,6 @@ fun ResumenDiarioContent(
                 }
             }
 
-            // Menú desplegable interactivo para seleccionar la fecha
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -149,7 +151,6 @@ fun ResumenDiarioContent(
             Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White), border = null) {
                 Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
                     Row(verticalAlignment = Alignment.Bottom) {
-                        // Inyección del dato real obtenido desde SQLite
                         Text(text = "${uiState.totalIngresos}", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.width(Dimens.espacioChico))
                         Column(modifier = Modifier.padding(bottom = 6.dp)) {
@@ -174,7 +175,11 @@ fun ResumenDiarioContent(
                 Text("No hay registros para esta fecha.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(Dimens.espacioMedio))
             } else {
                 uiState.flujos.forEach { flujo ->
-                    TarjetaAcceso(flujo)
+                    TarjetaAcceso(
+                        flujo = flujo,
+                        fechaSeleccionada = uiState.fechaSeleccionada,
+                        onIrDetalle = onIrDetalle
+                    )
                 }
             }
 
@@ -210,7 +215,11 @@ private fun EtiquetaSeccion(etiqueta: String, titulo: String) {
 }
 
 @Composable
-private fun TarjetaAcceso(flujo: FlujoAcceso) {
+private fun TarjetaAcceso(
+    flujo: FlujoAcceso,
+    fechaSeleccionada: String,
+    onIrDetalle: (String, String) -> Unit
+) {
     val sigla = flujo.acceso.replace("Acceso ", "")
     val nombrePuerta = when(sigla) {
         "A1" -> "Pasillo Mall"
@@ -245,7 +254,7 @@ private fun TarjetaAcceso(flujo: FlujoAcceso) {
 
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
                 Button(
-                    onClick = { },
+                    onClick = { onIrDetalle(flujo.acceso, fechaSeleccionada) },
                     colors = ButtonDefaults.buttonColors(containerColor = BurdeoRincon),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f)
@@ -254,7 +263,7 @@ private fun TarjetaAcceso(flujo: FlujoAcceso) {
                 }
 
                 OutlinedButton(
-                    onClick = { },
+                    onClick = { onIrDetalle(flujo.acceso, fechaSeleccionada) },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = BurdeoRincon),
                     border = androidx.compose.foundation.BorderStroke(1.dp, BurdeoRincon),
                     shape = RoundedCornerShape(8.dp),

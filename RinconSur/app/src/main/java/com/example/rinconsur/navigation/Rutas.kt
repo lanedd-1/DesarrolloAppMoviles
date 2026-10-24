@@ -9,6 +9,10 @@ sealed class Ruta(val ruta: String) {
     }
     data object ResumenDiario : Ruta("resumen_diario")
 
+    data object DetalleResumen : Ruta("detalle_resumen/{acceso}/{fecha}") {
+        fun crear(acceso: String, fecha: String) = "detalle_resumen/$acceso/$fecha"
+    }
+
     data object GestionAccesos : Ruta("gestion_accesos")
     data object MisSesiones : Ruta("mis_sesiones")
     data object Formulario : Ruta("formulario")

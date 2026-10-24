@@ -476,7 +476,73 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         cursor.close()
         return fechas
     }
+    fun obtenerRegistrosPorAccesoYFecha(acceso: String, fecha: String): List<RegistroDetalleItem> {
+        val db = this.readableDatabase
+        val lista = mutableListOf<RegistroDetalleItem>()
+
+        val query = """
+            SELECT r.reg_id, r.reg_hora, r.reg_clasificacion, r.reg_rango_etario, r.reg_compania, r.reg_bolsas, r.reg_destino
+            FROM $TABLA_REGISTROS r
+            INNER JOIN $TABLA_SESIONES s ON r.reg_sesion_id = s.ses_id
+            WHERE s.ses_acceso = ? AND s.ses_fecha = ?
+            ORDER BY r.reg_id DESC
+        """.trimIndent()
+
+        val cursor = db.rawQuery(query, arrayOf(acceso, fecha))
+        if (cursor.moveToFirst()) {
+            do {
+                lista.add(
+                    RegistroDetalleItem(
+                        id = cursor.getLong(0),
+                        hora = cursor.getString(1),
+                        clasificacion = cursor.getString(2),
+                        rangoEtario = cursor.getString(3),
+                        compania = cursor.getString(4),
+                        bolsas = cursor.getInt(5) == 1,
+                        destino = cursor.getString(6)
+                    )
+                )
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return lista
+    }
+    fun eliminarRegistroPorId(idRegistro: Long): Boolean {
+        val db = this.writableDatabase
+        val filas = db.delete(TABLA_REGISTROS, "$REG_ID = ?", arrayOf(idRegistro.toString()))
+        return filas > 0
+    }
+
+    fun actualizarRegistroEspecifico(
+        idRegistro: Long,
+        clasificacion: String,
+        rangoEtario: String,
+        compania: String,
+        bolsas: Boolean,
+        destino: String?
+    ): Boolean {
+        val db = this.writableDatabase
+        val valores = ContentValues().apply {
+            put(REG_CLASIFICACION, clasificacion)
+            put(REG_RANGO_ETARIO, rangoEtario)
+            put(REG_COMPANIA, compania)
+            put(REG_BOLSAS, if (bolsas) 1 else 0)
+            put(REG_DESTINO, destino)
+        }
+        val filas = db.update(TABLA_REGISTROS, valores, "$REG_ID = ?", arrayOf(idRegistro.toString()))
+        return filas > 0
+    }
+
 }
+data class RegistroDetalleItem(
+    val id: Long,
+    val hora: String,
+    val clasificacion: String,
+    val rangoEtario: String,
+    val compania: String,
+    val bolsas: Boolean,
+    val destino: String?
+)
 
 data class SesionItem(
     val id: Long,
