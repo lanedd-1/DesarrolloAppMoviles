@@ -532,6 +532,21 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val filas = db.update(TABLA_REGISTROS, valores, "$REG_ID = ?", arrayOf(idRegistro.toString()))
         return filas > 0
     }
+    fun obtenerDistribucionClasificacion(acceso: String, fecha: String): List<Pair<String, Int>> {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT r.reg_clasificacion, COUNT(r.reg_id) FROM registros_conteo r INNER JOIN sesiones s ON r.reg_sesion_id = s.ses_id WHERE s.ses_acceso = ? AND s.ses_fecha = ? GROUP BY r.reg_clasificacion",
+            arrayOf(acceso, fecha)
+        )
+        val lista = mutableListOf<Pair<String, Int>>()
+        if (cursor.moveToFirst()) {
+            do {
+                lista.add(Pair(cursor.getString(0), cursor.getInt(1)))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return lista
+    }
 
 }
 data class RegistroDetalleItem(

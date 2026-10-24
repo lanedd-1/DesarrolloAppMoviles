@@ -9,6 +9,11 @@ sealed class Ruta(val ruta: String) {
     }
     data object ResumenDiario : Ruta("resumen_diario")
 
+    // ESTA ES LA NUEVA RUTA DEL GRÁFICO
+    data object VerResumen : Ruta("ver_resumen/{acceso}/{fecha}") {
+        fun crear(acceso: String, fecha: String) = "ver_resumen/$acceso/$fecha"
+    }
+
     data object DetalleResumen : Ruta("detalle_resumen/{acceso}/{fecha}") {
         fun crear(acceso: String, fecha: String) = "detalle_resumen/$acceso/$fecha"
     }

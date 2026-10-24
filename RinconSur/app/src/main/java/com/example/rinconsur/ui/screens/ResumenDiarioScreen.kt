@@ -33,7 +33,8 @@ import com.example.rinconsur.viewmodel.ResumenDiarioViewModel
 fun ResumenDiarioScreen(
     usuarioActual: Usuario?,
     onVolver: () -> Unit,
-    onIrDetalle: (String, String) -> Unit,
+    onIrVerResumen: (String, String) -> Unit,
+    onIrEditarResumen: (String, String) -> Unit,
     viewModel: ResumenDiarioViewModel = viewModel()
 ) {
     val contexto = LocalContext.current
@@ -46,10 +47,9 @@ fun ResumenDiarioScreen(
     ResumenDiarioContent(
         uiState = uiState,
         onVolver = onVolver,
-        onFechaSeleccionada = { nuevaFecha ->
-            viewModel.seleccionarFecha(contexto, nuevaFecha)
-        },
-        onIrDetalle = onIrDetalle
+        onFechaSeleccionada = { nuevaFecha -> viewModel.seleccionarFecha(contexto, nuevaFecha) },
+        onIrVerResumen = onIrVerResumen,
+        onIrEditarResumen = onIrEditarResumen
     )
 }
 
@@ -59,7 +59,8 @@ fun ResumenDiarioContent(
     uiState: ResumenDiarioUiState,
     onVolver: () -> Unit,
     onFechaSeleccionada: (String) -> Unit,
-    onIrDetalle: (String, String) -> Unit
+    onIrVerResumen: (String, String) -> Unit,
+    onIrEditarResumen: (String, String) -> Unit
 ) {
     var desplegarMenuFechas by remember { mutableStateOf(false) }
 
@@ -178,7 +179,8 @@ fun ResumenDiarioContent(
                     TarjetaAcceso(
                         flujo = flujo,
                         fechaSeleccionada = uiState.fechaSeleccionada,
-                        onIrDetalle = onIrDetalle
+                        onIrVer = onIrVerResumen,
+                        onIrEditar = onIrEditarResumen
                     )
                 }
             }
@@ -218,7 +220,8 @@ private fun EtiquetaSeccion(etiqueta: String, titulo: String) {
 private fun TarjetaAcceso(
     flujo: FlujoAcceso,
     fechaSeleccionada: String,
-    onIrDetalle: (String, String) -> Unit
+    onIrVer: (String, String) -> Unit,
+    onIrEditar: (String, String) -> Unit
 ) {
     val sigla = flujo.acceso.replace("Acceso ", "")
     val nombrePuerta = when(sigla) {
@@ -254,7 +257,7 @@ private fun TarjetaAcceso(
 
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
                 Button(
-                    onClick = { onIrDetalle(flujo.acceso, fechaSeleccionada) },
+                    onClick = { onIrVer(flujo.acceso, fechaSeleccionada) },
                     colors = ButtonDefaults.buttonColors(containerColor = BurdeoRincon),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f)
@@ -263,7 +266,7 @@ private fun TarjetaAcceso(
                 }
 
                 OutlinedButton(
-                    onClick = { onIrDetalle(flujo.acceso, fechaSeleccionada) },
+                    onClick = { onIrEditar(flujo.acceso, fechaSeleccionada) },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = BurdeoRincon),
                     border = androidx.compose.foundation.BorderStroke(1.dp, BurdeoRincon),
                     shape = RoundedCornerShape(8.dp),

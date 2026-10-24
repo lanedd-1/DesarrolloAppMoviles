@@ -23,16 +23,15 @@ import com.example.rinconsur.ui.screens.MisSesionesScreen
 import com.example.rinconsur.ui.screens.OlvideContrasenaScreen
 import com.example.rinconsur.ui.screens.ResumenDiarioScreen
 import com.example.rinconsur.ui.screens.SesionEnCursoScreen
+import com.example.rinconsur.ui.screens.VerResumenScreen
 import com.example.rinconsur.viewmodel.SesionViewModel
 
 @Composable
 fun AppNavegacion() {
     val navController = rememberNavController()
     val contexto = LocalContext.current
-
     val sesionViewModel: SesionViewModel = viewModel()
 
-    // Si ya había una sesión guardada, la carga al abrir la app
     LaunchedEffect(Unit) {
         sesionViewModel.cargarUsuario(contexto)
     }
@@ -74,11 +73,7 @@ fun AppNavegacion() {
             CambiarContrasenaScreen(
                 correoUsuario = correo,
                 onCambioExitoso = {
-                    Toast.makeText(
-                        contexto,
-                        "Contraseña actualizada. Inicia sesión.",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(contexto, "Contraseña actualizada. Inicia sesión.", Toast.LENGTH_LONG).show()
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }
                 },
                 onVolver = { navController.navigateUp() }
@@ -102,23 +97,44 @@ fun AppNavegacion() {
         }
 
         composable(Ruta.GestionAccesos.ruta) {
-            GestionAccesosScreen(
-                onVolver = { navController.navigateUp() }
-            )
+            GestionAccesosScreen(onVolver = { navController.navigateUp() })
         }
 
-        // PANTALLA DE RESUMEN DIARIO
+        // PANTALLA DE RESUMEN DIARIO CON LAS RUTAS PROTEGIDAS (Uri.encode)
         composable(Ruta.ResumenDiario.ruta) {
             ResumenDiarioScreen(
                 usuarioActual = usuarioActual,
                 onVolver = { navController.navigateUp() },
-                onIrDetalle = { acceso, fecha ->
-                    navController.navigate(Ruta.DetalleResumen.crear(acceso, fecha))
+                onIrVerResumen = { acceso, fecha ->
+                    // El encode protege los espacios en "Acceso A1" para que no crashee
+                    navController.navigate(Ruta.VerResumen.crear(Uri.encode(acceso), Uri.encode(fecha)))
+                },
+                onIrEditarResumen = { acceso, fecha ->
+                    // El encode protege los espacios en "Acceso A1" para que no crashee
+                    navController.navigate(Ruta.DetalleResumen.crear(Uri.encode(acceso), Uri.encode(fecha)))
                 }
             )
         }
 
-        // NUEVA PANTALLA: DETALLE DEL RESUMEN
+        // PANTALLA: VER RESUMEN (GRÁFICOS)
+        composable(
+            route = Ruta.VerResumen.ruta,
+            arguments = listOf(
+                navArgument("acceso") { type = NavType.StringType },
+                navArgument("fecha") { type = NavType.StringType }
+            )
+        ) { entrada ->
+            val acceso = Uri.decode(entrada.arguments?.getString("acceso").orEmpty())
+            val fecha = Uri.decode(entrada.arguments?.getString("fecha").orEmpty())
+
+            VerResumenScreen(
+                acceso = acceso,
+                fecha = fecha,
+                onVolver = { navController.navigateUp() }
+            )
+        }
+
+        // PANTALLA: EDITAR RESUMEN (LISTA DE REGISTROS)
         composable(
             route = Ruta.DetalleResumen.ruta,
             arguments = listOf(
@@ -154,9 +170,7 @@ fun AppNavegacion() {
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
                     navController.navigate(Ruta.MisSesiones.ruta) {
-                        popUpTo(Ruta.MisSesiones.ruta) {
-                            inclusive = true
-                        }
+                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true }
                     }
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
@@ -171,13 +185,11 @@ fun AppNavegacion() {
         composable(Ruta.Formulario.ruta) {
             FormularioScreen(
                 usuarioActual = usuarioActual,
-                onRegistroExitoso = { usuario -> },
+                onRegistroExitoso = { _ -> },
                 onVolver = { navController.navigateUp() },
                 onIrMisSesiones = {
                     navController.navigate(Ruta.MisSesiones.ruta) {
-                        popUpTo(Ruta.MisSesiones.ruta) {
-                            inclusive = true
-                        }
+                        popUpTo(Ruta.MisSesiones.ruta) { inclusive = true }
                     }
                 },
                 onIrCrearCuenta = { },
