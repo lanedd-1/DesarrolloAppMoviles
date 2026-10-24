@@ -2,6 +2,7 @@ package com.example.rinconsur.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.model.AccesoDestinoEnum
 import com.example.rinconsur.model.ClasificacionPersona
@@ -22,7 +23,7 @@ class SesionEnCursoViewModel : ViewModel() {
     val uiState: StateFlow<SesionEnCursoUiState> = _uiState.asStateFlow()
 
     private val historialRegistros = mutableListOf<String>()
-    
+
     fun inicializarSesion(idSesion: Long, nombreAcceso: String) {
         _uiState.update {
             it.copy(
@@ -54,7 +55,7 @@ class SesionEnCursoViewModel : ViewModel() {
 
     fun onGuardarRegistro(context: Context) {
         val estado = _uiState.value
-        val resumen = "${estado.clasificacionSeleccionada.etiqueta} · ${estado.rangoEtarioSeleccionado.etiqueta} ·${estado.companiaSeleccionada.etiqueta}"
+        val resumen = "${estado.clasificacionSeleccionada.etiqueta} · ${estado.rangoEtarioSeleccionado.etiqueta} · ${estado.companiaSeleccionada.etiqueta}"
         val horaActual = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
 
         val destinoFinal = if (estado.clasificacionSeleccionada == ClasificacionPersona.TRANSITO) {
@@ -65,7 +66,7 @@ class SesionEnCursoViewModel : ViewModel() {
 
         val dbHelper = RinconDbHelper(context)
         dbHelper.guardarRegistroConteo(
-            sesionId = estado.idSesionActual, // Ahora sí tiene un ID válido
+            sesionId = estado.idSesionActual,
             clasificacion = estado.clasificacionSeleccionada.name,
             rangoEtario = estado.rangoEtarioSeleccionado.name,
             compania = estado.companiaSeleccionada.name,
@@ -88,7 +89,7 @@ class SesionEnCursoViewModel : ViewModel() {
     fun finalizarSesionConteo(context: Context) {
         val estado = _uiState.value
         val dbHelper = RinconDbHelper(context)
-        dbHelper.finalizarSesion(estado.idSesionActual) // Actualiza el estado a "FINALIZADA"
+        dbHelper.finalizarSesion(estado.idSesionActual)
     }
 
     fun onAnularUltimoRegistro(context: Context) {
@@ -100,7 +101,7 @@ class SesionEnCursoViewModel : ViewModel() {
 
             if (eliminadoEnBD) {
                 historialRegistros.removeAt(historialRegistros.size - 1)
-                val resumenAnterior = historialRegistros.lastOrNull() ?: "Sin registros previos"
+                val resumenAnterior = historialRegistros.lastOrNull() ?: context.getString(R.string.sesion_curso_sin_registros)
 
                 _uiState.update {
                     it.copy(

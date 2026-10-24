@@ -103,6 +103,30 @@
     <string name="formulario_error_creacion_fallida">No se pudo crear la cuenta, intenta nuevamente</string>
     <string name="formulario_mensaje_exito">¡Cuenta creada para %1$s con éxito!</string>
 
+    <!-- Textos Sesión en Curso -->
+    <string name="sesion_curso_titulo">Sesión en Curso</string>
+    <string name="sesion_curso_subtitulo">Rincón Sur</string>
+    <string name="sesion_curso_cd_menu">Menú</string>
+    <string name="sesion_curso_estado_en_curso">En curso · %1$s</string>
+    <string name="sesion_curso_guardado_local">Guardado local activo · Sin conexión</string>
+    <string name="sesion_curso_seccion_nuevo">Nuevo registro</string>
+    <string name="sesion_curso_subtitulo_tactil">Solo toca opciones</string>
+    <string name="sesion_curso_clasificacion">Clasificación</string>
+    <string name="sesion_curso_obligatoria">Obligatoria</string>
+    <string name="sesion_curso_rango_etario">Rango etario</string>
+    <string name="sesion_curso_compania">Compañía</string>
+    <string name="sesion_curso_pregunta_bolsas">¿Trae bolsas de otra tienda?</string>
+    <string name="sesion_curso_opcion_si">Sí</string>
+    <string name="sesion_curso_opcion_no">No</string>
+    <string name="sesion_curso_boton_guardar">Guardar registro</string>
+    <string name="sesion_curso_boton_pausar">Pausar</string>
+    <string name="sesion_curso_boton_finalizar">Finalizar</string>
+    <string name="sesion_curso_resumen_titulo">Registros en esta sesión</string>
+    <string name="sesion_curso_resumen_ultimo">Último: %1$s</string>
+    <string name="sesion_curso_sin_registros">Sin registros previos</string>
+    <string name="sesion_curso_boton_anular">Anular último registro</string>
+    <string name="sesion_curso_pie_sincronizacion">Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.</string>
+
 
 
     <!-- Accesibilidad Campo Contraseña -->
