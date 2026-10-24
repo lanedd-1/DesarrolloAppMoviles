@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,13 +49,13 @@ fun VerResumenScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("Resumen Total", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(stringResource(R.string.ver_resumen_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
                         Text("${uiState.acceso} · ${uiState.fecha}", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.8f))
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
-                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = "Volver", tint = Color.White)
+                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.ver_resumen_cd_volver), tint = Color.White)
                     }
                 },
                 actions = {
@@ -74,7 +75,6 @@ fun VerResumenScreen(
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
         ) {
 
-            // Tarjeta de Resumen Numérico
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -86,15 +86,14 @@ fun VerResumenScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(text = "Total Verificados", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                        Text(text = stringResource(R.string.ver_resumen_total_verificados), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
                         Text(text = "${uiState.totalMuestras}", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
                     }
                 }
             }
 
-            Text(text = "Distribución de Flujo (Barras)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+            Text(text = stringResource(R.string.ver_resumen_titulo_barras), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.DarkGray)
 
-            // Gráfico de Barras seguro con Card estándar
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -102,15 +101,14 @@ fun VerResumenScreen(
             ) {
                 Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
                     if (uiState.distribucionClasificacion.isEmpty()) {
-                        Text("No hay datos suficientes para graficar.", color = Color.Gray, modifier = Modifier.padding(Dimens.espacioMedio))
+                        Text(stringResource(R.string.ver_resumen_sin_datos), color = Color.Gray, modifier = Modifier.padding(Dimens.espacioMedio))
                     } else {
                         GraficoBarrasNativo(datos = uiState.distribucionClasificacion)
                     }
                 }
             }
 
-            // NUEVO: Título y Tarjeta del Gráfico Circular (Torta)
-            Text(text = "Distribución Porcentual (Torta)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+            Text(text = stringResource(R.string.ver_resumen_titulo_torta), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.DarkGray)
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -125,9 +123,8 @@ fun VerResumenScreen(
                     verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
                 ) {
                     if (uiState.distribucionClasificacion.isEmpty()) {
-                        Text("No hay datos suficientes para graficar.", color = Color.Gray, modifier = Modifier.padding(Dimens.espacioMedio))
+                        Text(stringResource(R.string.ver_resumen_sin_datos), color = Color.Gray, modifier = Modifier.padding(Dimens.espacioMedio))
                     } else {
-                        // Paleta de colores armónica para las porciones de la torta
                         val coloresTorta = listOf(
                             BurdeoRincon,
                             Color(0xFFE65100),
@@ -156,7 +153,6 @@ fun VerResumenScreen(
 
 @Composable
 fun GraficoBarrasNativo(datos: List<Pair<String, Int>>) {
-    // Calculamos el valor más alto para que esa barra sea el 100% de la altura (mínimo 1)
     val maxValor = datos.maxOfOrNull { it.second }?.coerceAtLeast(1) ?: 1
 
     Row(
@@ -164,10 +160,9 @@ fun GraficoBarrasNativo(datos: List<Pair<String, Int>>) {
             .fillMaxWidth()
             .padding(top = Dimens.espacioMedio),
         horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.Bottom // Alineamos todo hacia la base
+        verticalAlignment = Alignment.Bottom
     ) {
         datos.forEach { (categoria, valor) ->
-            // Evitamos usar fillMaxHeight. Calculamos la altura exacta en DP. (Altura máxima = 150.dp)
             val alturaProporcional = (valor.toFloat() / maxValor.toFloat()).coerceIn(0.01f, 1f)
             val alturaBarra = 150.dp * alturaProporcional
 
@@ -176,11 +171,9 @@ fun GraficoBarrasNativo(datos: List<Pair<String, Int>>) {
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier.weight(1f)
             ) {
-                // Número sobre la barra
                 Text(text = valor.toString(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Barra visual dibujada con altura exacta
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.6f)
@@ -190,7 +183,6 @@ fun GraficoBarrasNativo(datos: List<Pair<String, Int>>) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Etiqueta abajo de la barra
                 Text(
                     text = categoria,
                     style = MaterialTheme.typography.labelSmall,
@@ -213,7 +205,7 @@ fun GraficoCircularNativo(datos: List<Pair<String, Int>>, colores: List<Color>) 
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            var anguloInicio = -90f // Comienza arriba
+            var anguloInicio = -90f
             datos.forEachIndexed { index, (_, valor) ->
                 val proporcion = valor.toFloat() / sumaTotal
                 val anguloBarrido = proporcion * 360f

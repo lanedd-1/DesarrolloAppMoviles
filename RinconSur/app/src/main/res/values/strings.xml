@@ -162,6 +162,14 @@
     <string name="rol_resumen_admin">ADMINISTRACIÓN</string>
     <string name="rol_resumen_jefatura">JEFATURA</string>
 
+    <!-- Textos Ver Resumen Gráfico -->
+    <string name="ver_resumen_titulo">Resumen Total</string>
+    <string name="ver_resumen_cd_volver">Volver</string>
+    <string name="ver_resumen_total_verificados">Total Verificados</string>
+    <string name="ver_resumen_titulo_barras">Distribución de Flujo (Barras)</string>
+    <string name="ver_resumen_titulo_torta">Distribución Porcentual (Torta)</string>
+    <string name="ver_resumen_sin_datos">No hay datos suficientes para graficar.</string>
+
 
 
 
