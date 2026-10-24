@@ -33,6 +33,7 @@ import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
@@ -94,6 +95,9 @@ fun CambiarContrasenaContent(
                             tint = Color.White
                         )
                     }
+                },
+                actions = {
+                    LogoTopBarRinconSur()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )

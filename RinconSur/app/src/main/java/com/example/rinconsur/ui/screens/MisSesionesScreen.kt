@@ -73,6 +73,7 @@ import com.example.rinconsur.ui.components.DialogoCerrarSesion
 import com.example.rinconsur.ui.components.DialogoMostrarFoto
 import com.example.rinconsur.ui.components.DialogoNuevaSesion
 import com.example.rinconsur.ui.components.EtiquetaEstado
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.components.TarjetaEstadistica
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
@@ -181,12 +182,12 @@ fun MisSesionesContent(
     var mostrarDialogoFoto by remember { mutableStateOf(false) }
     var mostrarDialogoNuevaSesion by remember { mutableStateOf(false) }
 
-    // Estado para almacenar temporalmente la foto de perfil capturada con la cámara
+
     var fotoPerfilBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
     var accesosCerrados by remember { mutableStateOf<List<String>>(emptyList()) }
 
-    // Lanzadores para abrir la cámara y la galería una vez concedidos los permisos
+
     val camaraFotoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
         if (bitmap != null) {
             fotoPerfilBitmap = rotarBitmapSiEsNecesario(bitmap)
@@ -241,7 +242,7 @@ fun MisSesionesContent(
             onDismiss = { mostrarDialogoFoto = false },
             onCamara = {
                 mostrarDialogoFoto = false
-                // Validamos si ya tiene el permiso de la cámara usando tu objeto Permisos
+
                 if (Permisos.tiene(contexto, Permisos.CAMARA)) {
                     camaraFotoLauncher.launch(null)
                 } else {
@@ -250,7 +251,7 @@ fun MisSesionesContent(
             },
             onGaleria = {
                 mostrarDialogoFoto = false
-                // Validamos si ya tiene el permiso de imágenes usando tu objeto Permisos
+
                 if (Permisos.tiene(contexto, Permisos.IMAGENES)) {
                     galeriaLauncher.launch("image/*")
                 } else {
@@ -294,6 +295,9 @@ fun MisSesionesContent(
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(painterResource(R.drawable.ic_menu), "Abrir menú", tint = Color.White)
                         }
+                    },
+                    actions = {
+                        LogoTopBarRinconSur()
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
                 )

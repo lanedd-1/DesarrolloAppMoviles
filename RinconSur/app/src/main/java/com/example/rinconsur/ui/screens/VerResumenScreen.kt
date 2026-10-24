@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
@@ -55,6 +56,9 @@ fun VerResumenScreen(
                     IconButton(onClick = onVolver) {
                         Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = "Volver", tint = Color.White)
                     }
+                },
+                actions = {
+                    LogoTopBarRinconSur()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )

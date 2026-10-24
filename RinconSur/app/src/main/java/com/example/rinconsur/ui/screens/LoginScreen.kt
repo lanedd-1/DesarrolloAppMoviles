@@ -31,6 +31,7 @@ import com.example.rinconsur.model.LoginUiState
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
 import com.example.rinconsur.ui.components.CampoTexto
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
@@ -92,6 +93,9 @@ fun LoginContent(
                             color = Color.White.copy(alpha = 0.8f)
                         )
                     }
+                },
+                actions = {
+                    LogoTopBarRinconSur()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )

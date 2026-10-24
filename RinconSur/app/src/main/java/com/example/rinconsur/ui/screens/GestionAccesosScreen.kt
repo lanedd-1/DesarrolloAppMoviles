@@ -38,6 +38,7 @@ import com.example.rinconsur.R
 import com.example.rinconsur.model.GestionAccesosUiState
 import com.example.rinconsur.ui.components.BannerNotificacion
 import com.example.rinconsur.ui.components.BotonPrincipal
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
@@ -87,6 +88,9 @@ fun GestionAccesosContent(
                     IconButton(onClick = onVolver) {
                         Icon(painterResource(R.drawable.ic_volver), contentDescription = "Volver", tint = Color.White)
                     }
+                },
+                actions = {
+                    LogoTopBarRinconSur()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )

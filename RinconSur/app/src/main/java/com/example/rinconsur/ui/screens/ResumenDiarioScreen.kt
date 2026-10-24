@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
 import com.example.rinconsur.data.FlujoAcceso
 import com.example.rinconsur.model.Usuario
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.viewmodel.ResumenDiarioUiState
@@ -79,16 +80,7 @@ fun ResumenDiarioContent(
                     }
                 },
                 actions = {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = Dimens.espacioMedio)
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = uiState.iniciales, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    }
+                    LogoTopBarRinconSur()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )

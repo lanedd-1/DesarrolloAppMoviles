@@ -38,6 +38,7 @@ import com.example.rinconsur.R
 import com.example.rinconsur.permisos.Permisos
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoTexto
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
@@ -120,6 +121,9 @@ fun OlvideContrasenaContent(
                             tint = Color.White
                         )
                     }
+                },
+                actions = {
+                    LogoTopBarRinconSur()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )
