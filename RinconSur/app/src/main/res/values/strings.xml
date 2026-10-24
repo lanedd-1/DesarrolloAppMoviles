@@ -103,6 +103,30 @@
     <string name="formulario_error_creacion_fallida">No se pudo crear la cuenta, intenta nuevamente</string>
     <string name="formulario_mensaje_exito">¡Cuenta creada para %1$s con éxito!</string>
 
+    <!-- Textos Mis Sesiones -->
+    <string name="mis_sesiones_titulo">Mis Sesiones</string>
+    <string name="mis_sesiones_cd_menu">Abrir menú</string>
+    <string name="mis_sesiones_cd_foto_perfil">Foto de perfil</string>
+    <string name="mis_sesiones_turno">Turno</string>
+    <string name="mis_sesiones_agregar_foto">Agregar foto</string>
+    <string name="mis_sesiones_stat_sesiones_hoy">Sesiones Hoy</string>
+    <string name="mis_sesiones_stat_muestras_registradas">Muestras Registradas</string>
+    <string name="mis_sesiones_seccion_asignadas">Sesiones Asignadas</string>
+    <string name="mis_sesiones_sin_sesiones">No tienes sesiones registradas.</string>
+
+    <string name="mis_sesiones_boton_crear_nueva">+ Crear nueva sesión</string>
+    <string name="mis_sesiones_item_codigo">Código: %1$s · \%2$s</string>
+    <string name="mis_sesiones_item_boton_iniciar">Iniciar conteo en puerta</string>
+
+    <!-- Menú Lateral Drawer -->
+    <string name="menu_lateral_gestionar_accesos">Gestionar Accesos (Puertas)</string>
+    <string name="menu_lateral_resumen_dia">Resumen del Día</string>
+    <string name="menu_lateral_registrar_colaborador">Registrar Colaborador</string>
+    <string name="menu_lateral_cerrar_sesion">Cerrar sesión</string>
+
+    <!-- Mensaje ViewModel -->
+    <string name="mis_sesiones_foto_actualizada_exito">¡Foto actualizada con éxito!</string>
+
     <!-- Textos Sesión en Curso -->
     <string name="sesion_curso_titulo">Sesión en Curso</string>
     <string name="sesion_curso_subtitulo">Rincón Sur</string>
