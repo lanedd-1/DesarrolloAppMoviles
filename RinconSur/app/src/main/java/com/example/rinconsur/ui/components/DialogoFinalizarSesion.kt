@@ -9,8 +9,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.rinconsur.R
 import com.example.rinconsur.ui.theme.RojoAlerta
 
 @Composable
@@ -20,21 +22,21 @@ fun DialogoFinalizarSesion(
 ) {
     AlertDialog(
         onDismissRequest = onCancelar,
-        title = { Text(text = "¿Finalizar registro?", fontWeight = FontWeight.Bold) },
-        text = { Text("Si cierras el registro no podrás volver a entrar. Asegúrate de haber completado tu bloque de conteo.") },
+        title = { Text(text = stringResource(R.string.dialogo_finalizar_titulo), fontWeight = FontWeight.Bold) },
+        text = { Text(stringResource(R.string.dialogo_finalizar_mensaje)) },
         shape = RoundedCornerShape(16.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         confirmButton = {
             Button(
                 onClick = onConfirmar,
-                colors = ButtonDefaults.buttonColors(containerColor = RojoAlerta) // Usamos rojo para denotar una acción destructiva/final
+                colors = ButtonDefaults.buttonColors(containerColor = RojoAlerta)
             ) {
-                Text("Sí, finalizar", color = Color.White, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.dialogo_finalizar_confirmar), color = Color.White, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onCancelar) {
-                Text("Cancelar", color = Color.Gray, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.dialogo_cancelar), color = Color.Gray, fontWeight = FontWeight.Bold)
             }
         }
     )

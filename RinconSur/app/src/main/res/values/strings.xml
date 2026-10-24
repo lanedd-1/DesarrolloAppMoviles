@@ -235,8 +235,36 @@
     <string name="detalle_dialogo_editar_guardar">Guardar Cambios</string>
     <string name="detalle_dialogo_editar_cd_eliminar">Eliminar</string>
 
-
     <!-- Accesibilidad Campo Contraseña -->
     <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
     <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
+
+    <!-- Textos de Diálogos Reutilizables -->
+
+    <!-- Diálogo Cerrar Sesión -->
+    <string name="dialogo_cerrar_titulo">¿Cerrar sesión?</string>
+    <string name="dialogo_cerrar_mensaje">Tendrás que ingresar nuevamente con tu correo para acceder a tus sesiones.</string>
+    <string name="dialogo_cerrar_confirmar">Sí, salir</string>
+    <string name="dialogo_cancelar">Cancelar</string>
+
+    <!-- Diálogo Finalizar Sesión -->
+    <string name="dialogo_finalizar_titulo">¿Finalizar registro?</string>
+    <string name="dialogo_finalizar_mensaje">Si cierras el registro no podrás volver a entrar. Asegúrate de haber completado tu bloque de conteo.</string>
+    <string name="dialogo_finalizar_confirmar">Sí, finalizar</string>
+
+    <!-- Diálogo Mostrar Foto -->
+    <string name="dialogo_foto_titulo">Seleccionar Foto de Perfil</string>
+    <string name="dialogo_foto_mensaje">¿De dónde deseas obtener la imagen?</string>
+    <string name="dialogo_foto_camara">Cámara</string>
+    <string name="dialogo_foto_galeria">Galería</string>
+
+    <!-- Diálogo Nueva Sesión -->
+    <string name="dialogo_nueva_sesion_titulo">Nueva Sesión de Conteo</string>
+    <string name="dialogo_nueva_sesion_mensaje">Selecciona el acceso asignado:</string>
+    <string name="dialogo_nueva_sesion_no_disponible">%1$s (No disponible)</string>
+
+    <!-- Diálogo Pausar Sesión -->
+    <string name="dialogo_pausar_titulo">¿Pausar sesión?</string>
+    <string name="dialogo_pausar_mensaje">Si vuelves atrás, la sesión quedará en curso y podrás retomarla más tarde desde Mis Sesiones. No perderás tus registros.</string>
+    <string name="dialogo_pausar_confirmar">Sí, pausar</string>
 </resources>

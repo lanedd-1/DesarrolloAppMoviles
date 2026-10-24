@@ -9,8 +9,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.rinconsur.R
 import com.example.rinconsur.ui.theme.VerdeExito
 
 @Composable
@@ -20,8 +22,8 @@ fun DialogoCerrarSesion(
 ) {
     AlertDialog(
         onDismissRequest = onCancelar,
-        title = { Text(text = "¿Cerrar sesión?", fontWeight = FontWeight.Bold) },
-        text = { Text("Tendrás que ingresar nuevamente con tu correo para acceder a tus sesiones.") },
+        title = { Text(text = stringResource(R.string.dialogo_cerrar_titulo), fontWeight = FontWeight.Bold) },
+        text = { Text(stringResource(R.string.dialogo_cerrar_mensaje)) },
         shape = RoundedCornerShape(16.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         confirmButton = {
@@ -29,12 +31,12 @@ fun DialogoCerrarSesion(
                 onClick = onConfirmar,
                 colors = ButtonDefaults.buttonColors(containerColor = VerdeExito)
             ) {
-                Text("Sí, salir", color = Color.White, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.dialogo_cerrar_confirmar), color = Color.White, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onCancelar) {
-                Text("Cancelar", color = Color.Gray, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.dialogo_cancelar), color = Color.Gray, fontWeight = FontWeight.Bold)
             }
         }
     )
