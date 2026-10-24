@@ -40,6 +40,22 @@
     <string name="olvide_error_codigo_incompleto">Ingresa el código completo de 6 dígitos</string>
     <string name="olvide_error_codigo_incorrecto">Código incorrecto</string>
 
+    <!-- Textos Cambiar Contraseña -->
+    <string name="cambiar_titulo">Nueva Contraseña</string>
+    <string name="cambiar_cd_volver">Volver</string>
+    <string name="cambiar_seccion_titulo">Actualizar Clave de Acceso</string>
+    <string name="cambiar_instrucciones">Crea una nueva contraseña segura para tu cuenta institucional.</string>
+    <string name="cambiar_etiqueta_nueva">Nueva contraseña</string>
+    <string name="cambiar_etiqueta_confirmar">Confirmar nueva contraseña</string>
+    <string name="cambiar_boton_guardar">Guardar Nueva Contraseña</string>
+
+    <!-- Errores de Cambiar Contraseña -->
+    <string name="cambiar_error_obligatoria">La contraseña es obligatoria</string>
+    <string name="cambiar_error_formato">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 carácter especial</string>
+    <string name="cambiar_error_confirmar_obligatoria">Confirma la contraseña</string>
+    <string name="cambiar_error_no_coinciden">Las contraseñas no coinciden</string>
+    <string name="cambiar_error_cuenta_no_identificada">No se pudo identificar la cuenta, vuelve a iniciar el proceso</string>
+
     <!-- Accesibilidad Campo Contraseña -->
     <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
     <string name="cd_ocultar_contrasena">Ocultar contraseña</string>

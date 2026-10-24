@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,7 +59,7 @@ fun CambiarContrasenaScreen(
         onConfirmarContrasenaCambia = viewModel::onConfirmarContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         onGuardarContrasena = {
-            if (viewModel.onGuardarContrasena(correoUsuario, dbHelper)) {
+            if (viewModel.onGuardarContrasena(correoUsuario, dbHelper, contexto)) {
                 onCambioExitoso()
             }
         },
@@ -81,7 +82,7 @@ fun CambiarContrasenaContent(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Nueva Contraseña",
+                        text = stringResource(R.string.cambiar_titulo),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -91,7 +92,7 @@ fun CambiarContrasenaContent(
                     IconButton(onClick = onVolver) {
                         Icon(
                             painter = painterResource(R.drawable.ic_volver),
-                            contentDescription = "Volver",
+                            contentDescription = stringResource(R.string.cambiar_cd_volver),
                             tint = Color.White
                         )
                     }
@@ -115,20 +116,19 @@ fun CambiarContrasenaContent(
         ) {
             Spacer(modifier = Modifier.height(Dimens.espacioPantalla))
 
-            TarjetaSeccion(titulo = "Actualizar Clave de Acceso") {
+            TarjetaSeccion(titulo = stringResource(R.string.cambiar_seccion_titulo)) {
                 Text(
-                    text = "Crea una nueva contraseña segura para tu cuenta institucional.",
+                    text = stringResource(R.string.cambiar_instrucciones),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
 
                 Spacer(modifier = Modifier.height(Dimens.espacioMedio))
 
-
                 CampoContrasena(
                     valor = uiState.contrasenaNueva,
                     onValorCambia = onContrasenaNuevaCambia,
-                    etiqueta = "Nueva contraseña",
+                    etiqueta = stringResource(R.string.cambiar_etiqueta_nueva),
                     visible = uiState.contrasenaVisible,
                     onAlternarVisible = onAlternarVisibilidad,
                     error = uiState.errorContrasenaNueva
@@ -136,11 +136,10 @@ fun CambiarContrasenaContent(
 
                 Spacer(modifier = Modifier.height(Dimens.espacioMedio))
 
-
                 CampoContrasena(
                     valor = uiState.confirmarContrasena,
                     onValorCambia = onConfirmarContrasenaCambia,
-                    etiqueta = "Confirmar nueva contraseña",
+                    etiqueta = stringResource(R.string.cambiar_etiqueta_confirmar),
                     visible = uiState.contrasenaVisible,
                     onAlternarVisible = onAlternarVisibilidad,
                     error = uiState.errorConfirmarContrasena
@@ -151,9 +150,8 @@ fun CambiarContrasenaContent(
 
             Spacer(modifier = Modifier.height(Dimens.espacioGrande))
 
-
             BotonPrincipal(
-                texto = "Guardar Nueva Contraseña",
+                texto = stringResource(R.string.cambiar_boton_guardar),
                 onClick = onGuardarContrasena,
                 modifier = Modifier.fillMaxWidth(0.9f)
             )
@@ -162,8 +160,6 @@ fun CambiarContrasenaContent(
         }
     }
 }
-
-
 
 @Preview(showBackground = true, showSystemUi = true, name = "1. Cambiar Clave Limpio")
 @Composable

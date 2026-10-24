@@ -1,6 +1,8 @@
 package com.example.rinconsur.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,26 +35,26 @@ class CambiarContrasenaViewModel : ViewModel() {
         _uiState.update { it.copy(contrasenaVisible = !it.contrasenaVisible) }
     }
 
-    fun onGuardarContrasena(correoUsuario: String, dbHelper: RinconDbHelper): Boolean {
+    fun onGuardarContrasena(correoUsuario: String, dbHelper: RinconDbHelper, contexto: Context): Boolean {
         val estado = _uiState.value
 
         val patronContrasena = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._\\-]).{8,}$".toRegex()
 
         var errorNueva = when {
-            estado.contrasenaNueva.isBlank() -> "La contraseña es obligatoria"
+            estado.contrasenaNueva.isBlank() -> contexto.getString(R.string.cambiar_error_obligatoria)
             !estado.contrasenaNueva.matches(patronContrasena) ->
-                "Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 carácter especial"
+                contexto.getString(R.string.cambiar_error_formato)
             else -> null
         }
 
         val errorConfirmar = when {
-            estado.confirmarContrasena.isBlank() -> "Confirma la contraseña"
-            estado.contrasenaNueva != estado.confirmarContrasena -> "Las contraseñas no coinciden"
+            estado.confirmarContrasena.isBlank() -> contexto.getString(R.string.cambiar_error_confirmar_obligatoria)
+            estado.contrasenaNueva != estado.confirmarContrasena -> contexto.getString(R.string.cambiar_error_no_coinciden)
             else -> null
         }
 
         if (errorNueva == null && correoUsuario.isBlank()) {
-            errorNueva = "No se pudo identificar la cuenta, vuelve a iniciar el proceso"
+            errorNueva = contexto.getString(R.string.cambiar_error_cuenta_no_identificada)
         }
 
         val hayErrores = errorNueva != null || errorConfirmar != null
