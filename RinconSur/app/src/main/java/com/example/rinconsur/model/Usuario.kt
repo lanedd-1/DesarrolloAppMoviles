@@ -6,5 +6,6 @@ data class Usuario(
     val contrasena: String = "",
     val id: Long = 0,
     val rolId: Long = Rol.ID_OBSERVADOR,
-    val rolNombre: String = "Observador de Pasillo"
+    val rolNombre: String = "Observador de Pasillo",
+    val fotoPerfilRuta: String? = null
 )
