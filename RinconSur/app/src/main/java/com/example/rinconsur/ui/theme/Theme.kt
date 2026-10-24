@@ -48,5 +48,29 @@ fun RinconSurTheme(
     )
 }
 
+private val Azul = Color(0xFF1E5EFF)
+
+// Colores para las barras y los trozos del gráfico circular
+val PaletaGraficos = listOf(
+    Color(0xFF1E5EFF), // azul
+    Color(0xFFF59F00), // amarillo
+    Color(0xFF12B886), // verde
+    Color(0xFFE64980), // rosado
+    Color(0xFF7950F2), // violeta
+    Color(0xFF15AABF)  // celeste
+)
+
+
+@Composable
+fun GraficosAppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    MaterialTheme(
+        colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
+        content = content
+    )
+}
+
 
 

@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,6 +29,7 @@ import com.example.rinconsur.model.TipoCompaniaEnum
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
+import com.example.rinconsur.ui.theme.RinconSurTheme
 import com.example.rinconsur.viewmodel.DetalleResumenViewModel
 
 @Composable
@@ -327,6 +329,42 @@ fun FiltroChipBasico(texto: String, seleccionado: Boolean, onClick: () -> Unit) 
             color = if (seleccionado) Color.White else Color.DarkGray,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true, heightDp = 800)
+@Composable
+private fun DetalleResumenScreenPreview() {
+    RinconSurTheme {
+        DetalleResumenContent(
+            uiState = com.example.rinconsur.viewmodel.DetalleResumenUiState(
+                acceso = "Acceso 1 - Galería Principal",
+                fecha = "24/10/2026",
+                totalRegistros = 12,
+                registros = listOf(
+                    RegistroDetalleItem(
+                        id = 1L,
+                        hora = "10:15",
+                        clasificacion = "CLIENTE",
+                        rangoEtario = "RANGO_26_40",
+                        compania = "PAREJA",
+                        bolsas = true,
+                        destino = ""
+                    ),
+                    RegistroDetalleItem(
+                        id = 2L,
+                        hora = "10:30",
+                        clasificacion = "TRANSITO",
+                        rangoEtario = "RANGO_18_25",
+                        compania = "SOLO",
+                        bolsas = false,
+                        destino = "Patio de Comidas"
+                    )
+                )
+            ),
+            onVolver = {},
+            onAbrirEdicion = {}
         )
     }
 }

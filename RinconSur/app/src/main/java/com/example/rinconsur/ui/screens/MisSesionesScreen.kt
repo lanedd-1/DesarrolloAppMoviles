@@ -186,7 +186,8 @@ fun MisSesionesContent(
 
     var accesosCerrados by remember { mutableStateOf<List<String>>(emptyList()) }
 
-    val camaraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+    // Lanzadores para abrir la cámara y la galería una vez concedidos los permisos
+    val camaraFotoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
         if (bitmap != null) {
             fotoPerfilBitmap = rotarBitmapSiEsNecesario(bitmap)
         }
@@ -207,6 +208,27 @@ fun MisSesionesContent(
         }
     }
 
+    // --- LANZADORES DE SOLICITUD DE PERMISOS ---
+    val camaraPermisoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            camaraFotoLauncher.launch(null)
+        } else {
+            Permisos.abrirAjustes(contexto)
+        }
+    }
+
+    val galeriaPermisoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            galeriaLauncher.launch("image/*")
+        } else {
+            Permisos.abrirAjustes(contexto)
+        }
+    }
+
     if (mostrarDialogoCerrar) {
         DialogoCerrarSesion(
             onConfirmar = { mostrarDialogoCerrar = false; onCerrarSesion() },
@@ -219,11 +241,21 @@ fun MisSesionesContent(
             onDismiss = { mostrarDialogoFoto = false },
             onCamara = {
                 mostrarDialogoFoto = false
-                camaraLauncher.launch(null)
+                // Validamos si ya tiene el permiso de la cámara usando tu objeto Permisos
+                if (Permisos.tiene(contexto, Permisos.CAMARA)) {
+                    camaraFotoLauncher.launch(null)
+                } else {
+                    camaraPermisoLauncher.launch(Permisos.CAMARA)
+                }
             },
             onGaleria = {
                 mostrarDialogoFoto = false
-                galeriaLauncher.launch("image/*")
+                // Validamos si ya tiene el permiso de imágenes usando tu objeto Permisos
+                if (Permisos.tiene(contexto, Permisos.IMAGENES)) {
+                    galeriaLauncher.launch("image/*")
+                } else {
+                    galeriaPermisoLauncher.launch(Permisos.IMAGENES)
+                }
             }
         )
     }
