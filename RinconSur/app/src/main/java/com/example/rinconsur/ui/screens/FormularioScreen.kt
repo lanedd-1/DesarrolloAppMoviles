@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -81,7 +82,7 @@ fun FormularioScreen(
     val contexto = LocalContext.current
 
     LaunchedEffect(usuarioActual) {
-        viewModel.inicializarRolesSegunUsuario(usuarioActual)
+        viewModel.inicializarRolesSegunUsuario(usuarioActual, contexto)
     }
 
     LaunchedEffect(uiState.mensajeExito) {
@@ -149,7 +150,7 @@ fun FormularioContent(
         drawerContent = {
             ModalDrawerSheet {
                 Text(
-                    text = "Rincón Sur",
+                    text = stringResource(R.string.login_subtitulo),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(Dimens.espacioMedio)
@@ -157,7 +158,7 @@ fun FormularioContent(
                 HorizontalDivider()
 
                 NavigationDrawerItem(
-                    label = { Text("Mis Sesiones") },
+                    label = { Text(stringResource(R.string.gestion_accesos_boton_volver)) },
                     selected = false,
                     onClick = { scope.launch { drawerState.close() }; onIrMisSesiones() },
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
@@ -165,7 +166,7 @@ fun FormularioContent(
 
                 if (usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
                     NavigationDrawerItem(
-                        label = { Text("Gestionar Accesos (Puertas)") },
+                        label = { Text(stringResource(R.string.gestion_accesos_titulo)) },
                         selected = false,
                         onClick = { scope.launch { drawerState.close() }; onIrGestionAccesos() },
                         modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
@@ -182,7 +183,7 @@ fun FormularioContent(
                 }
 
                 NavigationDrawerItem(
-                    label = { Text("Registrar Colaborador") },
+                    label = { Text(stringResource(R.string.formulario_titulo)) },
                     selected = true,
                     onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() },
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
@@ -203,10 +204,10 @@ fun FormularioContent(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Crear Cuenta Colaborador", color = Color.White) },
+                    title = { Text(stringResource(R.string.formulario_titulo), color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = "Menú", tint = Color.White)
+                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = stringResource(R.string.formulario_cd_menu), tint = Color.White)
                         }
                     },
                     actions = {
@@ -233,14 +234,14 @@ fun FormularioContent(
                     )
                 }
 
-                TarjetaSeccion(titulo = "Datos del Nuevo Usuario") {
-                    CampoTexto(valor = uiState.nombre, onValorCambia = onNombreCambia, etiqueta = "Nombre completo", icono = R.drawable.ic_persona, error = uiState.errorNombre)
-                    CampoTexto(valor = uiState.correo, onValorCambia = onCorreoCambia, etiqueta = "Correo corporativo", icono = R.drawable.ic_correo, error = uiState.errorCorreo, tipoTeclado = KeyboardType.Email)
+                TarjetaSeccion(titulo = stringResource(R.string.formulario_seccion_datos)) {
+                    CampoTexto(valor = uiState.nombre, onValorCambia = onNombreCambia, etiqueta = stringResource(R.string.formulario_etiqueta_nombre), icono = R.drawable.ic_persona, error = uiState.errorNombre)
+                    CampoTexto(valor = uiState.correo, onValorCambia = onCorreoCambia, etiqueta = stringResource(R.string.formulario_etiqueta_correo), icono = R.drawable.ic_correo, error = uiState.errorCorreo, tipoTeclado = KeyboardType.Email)
 
                     var expandido by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(expanded = expandido, onExpandedChange = { expandido = it }) {
                         OutlinedTextField(
-                            value = uiState.rolSeleccionado, onValueChange = {}, readOnly = true, label = { Text("Cargo / Rol") },
+                            value = uiState.rolSeleccionado, onValueChange = {}, readOnly = true, label = { Text(stringResource(R.string.formulario_etiqueta_rol)) },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
                             isError = uiState.errorRol != null, modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                         )
@@ -252,13 +253,13 @@ fun FormularioContent(
                     }
                     uiState.errorRol?.let { mensaje -> Text(text = mensaje, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(start = Dimens.espacioChico)) }
 
-                    CampoContrasena(valor = uiState.contrasena, onValorCambia = onContrasenaCambia, etiqueta = "Contraseña", visible = uiState.contrasenaVisible, onAlternarVisible = onAlternarVisibilidad, error = uiState.errorContrasena)
-                    CampoContrasena(valor = uiState.confirmarContrasena, onValorCambia = onConfirmarContrasenaCambia, etiqueta = "Confirmar contraseña", visible = uiState.contrasenaVisible, onAlternarVisible = onAlternarVisibilidad, error = uiState.errorConfirmarContrasena)
+                    CampoContrasena(valor = uiState.contrasena, onValorCambia = onContrasenaCambia, etiqueta = stringResource(R.string.formulario_etiqueta_contrasena), visible = uiState.contrasenaVisible, onAlternarVisible = onAlternarVisibilidad, error = uiState.errorContrasena)
+                    CampoContrasena(valor = uiState.confirmarContrasena, onValorCambia = onConfirmarContrasenaCambia, etiqueta = stringResource(R.string.formulario_etiqueta_confirmar), visible = uiState.contrasenaVisible, onAlternarVisible = onAlternarVisibilidad, error = uiState.errorConfirmarContrasena)
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
-                    BotonSecundario(texto = "Limpiar", onClick = onLimpiar, modifier = Modifier.weight(1f))
-                    BotonPrincipal(texto = "Crear Cuenta", onClick = onRegistrar, modifier = Modifier.weight(1f))
+                    BotonSecundario(texto = stringResource(R.string.formulario_boton_limpiar), onClick = onLimpiar, modifier = Modifier.weight(1f))
+                    BotonPrincipal(texto = stringResource(R.string.formulario_boton_crear), onClick = onRegistrar, modifier = Modifier.weight(1f))
                 }
 
                 Spacer(modifier = Modifier.height(Dimens.espacioGrande))

@@ -72,6 +72,39 @@
     <!-- Mensajes de Estado ViewModel -->
     <string name="gestion_accesos_mensaje_exito">Estado de %1$s actualizado</string>
 
+    <!-- Textos Formulario / Registro Colaborador -->
+    <string name="formulario_titulo">Crear Cuenta Colaborador</string>
+    <string name="formulario_cd_menu">Menú</string>
+    <string name="formulario_seccion_datos">Datos del Nuevo Usuario</string>
+    <string name="formulario_etiqueta_nombre">Nombre completo</string>
+    <string name="formulario_etiqueta_correo">Correo corporativo</string>
+    <string name="formulario_etiqueta_rol">Cargo / Rol</string>
+    <string name="formulario_etiqueta_contrasena">Contraseña</string>
+    <string name="formulario_etiqueta_confirmar">Confirmar contraseña</string>
+    <string name="formulario_boton_limpiar">Limpiar</string>
+    <string name="formulario_boton_crear">Crear Cuenta</string>
+
+    <!-- Roles / Cargos -->
+    <string name="rol_observador">Observador de Pasillo</string>
+    <string name="rol_jefe_tienda">Jefe de Tienda</string>
+    <string name="rol_administrador">Administrador</string>
+
+    <!-- Errores y Mensajes de Formulario -->
+    <string name="formulario_error_nombre_obligatorio">El nombre completo es obligatorio</string>
+    <string name="formulario_error_correo_obligatorio">El correo es obligatorio</string>
+    <string name="formulario_error_correo_invalido">Ingresa un correo válido</string>
+    <string name="formulario_error_correo_institucional">Debe ser un correo institucional (@rinconsur.cl)</string>
+    <string name="formulario_error_rol_obligatorio">Debes seleccionar un rol para el colaborador</string>
+    <string name="formulario_error_contrasena_obligatoria">La contraseña es obligatoria</string>
+    <string name="formulario_error_contrasena_formato">Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 carácter especial</string>
+    <string name="formulario_error_confirmar_obligatoria">Confirma la contraseña</string>
+    <string name="formulario_error_no_coinciden">Las contraseñas no coinciden</string>
+    <string name="formulario_error_correo_existente">Ya existe una cuenta con este correo</string>
+    <string name="formulario_error_creacion_fallida">No se pudo crear la cuenta, intenta nuevamente</string>
+    <string name="formulario_mensaje_exito">¡Cuenta creada para %1$s con éxito!</string>
+
+
+
     <!-- Accesibilidad Campo Contraseña -->
     <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
     <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
