@@ -2,6 +2,7 @@ package com.example.rinconsur.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.model.GestionAccesosUiState
@@ -47,7 +48,7 @@ class GestionAccesosViewModel : ViewModel() {
             _uiState.update {
                 it.copy(
                     estadoAccesosMap = mapaActualizado,
-                    mensajeExito = "Estado de $accesoNombre actualizado"
+                    mensajeExito = contexto.getString(R.string.gestion_accesos_mensaje_exito, accesoNombre)
                 )
             }
         }

@@ -56,6 +56,22 @@
     <string name="cambiar_error_no_coinciden">Las contraseñas no coinciden</string>
     <string name="cambiar_error_cuenta_no_identificada">No se pudo identificar la cuenta, vuelve a iniciar el proceso</string>
 
+    <!-- Textos Gestión de Accesos -->
+    <string name="gestion_accesos_titulo">Gestión de Accesos</string>
+    <string name="gestion_accesos_cd_volver">Volver</string>
+    <string name="gestion_accesos_seccion_titulo">Control de Operatividad de Puertas</string>
+    <string name="gestion_accesos_instrucciones">Habilita o inhabilita las puertas de la tienda para restringir las sesiones de conteo de los observadores:</string>
+    <string name="gestion_accesos_estado_habilitado">Habilitado</string>
+    <string name="gestion_accesos_estado_cerrado">Cerrado / No disponible</string>
+
+    <!-- Vista Acceso Denegado -->
+    <string name="gestion_accesos_restringido_titulo">Acceso Restringido</string>
+    <string name="gestion_accesos_restringido_mensaje">Solo el Jefe de Tienda tiene permisos para gestionar los accesos operativos.</string>
+    <string name="gestion_accesos_boton_volver">Volver a Mis Sesiones</string>
+
+    <!-- Mensajes de Estado ViewModel -->
+    <string name="gestion_accesos_mensaje_exito">Estado de %1$s actualizado</string>
+
     <!-- Accesibilidad Campo Contraseña -->
     <string name="cd_mostrar_contrasena">Mostrar contraseña</string>
     <string name="cd_ocultar_contrasena">Ocultar contraseña</string>
