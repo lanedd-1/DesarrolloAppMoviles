@@ -42,11 +42,13 @@ fun DetalleResumenScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var registroAEditar by remember { mutableStateOf<RegistroDetalleItem?>(null) }
+    var registroAEliminar by remember { mutableStateOf<RegistroDetalleItem?>(null) }
 
     LaunchedEffect(acceso, fecha) {
         viewModel.cargarDetalles(contexto, acceso, fecha)
     }
 
+    // Diálogo de Edición
     if (registroAEditar != null) {
         DialogoEditarRegistro(
             registro = registroAEditar!!,
@@ -56,8 +58,33 @@ fun DetalleResumenScreen(
                 registroAEditar = null
             },
             onEliminar = {
-                viewModel.eliminarRegistro(contexto, registroAEditar!!.id)
-                registroAEditar = null
+                registroAEliminar = registroAEditar // Pasa el registro al diálogo de advertencia
+                registroAEditar = null // Cierra el de edición
+            }
+        )
+    }
+
+    // NUEVO: Diálogo de Confirmación para Eliminar
+    if (registroAEliminar != null) {
+        AlertDialog(
+            onDismissRequest = { registroAEliminar = null },
+            title = { Text("Eliminar Registro", fontWeight = FontWeight.Bold) },
+            text = { Text("¿Estás seguro que deseas eliminar este registro? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.eliminarRegistro(contexto, registroAEliminar!!.id)
+                        registroAEliminar = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)) // Rojo alerta
+                ) {
+                    Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { registroAEliminar = null }) {
+                    Text("Cancelar", color = Color.Gray, fontWeight = FontWeight.Bold)
+                }
             }
         )
     }
@@ -225,7 +252,6 @@ fun DialogoEditarRegistro(
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
                 Text("Hora de ingreso: ${registro.hora}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
 
-                // Selector de Clasificación (Usando el tema en vez de 12.sp)
                 Column {
                     Text("Clasificación", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -235,7 +261,6 @@ fun DialogoEditarRegistro(
                     }
                 }
 
-                // Selector de Rango (Usando el tema en vez de 12.sp)
                 Column {
                     Text("Rango Etario", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -250,7 +275,6 @@ fun DialogoEditarRegistro(
                     }
                 }
 
-                // Selector de Compañía (Usando el tema en vez de 12.sp)
                 Column {
                     Text("Compañía", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -265,7 +289,6 @@ fun DialogoEditarRegistro(
                     }
                 }
 
-                // Selector de Bolsas (Usando el tema en vez de 12.sp)
                 Column {
                     Text("Bolsas Externas", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -302,7 +325,7 @@ fun FiltroChipBasico(texto: String, seleccionado: Boolean, onClick: () -> Unit) 
         Text(
             text = texto,
             color = if (seleccionado) Color.White else Color.DarkGray,
-            style = MaterialTheme.typography.labelSmall, // Usando el tema en vez de 11.sp
+            style = MaterialTheme.typography.labelSmall,
             fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal
         )
     }
