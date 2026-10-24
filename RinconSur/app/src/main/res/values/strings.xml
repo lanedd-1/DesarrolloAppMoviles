@@ -170,7 +170,46 @@
     <string name="ver_resumen_titulo_torta">Distribución Porcentual (Torta)</string>
     <string name="ver_resumen_sin_datos">No hay datos suficientes para graficar.</string>
 
+    <!-- Textos Detalle y Edición de Resumen -->
+    <string name="detalle_resumen_titulo">Detalle de Registros</string>
+    <string name="detalle_resumen_cd_volver">Volver</string>
+    <string name="detalle_resumen_total_muestras">Total Muestras</string>
+    <string name="detalle_resumen_validado">Validado</string>
+    <string name="detalle_resumen_historial_titulo">Historial de ingresos</string>
+    <string name="detalle_resumen_sin_registros">No hay registros para mostrar en esta fecha.</string>
 
+    <!-- Diálogo Eliminar -->
+    <string name="detalle_dialogo_eliminar_titulo">Eliminar Registro</string>
+    <string name="detalle_dialogo_eliminar_mensaje">¿Estás seguro que deseas eliminar este registro? Esta acción no se puede deshacer.</string>
+    <string name="detalle_dialogo_eliminar_confirmar">Eliminar</string>
+    <string name="detalle_dialogo_eliminar_cancelar">Cancelar</string>
+
+    <!-- Item Registro -->
+    <string name="detalle_item_hora">Hora: %1$s</string>
+    <string name="detalle_item_perfil">Perfil:</string>
+    <string name="detalle_item_bolsas_ext">Bolsas ext:</string>
+    <string name="detalle_item_destino">Destino:</string>
+    <string name="detalle_item_cd_editar">Editar</string>
+
+    <!-- Formatos de Edad -->
+    <string name="rango_menor_18">Menor 18</string>
+    <string name="rango_18_25">18-25 años</string>
+    <string name="rango_26_40">26-40 años</string>
+    <string name="rango_41_60">41-60 años</string>
+    <string name="rango_mayor_60">Mayor 60</string>
+
+    <!-- Formatos de Compañía -->
+    <string name="compania_solo">Solo</string>
+    <string name="compania_pareja">En pareja</string>
+    <string name="compania_con_ninos">Con niños</string>
+    <string name="compania_grupo">En grupo</string>
+
+    <!-- Diálogo Editar Registro -->
+    <string name="detalle_dialogo_editar_titulo">Editar Registro</string>
+    <string name="detalle_dialogo_editar_hora">Hora de ingreso: %1$s</string>
+    <string name="detalle_dialogo_editar_bolsas">Bolsas Externas</string>
+    <string name="detalle_dialogo_editar_guardar">Guardar Cambios</string>
+    <string name="detalle_dialogo_editar_cd_eliminar">Eliminar</string>
 
 
     <!-- Accesibilidad Campo Contraseña -->

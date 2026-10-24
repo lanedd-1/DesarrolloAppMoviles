@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,7 +52,6 @@ fun DetalleResumenScreen(
         viewModel.cargarDetalles(contexto, acceso, fecha)
     }
 
-
     if (registroAEditar != null) {
         DialogoEditarRegistro(
             registro = registroAEditar!!,
@@ -61,32 +61,31 @@ fun DetalleResumenScreen(
                 registroAEditar = null
             },
             onEliminar = {
-                registroAEliminar = registroAEditar // Pasa el registro al diálogo de advertencia
-                registroAEditar = null // Cierra el de edición
+                registroAEliminar = registroAEditar
+                registroAEditar = null
             }
         )
     }
 
-
     if (registroAEliminar != null) {
         AlertDialog(
             onDismissRequest = { registroAEliminar = null },
-            title = { Text("Eliminar Registro", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Estás seguro que deseas eliminar este registro? Esta acción no se puede deshacer.") },
+            title = { Text(stringResource(R.string.detalle_dialogo_eliminar_titulo), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.detalle_dialogo_eliminar_mensaje)) },
             confirmButton = {
                 Button(
                     onClick = {
                         viewModel.eliminarRegistro(contexto, registroAEliminar!!.id)
                         registroAEliminar = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)) // Rojo alerta
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
                 ) {
-                    Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.detalle_dialogo_eliminar_confirmar), color = Color.White, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { registroAEliminar = null }) {
-                    Text("Cancelar", color = Color.Gray, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.detalle_dialogo_eliminar_cancelar), color = Color.Gray, fontWeight = FontWeight.Bold)
                 }
             }
         )
@@ -112,7 +111,7 @@ fun DetalleResumenContent(
                 title = {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Detalle de Registros",
+                            text = stringResource(R.string.detalle_resumen_titulo),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
@@ -130,7 +129,7 @@ fun DetalleResumenContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
-                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = "Volver", tint = Color.White)
+                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.detalle_resumen_cd_volver), tint = Color.White)
                     }
                 },
                 actions = {
@@ -161,20 +160,20 @@ fun DetalleResumenContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(text = "Total Muestras", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                        Text(text = stringResource(R.string.detalle_resumen_total_muestras), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
                         Text(text = "${uiState.totalRegistros}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
                     }
                     Box(modifier = Modifier.background(Color(0xFFE8F5E9), RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                        Text(text = "Validado", style = MaterialTheme.typography.labelSmall, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                        Text(text = stringResource(R.string.detalle_resumen_validado), style = MaterialTheme.typography.labelSmall, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
                     }
                 }
             }
 
-            Text(text = "Historial de ingresos", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+            Text(text = stringResource(R.string.detalle_resumen_historial_titulo), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.DarkGray)
 
             if (uiState.registros.isEmpty()) {
                 Text(
-                    text = "No hay registros para mostrar en esta fecha.",
+                    text = stringResource(R.string.detalle_resumen_sin_registros),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray,
                     modifier = Modifier.padding(top = Dimens.espacioMedio)
@@ -197,19 +196,19 @@ fun DetalleResumenContent(
 @Composable
 private fun ItemRegistroDetalle(registro: RegistroDetalleItem, onEditar: () -> Unit) {
     val edadFormato = when(registro.rangoEtario) {
-        "MENOR_18" -> "Menor 18"
-        "RANGO_18_25" -> "18-25 años"
-        "RANGO_26_40" -> "26-40 años"
-        "RANGO_41_60" -> "41-60 años"
-        "MAYOR_60" -> "Mayor 60"
+        "MENOR_18" -> stringResource(R.string.rango_menor_18)
+        "RANGO_18_25" -> stringResource(R.string.rango_18_25)
+        "RANGO_26_40" -> stringResource(R.string.rango_26_40)
+        "RANGO_41_60" -> stringResource(R.string.rango_41_60)
+        "MAYOR_60" -> stringResource(R.string.rango_mayor_60)
         else -> registro.rangoEtario
     }
 
     val companiaFormato = when(registro.compania) {
-        "SOLO" -> "Solo"
-        "PAREJA" -> "En pareja"
-        "CON_NINOS" -> "Con niños"
-        "GRUPO" -> "En grupo"
+        "SOLO" -> stringResource(R.string.compania_solo)
+        "PAREJA" -> stringResource(R.string.compania_pareja)
+        "CON_NINOS" -> stringResource(R.string.compania_con_ninos)
+        "GRUPO" -> stringResource(R.string.compania_grupo)
         else -> registro.compania
     }
 
@@ -219,32 +218,32 @@ private fun ItemRegistroDetalle(registro: RegistroDetalleItem, onEditar: () -> U
     ) {
         Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Hora: ${registro.hora}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
+                Text(text = stringResource(R.string.detalle_item_hora, registro.hora), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = registro.clasificacion, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.width(Dimens.espacioChico))
-                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Editar", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = stringResource(R.string.detalle_item_cd_editar), tint = Color.Gray, modifier = Modifier.size(16.dp))
                 }
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico), color = Color(0xFFF0F0F0))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = "Perfil:", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(text = stringResource(R.string.detalle_item_perfil), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 Text(text = "$edadFormato · $companiaFormato", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
             }
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = "Bolsas ext:", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                Text(text = if (registro.bolsas) "Sí" else "No", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                Text(text = stringResource(R.string.detalle_item_bolsas_ext), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(text = if (registro.bolsas) stringResource(R.string.sesion_curso_opcion_si) else stringResource(R.string.sesion_curso_opcion_no), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
             }
 
             if (registro.clasificacion == "TRANSITO" && !registro.destino.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = "Destino:", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    Text(text = stringResource(R.string.detalle_item_destino), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     Text(text = registro.destino, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium, color = Color(0xFFE65100))
                 }
             }
@@ -266,13 +265,13 @@ fun DialogoEditarRegistro(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Editar Registro", fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.detalle_dialogo_editar_titulo), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
-                Text("Hora de ingreso: ${registro.hora}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(stringResource(R.string.detalle_dialogo_editar_hora, registro.hora), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
 
                 Column {
-                    Text("Clasificación", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.sesion_curso_clasificacion), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         ClasificacionPersona.entries.forEach { op ->
                             FiltroChipBasico(texto = op.etiqueta, seleccionado = clasificacionSeleccionada == op.name, onClick = { clasificacionSeleccionada = op.name })
@@ -281,7 +280,7 @@ fun DialogoEditarRegistro(
                 }
 
                 Column {
-                    Text("Rango Etario", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.sesion_curso_rango_etario), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         RangoEtarioEnum.entries.take(3).forEach { op ->
                             FiltroChipBasico(texto = op.etiqueta, seleccionado = rangoSeleccionado == op.name, onClick = { rangoSeleccionado = op.name })
@@ -295,7 +294,7 @@ fun DialogoEditarRegistro(
                 }
 
                 Column {
-                    Text("Compañía", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.sesion_curso_compania), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         TipoCompaniaEnum.entries.take(2).forEach { op ->
                             FiltroChipBasico(texto = op.etiqueta, seleccionado = companiaSeleccionada == op.name, onClick = { companiaSeleccionada = op.name })
@@ -309,10 +308,10 @@ fun DialogoEditarRegistro(
                 }
 
                 Column {
-                    Text("Bolsas Externas", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.detalle_dialogo_editar_bolsas), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        FiltroChipBasico(texto = "Sí", seleccionado = traeBolsas, onClick = { traeBolsas = true })
-                        FiltroChipBasico(texto = "No", seleccionado = !traeBolsas, onClick = { traeBolsas = false })
+                        FiltroChipBasico(texto = stringResource(R.string.sesion_curso_opcion_si), seleccionado = traeBolsas, onClick = { traeBolsas = true })
+                        FiltroChipBasico(texto = stringResource(R.string.sesion_curso_opcion_no), seleccionado = !traeBolsas, onClick = { traeBolsas = false })
                     }
                 }
             }
@@ -322,12 +321,12 @@ fun DialogoEditarRegistro(
                 onClick = { onGuardar(clasificacionSeleccionada, rangoSeleccionado, companiaSeleccionada, traeBolsas) },
                 colors = ButtonDefaults.buttonColors(containerColor = BurdeoRincon)
             ) {
-                Text("Guardar Cambios")
+                Text(stringResource(R.string.detalle_dialogo_editar_guardar))
             }
         },
         dismissButton = {
             IconButton(onClick = onEliminar) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
+                Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.detalle_dialogo_editar_cd_eliminar), tint = Color.Red)
             }
         }
     )
