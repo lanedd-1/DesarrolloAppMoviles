@@ -12,7 +12,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "rinconsur.db"
-        private const val DATABASE_VERSION = 9 // Versión 9 con la tabla de configuración de accesos
+        private const val DATABASE_VERSION = 10
 
         private const val BCRYPT_COSTO = 10
 
@@ -45,7 +45,6 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val REG_DESTINO = "reg_destino"
         private const val REG_HORA = "reg_hora"
 
-        // Configuración de disponibilidad de accesos (Jefe de Tienda)
         private const val TABLA_ACCESOS_CONFIG = "accesos_config"
         private const val ACC_NOMBRE = "acceso_nombre"
         private const val ACC_DISPONIBLE = "disponible"
@@ -124,10 +123,32 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     "('Administrador IT', 'admin@rinconsur.cl', '$hashInicial', ${Rol.ID_ADMINISTRADOR})"
         db.execSQL(sqlPrecargarUsuarios)
 
-        val sqlPrecargarSesion =
-            "INSERT INTO $TABLA_SESIONES ($SES_CODIGO, $SES_ACCESO, $SES_FECHA, $SES_ESTADO, $SES_USU_ID) VALUES " +
-                    "('SES-001', 'Acceso A4', '15-09-2026', 'EN_CURSO', 1)"
-        db.execSQL(sqlPrecargarSesion)
+        val fechaHoy = java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault()).format(java.util.Date())
+
+        val sqlPrecargarSesiones = """
+            INSERT INTO $TABLA_SESIONES ($SES_CODIGO, $SES_ACCESO, $SES_FECHA, $SES_ESTADO, $SES_USU_ID) VALUES 
+            ('SES-A1-859', 'Acceso A1', '$fechaHoy', 'FINALIZADA', 1),
+            ('SES-A2-442', 'Acceso A2', '$fechaHoy', 'FINALIZADA', 1),
+            ('SES-A3-001', 'Acceso A3', '$fechaHoy', 'EN_CURSO', 1)
+        """.trimIndent()
+        db.execSQL(sqlPrecargarSesiones)
+
+        val sqlPrecargarRegistros = """
+            INSERT INTO $TABLA_REGISTROS ($REG_SESION_ID, $REG_CLASIFICACION, $REG_RANGO_ETARIO, $REG_COMPANIA, $REG_BOLSAS, $REG_DESTINO, $REG_HORA) VALUES 
+            (1, 'VISITA', 'RANGO_26_40', 'SOLO', 0, NULL, '10:05:00'),
+            (1, 'TRANSITO', 'RANGO_18_25', 'PAREJA', 1, 'A3', '10:12:00'),
+            (1, 'VISITA', 'RANGO_41_60', 'CON_NINOS', 1, NULL, '10:15:00'),
+            (1, 'VISITA', 'MENOR_18', 'GRUPO', 0, NULL, '10:20:00'),
+            (1, 'TRANSITO', 'MAYOR_60', 'SOLO', 0, 'A2', '10:25:00'),
+            (2, 'VISITA', 'RANGO_26_40', 'PAREJA', 1, NULL, '11:00:00'),
+            (2, 'VISITA', 'RANGO_18_25', 'SOLO', 0, NULL, '11:10:00'),
+            (2, 'TRANSITO', 'RANGO_41_60', 'SOLO', 0, 'A1', '11:15:00'),
+            (2, 'VISITA', 'MAYOR_60', 'CON_NINOS', 0, NULL, '11:20:00'),
+            (3, 'VISITA', 'RANGO_26_40', 'GRUPO', 1, NULL, '12:05:00'),
+            (3, 'VISITA', 'RANGO_18_25', 'PAREJA', 1, NULL, '12:12:00'),
+            (3, 'TRANSITO', 'MENOR_18', 'SOLO', 0, 'A1', '12:15:00')
+        """.trimIndent()
+        db.execSQL(sqlPrecargarRegistros)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -142,7 +163,6 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     fun crearUsuario(nombre: String, correo: String, contrasenaPlana: String, rolId: Long): Long {
         val db = this.writableDatabase
         val hash = BCrypt.withDefaults().hashToString(BCRYPT_COSTO, contrasenaPlana.toCharArray())
-
         val valores = ContentValues().apply {
             put(USU_NOMBRE, nombre.trim())
             put(USU_CORREO, correo.trim().lowercase())
@@ -154,18 +174,11 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun validarLogin(correo: String, contrasenaPlana: String): Boolean {
         val db = this.readableDatabase
-        val correoLimpio = correo.trim().lowercase()
-
-        val cursor = db.rawQuery(
-            "SELECT $USU_CONTRASENA FROM $TABLA_USUARIOS WHERE $USU_CORREO = ?",
-            arrayOf(correoLimpio)
-        )
-
+        val cursor = db.rawQuery("SELECT $USU_CONTRASENA FROM $TABLA_USUARIOS WHERE $USU_CORREO = ?", arrayOf(correo.trim().lowercase()))
         var existe = false
         if (cursor.moveToFirst()) {
             val hashGuardado = cursor.getString(0)
-            val verificacion = BCrypt.verifyer().verify(contrasenaPlana.toCharArray(), hashGuardado.toCharArray())
-            existe = verificacion.verified
+            existe = BCrypt.verifyer().verify(contrasenaPlana.toCharArray(), hashGuardado.toCharArray()).verified
         }
         cursor.close()
         return existe
@@ -173,10 +186,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun existeCorreo(correo: String): Boolean {
         val db = this.readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT 1 FROM $TABLA_USUARIOS WHERE $USU_CORREO = ?",
-            arrayOf(correo.trim().lowercase())
-        )
+        val cursor = db.rawQuery("SELECT 1 FROM $TABLA_USUARIOS WHERE $USU_CORREO = ?", arrayOf(correo.trim().lowercase()))
         val existe = cursor.moveToFirst()
         cursor.close()
         return existe
@@ -184,16 +194,10 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun buscarPorCorreo(correo: String): Usuario? {
         val db = this.readableDatabase
-        val correoLimpio = correo.trim().lowercase()
-
         val cursor = db.rawQuery(
-            "SELECT u.*, r.$ROL_NOMBRE AS $ROL_NOMBRE " +
-                    "FROM $TABLA_USUARIOS u " +
-                    "INNER JOIN $TABLA_ROLES r ON u.$USU_ROL = r.$ROL_ID " +
-                    "WHERE u.$USU_CORREO = ?",
-            arrayOf(correoLimpio)
+            "SELECT u.*, r.$ROL_NOMBRE AS $ROL_NOMBRE FROM $TABLA_USUARIOS u INNER JOIN $TABLA_ROLES r ON u.$USU_ROL = r.$ROL_ID WHERE u.$USU_CORREO = ?",
+            arrayOf(correo.trim().lowercase())
         )
-
         var usuario: Usuario? = null
         if (cursor.moveToFirst()) {
             usuario = Usuario(
@@ -211,13 +215,9 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun actualizarContrasena(correo: String, nuevaContrasenaPlana: String) {
         val db = this.writableDatabase
-        val correoLimpio = correo.trim().lowercase()
         val hashNuevo = BCrypt.withDefaults().hashToString(BCRYPT_COSTO, nuevaContrasenaPlana.toCharArray())
-
-        val valores = ContentValues().apply {
-            put(USU_CONTRASENA, hashNuevo)
-        }
-        db.update(TABLA_USUARIOS, valores, "$USU_CORREO = ?", arrayOf(correoLimpio))
+        val valores = ContentValues().apply { put(USU_CONTRASENA, hashNuevo) }
+        db.update(TABLA_USUARIOS, valores, "$USU_CORREO = ?", arrayOf(correo.trim().lowercase()))
     }
 
     fun buscarPorId(id: Long): Usuario? {
@@ -305,7 +305,6 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun obtenerEstadisticasSesiones(usuarioId: Long): Pair<Int, Int> {
         val db = this.readableDatabase
-
         var total = 0
         val cursorTotal = db.rawQuery("SELECT COUNT(ses_id) FROM $TABLA_SESIONES WHERE ses_usu_id = ?", arrayOf(usuarioId.toString()))
         if (cursorTotal.moveToFirst()) total = cursorTotal.getInt(0)
@@ -343,11 +342,9 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return listaItems
     }
 
-
     fun obtenerAccesosNoDisponibles(): List<String> {
         val db = this.readableDatabase
         val noDisponibles = mutableSetOf<String>()
-
         val cursorConfig = db.rawQuery("SELECT $ACC_NOMBRE FROM $TABLA_ACCESOS_CONFIG WHERE $ACC_DISPONIBLE = 0", null)
         if (cursorConfig.moveToFirst()) {
             do {
@@ -363,7 +360,6 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             } while (cursorSesiones.moveToNext())
         }
         cursorSesiones.close()
-
         return noDisponibles.toList()
     }
 
@@ -380,7 +376,6 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return cerrados
     }
 
-    // Accesos que tienen una sesión activa (EN_CURSO)
     fun obtenerAccesosEnUso(): List<String> {
         val db = this.readableDatabase
         val enUso = mutableListOf<String>()
@@ -396,8 +391,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun obtenerEstadoTodosAccesos(): Map<String, Boolean> {
         val db = this.readableDatabase
-        val mapa = LinkedHashMap<String, Boolean>() // Mantiene el orden estricto
-        // Ordenamos explícitamente por nombre para que los switches nunca cambien de posición
+        val mapa = LinkedHashMap<String, Boolean>()
         val cursor = db.rawQuery("SELECT $ACC_NOMBRE, $ACC_DISPONIBLE FROM $TABLA_ACCESOS_CONFIG ORDER BY $ACC_NOMBRE ASC", null)
         if (cursor.moveToFirst()) {
             do {
@@ -416,6 +410,72 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val filas = db.update(TABLA_ACCESOS_CONFIG, valores, "$ACC_NOMBRE = ?", arrayOf(accesoNombre))
         return filas > 0
     }
+
+    fun obtenerTotalMuestrasPorFecha(fecha: String): Int {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT COUNT(r.reg_id) FROM $TABLA_REGISTROS r INNER JOIN $TABLA_SESIONES s ON r.reg_sesion_id = s.ses_id WHERE s.ses_fecha = ?",
+            arrayOf(fecha)
+        )
+        var total = 0
+        if (cursor.moveToFirst()) total = cursor.getInt(0)
+        cursor.close()
+        return total
+    }
+
+    fun obtenerSesionesActivasPorFecha(fecha: String): Int {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT COUNT(ses_id) FROM $TABLA_SESIONES WHERE ses_fecha = ? AND ses_estado = 'EN_CURSO'",
+            arrayOf(fecha)
+        )
+        var total = 0
+        if (cursor.moveToFirst()) total = cursor.getInt(0)
+        cursor.close()
+        return total
+    }
+
+    fun obtenerFlujoPorAcceso(fecha: String): List<FlujoAcceso> {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT s.ses_acceso, COUNT(r.reg_id) AS cantidad " +
+                    "FROM $TABLA_SESIONES s " +
+                    "LEFT JOIN $TABLA_REGISTROS r ON s.ses_id = r.reg_sesion_id " +
+                    "WHERE s.ses_fecha = ? " +
+                    "GROUP BY s.ses_acceso " +
+                    "ORDER BY cantidad DESC",
+            arrayOf(fecha)
+        )
+        val lista = mutableListOf<FlujoAcceso>()
+        if (cursor.moveToFirst()) {
+            do {
+                val acceso = cursor.getString(0)
+                val cantidad = cursor.getInt(1)
+                val estado = if (cantidad >= 20) "Alto Tráfico" else "Normal"
+                lista.add(FlujoAcceso(acceso, cantidad, estado))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return lista
+    }
+
+    // ¡AQUÍ ESTÁ LA CORRECCIÓN DE LA FUNCIÓN QUE CAUSÓ EL CRASH!
+    fun obtenerFechasDisponibles(): List<String> {
+        val db = this.readableDatabase
+        val fechas = mutableListOf<String>()
+        // Cambiamos DISTINCT por GROUP BY para que sea 100% compatible con SQLite al usar ORDER BY
+        val cursor = db.rawQuery(
+            "SELECT ses_fecha FROM $TABLA_SESIONES GROUP BY ses_fecha ORDER BY MAX(ses_id) DESC",
+            null
+        )
+        if (cursor.moveToFirst()) {
+            do {
+                fechas.add(cursor.getString(0))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return fechas
+    }
 }
 
 data class SesionItem(
@@ -423,5 +483,11 @@ data class SesionItem(
     val codigo: String,
     val acceso: String,
     val fecha: String,
+    val estado: String
+)
+
+data class FlujoAcceso(
+    val acceso: String,
+    val cantidad: Int,
     val estado: String
 )
