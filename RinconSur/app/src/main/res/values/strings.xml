@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Rincón Sur</string>
-        <!-- Textos de Login -->
+    <!-- Textos de Login -->
     <string name="login_titulo">Iniciar Sesión</string>
     <string name="login_subtitulo">Rincón Sur</string>
     <string name="login_seccion_credenciales">Credenciales de Acceso</string>
@@ -195,8 +195,10 @@
 
     <!-- Textos Ver Resumen Gráfico -->
     <string name="ver_resumen_titulo">Resumen Total</string>
+    <string name="ver_resumen_subtitulo_formato">%1$s · %2$s</string>
     <string name="ver_resumen_cd_volver">Volver</string>
     <string name="ver_resumen_total_verificados">Total Verificados</string>
+    <string name="ver_resumen_filtrar_por">Filtrar estadísticas por</string>
     <string name="ver_resumen_titulo_barras">Distribución de Flujo (Barras)</string>
     <string name="ver_resumen_titulo_torta">Distribución Porcentual (Torta)</string>
     <string name="ver_resumen_sin_datos">No hay datos suficientes para graficar.</string>

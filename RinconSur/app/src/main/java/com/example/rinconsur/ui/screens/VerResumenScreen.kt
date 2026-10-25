@@ -11,6 +11,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,13 +48,12 @@ fun VerResumenScreen(
     val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
     val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
 
-    // Lista de colores consistente para gráficos (Barras y Torta)
     val coloresGrafico = listOf(
-        MaterialTheme.colorScheme.primary, // Primer ítem (TRANSITO -> Rosado/Burdeo pastel)
-        Color(0xFFE65100),                  // Segundo ítem (VISITA -> Naranjo)
-        Color(0xFF2E7D32),                  // Verde
-        Color(0xFF1565C0),                  // Azul
-        Color(0xFF6A1B9A)                   // Morado
+        MaterialTheme.colorScheme.primary,
+        Color(0xFFE65100),
+        Color(0xFF2E7D32),
+        Color(0xFF1565C0),
+        Color(0xFF6A1B9A)
     )
 
     LaunchedEffect(acceso, fecha) {
@@ -64,7 +66,7 @@ fun VerResumenScreen(
                 title = {
                     Column {
                         Text(stringResource(R.string.ver_resumen_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = colorContenidoTopAppBar)
-                        Text("${uiState.acceso} · ${uiState.fecha}", style = MaterialTheme.typography.bodySmall, color = colorContenidoTopAppBar.copy(alpha = 0.8f))
+                        Text(stringResource(R.string.ver_resumen_subtitulo_formato, uiState.acceso, uiState.fecha), style = MaterialTheme.typography.bodySmall, color = colorContenidoTopAppBar.copy(alpha = 0.8f))
                     }
                 },
                 navigationIcon = {
@@ -72,9 +74,7 @@ fun VerResumenScreen(
                         Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.ver_resumen_cd_volver), tint = colorContenidoTopAppBar)
                     }
                 },
-                actions = {
-                    LogoTopBarRinconSur()
-                },
+                actions = { LogoTopBarRinconSur() },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = fondoTopAppBar,
                     titleContentColor = colorContenidoTopAppBar,
@@ -93,7 +93,6 @@ fun VerResumenScreen(
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
         ) {
-
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent),
@@ -106,7 +105,41 @@ fun VerResumenScreen(
                 ) {
                     Column {
                         Text(text = stringResource(R.string.ver_resumen_total_verificados), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-                        Text(text = "${uiState.totalMuestras}", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text(text = uiState.totalMuestras.toString(), style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+
+            var expandido by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expandido,
+                onExpandedChange = { expandido = it },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = uiState.filtroSeleccionado,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.ver_resumen_filtrar_por)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    )
+                )
+                ExposedDropdownMenu(
+                    expanded = expandido,
+                    onDismissRequest = { expandido = false }
+                ) {
+                    uiState.filtrosDisponibles.forEach { filtro ->
+                        DropdownMenuItem(
+                            text = { Text(filtro) },
+                            onClick = {
+                                viewModel.cambiarFiltro(filtro)
+                                expandido = false
+                            }
+                        )
                     }
                 }
             }
@@ -119,11 +152,11 @@ fun VerResumenScreen(
                 border = null
             ) {
                 Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
-                    if (uiState.distribucionClasificacion.isEmpty()) {
+                    if (uiState.datosGrafico.isEmpty()) {
                         Text(stringResource(R.string.ver_resumen_sin_datos), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(Dimens.espacioMedio))
                     } else {
                         GraficoBarrasNativo(
-                            datos = uiState.distribucionClasificacion,
+                            datos = uiState.datosGrafico,
                             colores = coloresGrafico
                         )
                     }
@@ -144,18 +177,18 @@ fun VerResumenScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
                 ) {
-                    if (uiState.distribucionClasificacion.isEmpty()) {
+                    if (uiState.datosGrafico.isEmpty()) {
                         Text(stringResource(R.string.ver_resumen_sin_datos), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(Dimens.espacioMedio))
                     } else {
                         GraficoCircularNativo(
-                            datos = uiState.distribucionClasificacion,
+                            datos = uiState.datosGrafico,
                             colores = coloresGrafico
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
 
                         LeyendaCircularNativa(
-                            datos = uiState.distribucionClasificacion,
+                            datos = uiState.datosGrafico,
                             colores = coloresGrafico
                         )
                     }
@@ -263,7 +296,7 @@ fun LeyendaCircularNativa(datos: List<Pair<String, Int>>, colores: List<Color>) 
                     )
                     Text(text = categoria, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
                 }
-                Text(text = "$valor", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(text = valor.toString(), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -273,10 +306,6 @@ fun LeyendaCircularNativa(datos: List<Pair<String, Int>>, colores: List<Color>) 
 @Composable
 private fun VerResumenScreenPreview() {
     RinconSurTheme {
-        VerResumenScreen(
-            acceso = "Acceso 1 - Galería Principal",
-            fecha = "24/10/2026",
-            onVolver = {}
-        )
+        VerResumenScreen(acceso = "Acceso 1 - Galería Principal", fecha = "24/10/2026", onVolver = {})
     }
 }
