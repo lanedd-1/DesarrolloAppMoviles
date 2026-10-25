@@ -67,7 +67,7 @@
     <!-- Vista Acceso Denegado -->
     <string name="gestion_accesos_restringido_titulo">Acceso Restringido</string>
     <string name="gestion_accesos_restringido_mensaje">Solo el Jefe de Tienda tiene permisos para gestionar los accesos operativos.</string>
-    <string name="gestion_accesos_boton_volver">Volver a Mis Sesiones</string>
+    <string name="gestion_accesos_boton_volver">Mis Sesiones</string>
 
     <!-- Mensajes de Estado ViewModel -->
     <string name="gestion_accesos_mensaje_exito">Estado de %1$s actualizado</string>
@@ -119,6 +119,7 @@
     <string name="mis_sesiones_item_boton_iniciar">Iniciar conteo en puerta</string>
 
     <!-- Menú Lateral Drawer -->
+    <string name="menu_lateral_Mis_Sesiones">Mis Sesiones</string>
     <string name="menu_lateral_gestionar_accesos">Gestionar Accesos (Puertas)</string>
     <string name="menu_lateral_resumen_dia">Resumen del Día</string>
     <string name="menu_lateral_registrar_colaborador">Registrar Colaborador</string>

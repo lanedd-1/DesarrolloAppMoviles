@@ -40,7 +40,7 @@ fun AppNavegacion() {
 
     NavHost(
         navController = navController,
-        startDestination = Ruta.Login.ruta
+        startDestination = Ruta.MisSesiones.ruta
     ) {
         composable(Ruta.Login.ruta) {
             LoginScreen(
@@ -100,23 +100,19 @@ fun AppNavegacion() {
             GestionAccesosScreen(onVolver = { navController.navigateUp() })
         }
 
-        // PANTALLA DE RESUMEN DIARIO CON LAS RUTAS PROTEGIDAS (Uri.encode)
+
         composable(Ruta.ResumenDiario.ruta) {
             ResumenDiarioScreen(
                 usuarioActual = usuarioActual,
                 onVolver = { navController.navigateUp() },
                 onIrVerResumen = { acceso, fecha ->
-                    // El encode protege los espacios en "Acceso A1" para que no crashee
                     navController.navigate(Ruta.VerResumen.crear(Uri.encode(acceso), Uri.encode(fecha)))
                 },
                 onIrEditarResumen = { acceso, fecha ->
-                    // El encode protege los espacios en "Acceso A1" para que no crashee
                     navController.navigate(Ruta.DetalleResumen.crear(Uri.encode(acceso), Uri.encode(fecha)))
                 }
             )
         }
-
-        // PANTALLA: VER RESUMEN (GRÁFICOS)
         composable(
             route = Ruta.VerResumen.ruta,
             arguments = listOf(
@@ -134,7 +130,6 @@ fun AppNavegacion() {
             )
         }
 
-        // PANTALLA: EDITAR RESUMEN (LISTA DE REGISTROS)
         composable(
             route = Ruta.DetalleResumen.ruta,
             arguments = listOf(

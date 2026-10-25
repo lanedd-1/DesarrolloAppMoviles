@@ -85,6 +85,10 @@ fun SesionEnCursoScreen(
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
+    onIrGestionAccesos: () -> Unit = {},
+    onCerrarMenu: () -> Unit = {},
+    onMostrarCerrarSesion: () -> Unit = {},
+    onIrResumenDiario: () -> Unit = {},
     viewModel: SesionEnCursoViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -110,7 +114,11 @@ fun SesionEnCursoScreen(
         },
         onIrMisSesiones = onIrMisSesiones,
         onIrCrearCuenta = onIrCrearCuenta,
-        onCerrarSesion = onCerrarSesion
+        onCerrarSesion = onCerrarSesion,
+        onIrGestionAccesos = onIrGestionAccesos,
+        onCerrarMenu = onCerrarMenu,
+        onMostrarCerrarSesion = onMostrarCerrarSesion,
+        onIrResumenDiario = onIrResumenDiario
     )
 }
 
@@ -129,7 +137,11 @@ fun SesionEnCursoContent(
     onFinalizarSesion: () -> Unit = {},
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
-    onCerrarSesion: () -> Unit = {}
+    onCerrarSesion: () -> Unit = {},
+    onIrGestionAccesos: () -> Unit = {},
+    onCerrarMenu: () -> Unit = {},
+    onMostrarCerrarSesion: () -> Unit = {},
+    onIrResumenDiario: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -175,9 +187,26 @@ fun SesionEnCursoContent(
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                 )
 
-                if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
+                if (usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
                     NavigationDrawerItem(
-                        label = { Text(stringResource(R.string.formulario_titulo)) },
+                        label = { Text(stringResource(R.string.menu_lateral_gestionar_accesos)) },
+                        selected = false,
+                        onClick = { scope.launch { drawerState.close() }; onIrGestionAccesos() },
+                        modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                    )
+                }
+
+                if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR || usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
+
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(R.string.menu_lateral_resumen_dia)) },
+                        selected = false,
+                        onClick = { onCerrarMenu(); onIrResumenDiario() },
+                        modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                    )
+
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(R.string.menu_lateral_registrar_colaborador)) },
                         selected = false,
                         onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() },
                         modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
@@ -188,9 +217,9 @@ fun SesionEnCursoContent(
                 HorizontalDivider()
 
                 NavigationDrawerItem(
-                    label = { Text("Cerrar sesión", color = MaterialTheme.colorScheme.error) },
+                    label = { Text(stringResource(R.string.menu_lateral_cerrar_sesion), color = MaterialTheme.colorScheme.error) },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() }; mostrarDialogoCerrar = true },
+                    onClick = { onCerrarMenu(); onMostrarCerrarSesion() },
                     modifier = Modifier.padding(Dimens.espacioChico)
                 )
             }

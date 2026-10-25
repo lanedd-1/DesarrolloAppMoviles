@@ -325,7 +325,7 @@ private fun MenuLateral(
         HorizontalDivider()
 
         NavigationDrawerItem(
-            label = { Text(stringResource(R.string.mis_sesiones_titulo)) },
+            label = { Text(stringResource(R.string.menu_lateral_Mis_Sesiones)) },
             selected = true,
             onClick = onCerrarMenu,
             modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
