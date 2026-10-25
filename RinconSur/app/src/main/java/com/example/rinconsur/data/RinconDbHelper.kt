@@ -610,6 +610,11 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         cursor.close()
         return activa
     }
+    fun actualizarRolUsuario(usuarioId: Long, nuevoRolId: Long): Boolean {
+        val db = this.writableDatabase
+        val valores = ContentValues().apply { put(USU_ROL, nuevoRolId) }
+        return db.update(TABLA_USUARIOS, valores, "$USU_ID = ?", arrayOf(usuarioId.toString())) > 0
+    }
 }
 data class RegistroDetalleItem(
     val id: Long,

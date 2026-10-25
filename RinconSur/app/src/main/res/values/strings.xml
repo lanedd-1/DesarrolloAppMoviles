@@ -288,5 +288,6 @@
     <string name="gestion_usuarios_sin_usuarios">No hay usuarios registrados.</string>
     <string name="gestion_usuarios_restringido_titulo">Acceso Restringido</string>
     <string name="gestion_usuarios_restringido_mensaje">Solo el Administrador tiene permisos para gestionar las cuentas de usuario.</string>
+    <string name="gestion_usuarios_rol_modificado">Rol de %1$s actualizado correctamente</string>
 
 </resources>

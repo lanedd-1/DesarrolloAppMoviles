@@ -41,4 +41,18 @@ class GestionUsuariosViewModel : ViewModel() {
             }
         }
     }
+    fun cambiarRolUsuario(contexto: Context, usuario: Usuario, nuevoRolId: Long, mensajePlantilla: String) {
+        val dbHelper = RinconDbHelper(contexto)
+        val exito = dbHelper.actualizarRolUsuario(usuario.id, nuevoRolId)
+
+        if (exito) {
+            cargarUsuarios(contexto) // Recargar lista con el nuevo rol
+
+            _uiState.update { it.copy(mensajeExito = String.format(mensajePlantilla, usuario.nombre)) }
+            viewModelScope.launch {
+                delay(3000)
+                _uiState.update { it.copy(mensajeExito = null) }
+            }
+        }
+    }
 }
