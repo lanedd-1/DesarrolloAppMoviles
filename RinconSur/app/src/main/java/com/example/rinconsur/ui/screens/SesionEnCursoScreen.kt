@@ -87,8 +87,6 @@ fun SesionEnCursoScreen(
     onCerrarSesion: () -> Unit = {},
     onIrGestionAccesos: () -> Unit = {},
     onIrGestionUsuarios: () -> Unit = {},
-    onCerrarMenu: () -> Unit = {},
-    onMostrarCerrarSesion: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {},
     viewModel: SesionEnCursoViewModel = viewModel()
 ) {
@@ -118,8 +116,6 @@ fun SesionEnCursoScreen(
         onCerrarSesion = onCerrarSesion,
         onIrGestionAccesos = onIrGestionAccesos,
         onIrGestionUsuarios = onIrGestionUsuarios,
-        onCerrarMenu = onCerrarMenu,
-        onMostrarCerrarSesion = onMostrarCerrarSesion,
         onIrResumenDiario = onIrResumenDiario
     )
 }
@@ -142,8 +138,6 @@ fun SesionEnCursoContent(
     onCerrarSesion: () -> Unit = {},
     onIrGestionAccesos: () -> Unit = {},
     onIrGestionUsuarios: () -> Unit = {},
-    onCerrarMenu: () -> Unit = {},
-    onMostrarCerrarSesion: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -204,7 +198,7 @@ fun SesionEnCursoContent(
                     NavigationDrawerItem(
                         label = { Text(stringResource(R.string.menu_lateral_resumen_dia)) },
                         selected = false,
-                        onClick = { onCerrarMenu(); onIrResumenDiario() },
+                        onClick = { scope.launch { drawerState.close() }; onIrResumenDiario() },
                         modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                     )
 
@@ -220,7 +214,7 @@ fun SesionEnCursoContent(
                     NavigationDrawerItem(
                         label = { Text(stringResource(R.string.gestion_usuarios_titulo)) },
                         selected = false,
-                        onClick = { onCerrarMenu(); onIrGestionUsuarios() },
+                        onClick = { scope.launch { drawerState.close() }; onIrGestionUsuarios() },
                         modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                     )
                 }
@@ -231,7 +225,10 @@ fun SesionEnCursoContent(
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.menu_lateral_cerrar_sesion), color = MaterialTheme.colorScheme.error) },
                     selected = false,
-                    onClick = { onCerrarMenu(); onMostrarCerrarSesion() },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        mostrarDialogoCerrar = true
+                    },
                     modifier = Modifier.padding(Dimens.espacioChico)
                 )
             }
@@ -320,7 +317,7 @@ private fun CabeceraSesion(uiState: SesionEnCursoUiState, usuarioActual: Usuario
                 Text(text = stringResource(R.string.sesion_curso_estado_en_curso, uiState.accesoNombre), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
             Text(
-                text = "${uiState.ubicacionAcceso} ·${usuarioActual?.nombre ?: "Cargando..."}",
+                text = "${uiState.ubicacionAcceso} · ${usuarioActual?.nombre ?: "Cargando..."}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -436,5 +433,13 @@ private fun BotonOpcionTactil(
                 color = if (seleccionado) BurdeoRincon else Color(0xFF1A1C1E)
             )
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun SesionEnCursoPreview() {
+    RinconSurTheme {
+        SesionEnCursoScreen(usuarioActual = null)
     }
 }

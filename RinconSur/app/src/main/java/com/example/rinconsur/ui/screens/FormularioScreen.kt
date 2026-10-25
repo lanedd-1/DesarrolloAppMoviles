@@ -77,7 +77,6 @@ fun FormularioScreen(
     onIrGestionUsuarios: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
-    onMostrarCerrarSesion: () -> Unit = {},
     viewModel: FormularioViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -110,8 +109,7 @@ fun FormularioScreen(
         onIrGestionAccesos = onIrGestionAccesos,
         onIrGestionUsuarios = onIrGestionUsuarios,
         onIrResumenDiario = onIrResumenDiario,
-        onCerrarSesion = onCerrarSesion,
-        onMostrarCerrarSesion = onMostrarCerrarSesion
+        onCerrarSesion = onCerrarSesion
     )
 }
 
@@ -133,9 +131,7 @@ fun FormularioContent(
     onIrGestionAccesos: () -> Unit = {},
     onIrGestionUsuarios: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {},
-    onCerrarSesion: () -> Unit = {},
-    onCerrarMenu: () -> Unit = {},
-    onMostrarCerrarSesion: () -> Unit = {}
+    onCerrarSesion: () -> Unit = {}
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -184,7 +180,7 @@ fun FormularioContent(
                     NavigationDrawerItem(
                         label = { Text(stringResource(R.string.menu_lateral_resumen_dia)) },
                         selected = false,
-                        onClick = { onCerrarMenu(); onIrResumenDiario() },
+                        onClick = { scope.launch { drawerState.close() }; onIrResumenDiario() },
                         modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                     )
                 }
@@ -192,7 +188,7 @@ fun FormularioContent(
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.menu_lateral_registrar_colaborador)) },
                     selected = false,
-                    onClick = { onCerrarMenu(); onIrCrearCuenta() },
+                    onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() },
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                 )
 
@@ -200,7 +196,7 @@ fun FormularioContent(
                     NavigationDrawerItem(
                         label = { Text(stringResource(R.string.gestion_usuarios_titulo)) },
                         selected = false,
-                        onClick = { onCerrarMenu(); onIrGestionUsuarios() },
+                        onClick = { scope.launch { drawerState.close() }; onIrGestionUsuarios() },
                         modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                     )
                 }
@@ -211,7 +207,10 @@ fun FormularioContent(
                 NavigationDrawerItem(
                     label = { Text(stringResource(R.string.menu_lateral_cerrar_sesion), color = MaterialTheme.colorScheme.error) },
                     selected = false,
-                    onClick = { onCerrarMenu(); onMostrarCerrarSesion() },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        mostrarDialogo = true
+                    },
                     modifier = Modifier.padding(Dimens.espacioChico)
                 )
             }
