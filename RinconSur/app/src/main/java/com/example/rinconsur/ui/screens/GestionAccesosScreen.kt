@@ -152,8 +152,6 @@ fun GestionAccesosContent(
     }
 }
 
-// ----------------------------- COMPONENTES PRIVADOS -----------------------------
-
 @Composable
 private fun ItemOpcionAcceso(
     accesoNombre: String,

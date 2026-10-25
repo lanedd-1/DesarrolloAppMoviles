@@ -38,7 +38,6 @@ class DetalleResumenViewModel : ViewModel() {
         val dbHelper = RinconDbHelper(context)
         dbHelper.eliminarRegistroPorId(idRegistro)
 
-        // Recargamos los datos para actualizar la UI
         val current = _uiState.value
         cargarDetalles(context, current.acceso, current.fecha)
     }

@@ -2,6 +2,7 @@ package com.example.rinconsur.ui.screens
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -38,6 +40,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -176,6 +179,43 @@ fun MisSesionesContent(
     onCerrarSesion: () -> Unit,
     onCrearNuevaSesion: (String) -> Unit
 ) {
+
+    var mostrarDialogoSalirSistema by remember { mutableStateOf(false) }
+
+    BackHandler {
+        mostrarDialogoSalirSistema = true
+    }
+
+    if (mostrarDialogoSalirSistema) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogoSalirSistema = false },
+            title = {
+                Text(text = "Cerrar sesión")
+            },
+            text = {
+                Text(text = "¿Estás seguro que quieres cerrar sesión y salir de tu cuenta?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mostrarDialogoSalirSistema = false
+                        onCerrarSesion()
+                    }
+                ) {
+                    Text("Sí, cerrar sesión")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { mostrarDialogoSalirSistema = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+    // -------------------------------------
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val contexto = LocalContext.current
@@ -371,7 +411,6 @@ private fun MenuLateral(
             )
         }
 
-        // NUEVO BOTÓN: Gestión de Usuarios (Solo Administrador)
         if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR) {
             NavigationDrawerItem(
                 label = { Text(stringResource(R.string.gestion_usuarios_titulo)) },
