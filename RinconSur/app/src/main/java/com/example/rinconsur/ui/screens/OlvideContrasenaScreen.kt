@@ -2,6 +2,7 @@ package com.example.rinconsur.ui.screens
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -110,6 +111,10 @@ fun OlvideContrasenaContent(
         )
     }
 
+    val esTemaOscuro = isSystemInDarkTheme()
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -118,7 +123,7 @@ fun OlvideContrasenaContent(
                         text = stringResource(R.string.olvide_titulo),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = colorContenidoTopAppBar
                     )
                 },
                 navigationIcon = {
@@ -126,14 +131,19 @@ fun OlvideContrasenaContent(
                         Icon(
                             painter = painterResource(R.drawable.ic_volver),
                             contentDescription = stringResource(R.string.olvide_cd_volver),
-                            tint = Color.White
+                            tint = colorContenidoTopAppBar
                         )
                     }
                 },
                 actions = {
                     LogoTopBarRinconSur()
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = fondoTopAppBar,
+                    titleContentColor = colorContenidoTopAppBar,
+                    navigationIconContentColor = colorContenidoTopAppBar,
+                    actionIconContentColor = colorContenidoTopAppBar
+                )
             )
         },
         containerColor = MaterialTheme.colorScheme.background

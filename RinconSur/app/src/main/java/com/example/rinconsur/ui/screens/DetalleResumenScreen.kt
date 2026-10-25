@@ -2,6 +2,7 @@ package com.example.rinconsur.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -78,14 +79,14 @@ fun DetalleResumenScreen(
                         viewModel.eliminarRegistro(contexto, registroAEliminar!!.id)
                         registroAEliminar = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text(stringResource(R.string.detalle_dialogo_eliminar_confirmar), color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.detalle_dialogo_eliminar_confirmar), color = MaterialTheme.colorScheme.onError, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { registroAEliminar = null }) {
-                    Text(stringResource(R.string.detalle_dialogo_eliminar_cancelar), color = Color.Gray, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.detalle_dialogo_eliminar_cancelar), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
                 }
             }
         )
@@ -105,6 +106,10 @@ fun DetalleResumenContent(
     onVolver: () -> Unit,
     onAbrirEdicion: (RegistroDetalleItem) -> Unit
 ) {
+    val esTemaOscuro = isSystemInDarkTheme()
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -114,14 +119,14 @@ fun DetalleResumenContent(
                             text = stringResource(R.string.detalle_resumen_titulo),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = colorContenidoTopAppBar,
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                         Text(
                             text = "${uiState.acceso} · ${uiState.fecha}",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.8f),
+                            color = colorContenidoTopAppBar.copy(alpha = 0.8f),
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
@@ -129,13 +134,18 @@ fun DetalleResumenContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
-                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.detalle_resumen_cd_volver), tint = Color.White)
+                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.detalle_resumen_cd_volver), tint = colorContenidoTopAppBar)
                     }
                 },
                 actions = {
                     LogoTopBarRinconSur()
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = fondoTopAppBar,
+                    titleContentColor = colorContenidoTopAppBar,
+                    navigationIconContentColor = colorContenidoTopAppBar,
+                    actionIconContentColor = colorContenidoTopAppBar
+                )
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -149,9 +159,13 @@ fun DetalleResumenContent(
         ) {
             Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
+            // Tarjeta Superior (Total Muestras)
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
                 border = null
             ) {
                 Row(
@@ -160,8 +174,8 @@ fun DetalleResumenContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(text = stringResource(R.string.detalle_resumen_total_muestras), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
-                        Text(text = "${uiState.totalRegistros}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
+                        Text(text = stringResource(R.string.detalle_resumen_total_muestras), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                        Text(text = "${uiState.totalRegistros}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                     Box(modifier = Modifier.background(Color(0xFFE8F5E9), RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
                         Text(text = stringResource(R.string.detalle_resumen_validado), style = MaterialTheme.typography.labelSmall, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
@@ -169,13 +183,13 @@ fun DetalleResumenContent(
                 }
             }
 
-            Text(text = stringResource(R.string.detalle_resumen_historial_titulo), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+            Text(text = stringResource(R.string.detalle_resumen_historial_titulo), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
 
             if (uiState.registros.isEmpty()) {
                 Text(
                     text = stringResource(R.string.detalle_resumen_sin_registros),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     modifier = Modifier.padding(top = Dimens.espacioMedio)
                 )
             } else {
@@ -212,38 +226,42 @@ private fun ItemRegistroDetalle(registro: RegistroDetalleItem, onEditar: () -> U
         else -> registro.compania
     }
 
+    // Tarjetas del historial
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onEditar() },
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = stringResource(R.string.detalle_item_hora, registro.hora), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
+                Text(text = stringResource(R.string.detalle_item_hora, registro.hora), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = registro.clasificacion, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Text(text = registro.clasificacion, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                     Spacer(modifier = Modifier.width(Dimens.espacioChico))
-                    Icon(imageVector = Icons.Default.Edit, contentDescription = stringResource(R.string.detalle_item_cd_editar), tint = Color.Gray, modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = stringResource(R.string.detalle_item_cd_editar), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico), color = Color(0xFFF0F0F0))
+            HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.espacioChico), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = stringResource(R.string.detalle_item_perfil), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                Text(text = "$edadFormato · $companiaFormato", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                Text(text = stringResource(R.string.detalle_item_perfil), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                Text(text = "$edadFormato · $companiaFormato", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
             }
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = stringResource(R.string.detalle_item_bolsas_ext), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                Text(text = if (registro.bolsas) stringResource(R.string.sesion_curso_opcion_si) else stringResource(R.string.sesion_curso_opcion_no), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                Text(text = stringResource(R.string.detalle_item_bolsas_ext), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                Text(text = if (registro.bolsas) stringResource(R.string.sesion_curso_opcion_si) else stringResource(R.string.sesion_curso_opcion_no), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
             }
 
             if (registro.clasificacion == "TRANSITO" && !registro.destino.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = stringResource(R.string.detalle_item_destino), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    Text(text = stringResource(R.string.detalle_item_destino), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                     Text(text = registro.destino, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium, color = Color(0xFFE65100))
                 }
             }
@@ -268,7 +286,7 @@ fun DialogoEditarRegistro(
         title = { Text(stringResource(R.string.detalle_dialogo_editar_titulo), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
-                Text(stringResource(R.string.detalle_dialogo_editar_hora, registro.hora), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(stringResource(R.string.detalle_dialogo_editar_hora, registro.hora), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
 
                 Column {
                     Text(stringResource(R.string.sesion_curso_clasificacion), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
@@ -319,14 +337,14 @@ fun DialogoEditarRegistro(
         confirmButton = {
             Button(
                 onClick = { onGuardar(clasificacionSeleccionada, rangoSeleccionado, companiaSeleccionada, traeBolsas) },
-                colors = ButtonDefaults.buttonColors(containerColor = BurdeoRincon)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text(stringResource(R.string.detalle_dialogo_editar_guardar))
+                Text(stringResource(R.string.detalle_dialogo_editar_guardar), color = MaterialTheme.colorScheme.onPrimary)
             }
         },
         dismissButton = {
             IconButton(onClick = onEliminar) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.detalle_dialogo_editar_cd_eliminar), tint = Color.Red)
+                Icon(imageVector = Icons.Default.Delete, contentDescription = stringResource(R.string.detalle_dialogo_editar_cd_eliminar), tint = MaterialTheme.colorScheme.error)
             }
         }
     )
@@ -336,13 +354,16 @@ fun DialogoEditarRegistro(
 fun FiltroChipBasico(texto: String, seleccionado: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .background(if (seleccionado) BurdeoRincon else Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+            .background(
+                if (seleccionado) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                RoundedCornerShape(8.dp)
+            )
             .clickable { onClick() }
             .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         Text(
             text = texto,
-            color = if (seleccionado) Color.White else Color.DarkGray,
+            color = if (seleccionado) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal
         )

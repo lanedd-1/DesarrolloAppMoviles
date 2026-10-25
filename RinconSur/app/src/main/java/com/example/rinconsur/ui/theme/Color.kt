@@ -15,3 +15,10 @@ val GrisDeshabilitado = Color(0xFFBDBDBD)
 // Colores de estado (opcionales para feedback en UI)
 val VerdeExito = Color(0xFF2E7D32)
 val RojoAlerta = Color(0xFFD32F2F)
+
+
+val BurdeoRinconDark = Color(0xFFEF9A9A)       // Tono pastel suave para legibilidad alta
+val TerracotaRinconDark = Color(0xFFFF8A65)    // Tono cálido pastel
+val FondoGrisDark = Color(0xFF121212)          // Fondo oscuro profundo
+val BlancoTarjetaDark = Color(0xFF1E1E1E)      // Superficie de tarjetas y barra superior
+val TextoPrincipalDark = Color(0xFFE0E0E0)     // Texto suave para no encandilar

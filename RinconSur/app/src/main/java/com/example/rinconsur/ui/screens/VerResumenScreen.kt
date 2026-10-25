@@ -2,6 +2,7 @@ package com.example.rinconsur.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +41,19 @@ fun VerResumenScreen(
     val contexto = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val esTemaOscuro = isSystemInDarkTheme()
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
+    // Lista de colores consistente para gráficos (Barras y Torta)
+    val coloresGrafico = listOf(
+        MaterialTheme.colorScheme.primary, // Primer ítem (TRANSITO -> Rosado/Burdeo pastel)
+        Color(0xFFE65100),                  // Segundo ítem (VISITA -> Naranjo)
+        Color(0xFF2E7D32),                  // Verde
+        Color(0xFF1565C0),                  // Azul
+        Color(0xFF6A1B9A)                   // Morado
+    )
+
     LaunchedEffect(acceso, fecha) {
         viewModel.cargarDatos(contexto, acceso, fecha)
     }
@@ -49,19 +63,24 @@ fun VerResumenScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(stringResource(R.string.ver_resumen_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("${uiState.acceso} · ${uiState.fecha}", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.8f))
+                        Text(stringResource(R.string.ver_resumen_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = colorContenidoTopAppBar)
+                        Text("${uiState.acceso} · ${uiState.fecha}", style = MaterialTheme.typography.bodySmall, color = colorContenidoTopAppBar.copy(alpha = 0.8f))
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
-                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.ver_resumen_cd_volver), tint = Color.White)
+                        Icon(painter = painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.ver_resumen_cd_volver), tint = colorContenidoTopAppBar)
                     }
                 },
                 actions = {
                     LogoTopBarRinconSur()
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = fondoTopAppBar,
+                    titleContentColor = colorContenidoTopAppBar,
+                    navigationIconContentColor = colorContenidoTopAppBar,
+                    actionIconContentColor = colorContenidoTopAppBar
+                )
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -77,7 +96,7 @@ fun VerResumenScreen(
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                 border = null
             ) {
                 Row(
@@ -86,33 +105,36 @@ fun VerResumenScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(text = stringResource(R.string.ver_resumen_total_verificados), style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
-                        Text(text = "${uiState.totalMuestras}", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
+                        Text(text = stringResource(R.string.ver_resumen_total_verificados), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                        Text(text = "${uiState.totalMuestras}", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
 
-            Text(text = stringResource(R.string.ver_resumen_titulo_barras), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+            Text(text = stringResource(R.string.ver_resumen_titulo_barras), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                 border = null
             ) {
                 Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
                     if (uiState.distribucionClasificacion.isEmpty()) {
-                        Text(stringResource(R.string.ver_resumen_sin_datos), color = Color.Gray, modifier = Modifier.padding(Dimens.espacioMedio))
+                        Text(stringResource(R.string.ver_resumen_sin_datos), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(Dimens.espacioMedio))
                     } else {
-                        GraficoBarrasNativo(datos = uiState.distribucionClasificacion)
+                        GraficoBarrasNativo(
+                            datos = uiState.distribucionClasificacion,
+                            colores = coloresGrafico
+                        )
                     }
                 }
             }
 
-            Text(text = stringResource(R.string.ver_resumen_titulo_torta), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+            Text(text = stringResource(R.string.ver_resumen_titulo_torta), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                 border = null
             ) {
                 Column(
@@ -123,26 +145,18 @@ fun VerResumenScreen(
                     verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
                 ) {
                     if (uiState.distribucionClasificacion.isEmpty()) {
-                        Text(stringResource(R.string.ver_resumen_sin_datos), color = Color.Gray, modifier = Modifier.padding(Dimens.espacioMedio))
+                        Text(stringResource(R.string.ver_resumen_sin_datos), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(Dimens.espacioMedio))
                     } else {
-                        val coloresTorta = listOf(
-                            BurdeoRincon,
-                            Color(0xFFE65100),
-                            Color(0xFF2E7D32),
-                            Color(0xFF1565C0),
-                            Color(0xFF6A1B9A)
-                        )
-
                         GraficoCircularNativo(
                             datos = uiState.distribucionClasificacion,
-                            colores = coloresTorta
+                            colores = coloresGrafico
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
 
                         LeyendaCircularNativa(
                             datos = uiState.distribucionClasificacion,
-                            colores = coloresTorta
+                            colores = coloresGrafico
                         )
                     }
                 }
@@ -152,7 +166,7 @@ fun VerResumenScreen(
 }
 
 @Composable
-fun GraficoBarrasNativo(datos: List<Pair<String, Int>>) {
+fun GraficoBarrasNativo(datos: List<Pair<String, Int>>, colores: List<Color>) {
     val maxValor = datos.maxOfOrNull { it.second }?.coerceAtLeast(1) ?: 1
 
     Row(
@@ -162,23 +176,24 @@ fun GraficoBarrasNativo(datos: List<Pair<String, Int>>) {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.Bottom
     ) {
-        datos.forEach { (categoria, valor) ->
+        datos.forEachIndexed { index, (categoria, valor) ->
             val alturaProporcional = (valor.toFloat() / maxValor.toFloat()).coerceIn(0.01f, 1f)
             val alturaBarra = 150.dp * alturaProporcional
+            val colorActual = colores[index % colores.size]
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier.weight(1f)
             ) {
-                Text(text = valor.toString(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
+                Text(text = valor.toString(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = colorActual)
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.6f)
                         .height(alturaBarra)
-                        .background(BurdeoRincon, RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                        .background(colorActual, RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -186,7 +201,7 @@ fun GraficoBarrasNativo(datos: List<Pair<String, Int>>) {
                 Text(
                     text = categoria,
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.DarkGray,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
             }
@@ -246,9 +261,9 @@ fun LeyendaCircularNativa(datos: List<Pair<String, Int>>, colores: List<Color>) 
                             .size(12.dp)
                             .background(colorActual, RoundedCornerShape(2.dp))
                     )
-                    Text(text = categoria, style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
+                    Text(text = categoria, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
                 }
-                Text(text = "$valor", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                Text(text = "$valor", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }

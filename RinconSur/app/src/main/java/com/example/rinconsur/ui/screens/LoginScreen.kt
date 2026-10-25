@@ -1,5 +1,6 @@
 package com.example.rinconsur.ui.screens
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -86,6 +87,10 @@ fun LoginContent(
         )
     }
 
+    val esTemaOscuro = isSystemInDarkTheme()
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -95,19 +100,23 @@ fun LoginContent(
                             text = stringResource(R.string.login_titulo),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = colorContenidoTopAppBar
                         )
                         Text(
                             text = stringResource(R.string.login_subtitulo),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.8f)
+                            color = colorContenidoTopAppBar.copy(alpha = 0.8f)
                         )
                     }
                 },
                 actions = {
                     LogoTopBarRinconSur()
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = fondoTopAppBar,
+                    titleContentColor = colorContenidoTopAppBar,
+                    actionIconContentColor = colorContenidoTopAppBar
+                )
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -154,7 +163,7 @@ fun LoginContent(
                         Text(
                             text = stringResource(R.string.login_olvidaste_contrasena),
                             style = MaterialTheme.typography.bodySmall,
-                            color = BurdeoRincon,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                     }

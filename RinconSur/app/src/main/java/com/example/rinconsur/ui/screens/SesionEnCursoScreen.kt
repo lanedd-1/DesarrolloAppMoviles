@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -147,6 +148,10 @@ fun SesionEnCursoContent(
     var mostrarDialogoFinalizar by remember { mutableStateOf(false) }
     var mostrarDialogoCerrar by remember { mutableStateOf(false) }
 
+    val esTemaOscuro = isSystemInDarkTheme()
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
     BackHandler { mostrarDialogoPausa = true }
 
     if (mostrarDialogoCerrar) {
@@ -239,19 +244,24 @@ fun SesionEnCursoContent(
                 TopAppBar(
                     title = {
                         Column {
-                            Text(stringResource(R.string.sesion_curso_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White)
-                            Text(stringResource(R.string.sesion_curso_subtitulo), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
+                            Text(stringResource(R.string.sesion_curso_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = colorContenidoTopAppBar)
+                            Text(stringResource(R.string.sesion_curso_subtitulo), style = MaterialTheme.typography.bodyMedium, color = colorContenidoTopAppBar.copy(alpha = 0.8f))
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = stringResource(R.string.sesion_curso_cd_menu), tint = Color.White)
+                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = stringResource(R.string.sesion_curso_cd_menu), tint = colorContenidoTopAppBar)
                         }
                     },
                     actions = {
                         LogoTopBarRinconSur()
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = fondoTopAppBar,
+                        titleContentColor = colorContenidoTopAppBar,
+                        navigationIconContentColor = colorContenidoTopAppBar,
+                        actionIconContentColor = colorContenidoTopAppBar
+                    )
                 )
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -343,7 +353,7 @@ private fun FormularioRegistro(
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.sesion_curso_clasificacion), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text(stringResource(R.string.sesion_curso_obligatoria), style = MaterialTheme.typography.bodySmall, color = BurdeoRincon, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.sesion_curso_obligatoria), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.espacioChico), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
             ClasificacionPersona.entries.forEach { opcion ->
@@ -391,7 +401,7 @@ private fun ResumenRegistros(uiState: SesionEnCursoUiState, onAnular: () -> Unit
         Column(modifier = Modifier.padding(Dimens.espacioMedio), verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.sesion_curso_resumen_titulo), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text("${uiState.totalRegistrosSesion}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = BurdeoRincon)
+                Text("${uiState.totalRegistrosSesion}", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             }
             Text(stringResource(R.string.sesion_curso_resumen_ultimo, uiState.ultimoRegistroResumen), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
 
@@ -409,13 +419,32 @@ private fun BotonOpcionTactil(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val esTemaOscuro = isSystemInDarkTheme()
+
+    val colorFondo = when {
+        seleccionado -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+        esTemaOscuro -> MaterialTheme.colorScheme.surfaceVariant
+        else -> Color.White
+    }
+
+    val colorBorde = when {
+        seleccionado -> MaterialTheme.colorScheme.primary
+        esTemaOscuro -> MaterialTheme.colorScheme.outline
+        else -> Color(0xFFD6D6D6)
+    }
+
+    val colorTexto = when {
+        seleccionado -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(Dimens.cornerSmall))
-            .background(if (seleccionado) BurdeoRincon.copy(alpha = 0.12f) else Color.White)
+            .background(colorFondo)
             .border(
                 width = if (seleccionado) 1.5.dp else 1.dp,
-                color = if (seleccionado) BurdeoRincon else Color(0xFFD6D6D6),
+                color = colorBorde,
                 shape = RoundedCornerShape(Dimens.cornerSmall)
             )
             .clickable { onClick() }
@@ -424,13 +453,13 @@ private fun BotonOpcionTactil(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (seleccionado) {
-                Text(text = "✓ ", color = BurdeoRincon, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                Text(text = "✓ ", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             }
             Text(
                 text = texto,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal,
-                color = if (seleccionado) BurdeoRincon else Color(0xFF1A1C1E)
+                color = colorTexto
             )
         }
     }
