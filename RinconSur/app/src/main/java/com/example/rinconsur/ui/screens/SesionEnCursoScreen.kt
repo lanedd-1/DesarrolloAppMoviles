@@ -95,7 +95,7 @@ fun SesionEnCursoScreen(
     val contexto = LocalContext.current
 
     LaunchedEffect(idSesion) {
-        viewModel.inicializarSesion(idSesion, acceso)
+        viewModel.inicializarSesion(contexto, idSesion, acceso)
     }
 
     SesionEnCursoContent(

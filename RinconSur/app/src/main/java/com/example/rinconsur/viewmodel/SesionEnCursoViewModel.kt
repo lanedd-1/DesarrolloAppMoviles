@@ -24,15 +24,6 @@ class SesionEnCursoViewModel : ViewModel() {
 
     private val historialRegistros = mutableListOf<String>()
 
-    fun inicializarSesion(idSesion: Long, nombreAcceso: String) {
-        _uiState.update {
-            it.copy(
-                idSesionActual = idSesion,
-                accesoNombre = nombreAcceso
-            )
-        }
-    }
-
     fun onClasificacionSeleccionada(opcion: ClasificacionPersona) {
         _uiState.update { it.copy(clasificacionSeleccionada = opcion) }
     }
@@ -49,10 +40,35 @@ class SesionEnCursoViewModel : ViewModel() {
         _uiState.update { it.copy(traeBolsasOtraTienda = traeBolsas) }
     }
 
-    fun onDestinoSeleccionado(destino: AccesoDestinoEnum) {
-        _uiState.update { it.copy(destinoSeleccionado = destino) }
-    }
+    fun inicializarSesion(context: Context, idSesion: Long, nombreAcceso: String) {
+        val dbHelper = RinconDbHelper(context)
+        val fechaHoy = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
 
+        val registrosExistentes = dbHelper.obtenerRegistrosPorAccesoYFecha(nombreAcceso, fechaHoy)
+
+        historialRegistros.clear()
+
+        registrosExistentes.reversed().forEach { item ->
+            val clasif = try { ClasificacionPersona.valueOf(item.clasificacion).etiqueta } catch (e: Exception) { item.clasificacion }
+            val rango = try { RangoEtarioEnum.valueOf(item.rangoEtario).etiqueta } catch (e: Exception) { item.rangoEtario }
+            val comp = try { TipoCompaniaEnum.valueOf(item.compania).etiqueta } catch (e: Exception) { item.compania }
+
+            historialRegistros.add("$clasif · $rango · $comp")
+        }
+
+        val total = historialRegistros.size
+        val ultimoResumen = historialRegistros.lastOrNull() ?: context.getString(R.string.sesion_curso_sin_registros)
+
+        _uiState.update {
+            it.copy(
+                idSesionActual = idSesion,
+                accesoNombre = nombreAcceso,
+                totalRegistrosSesion = total,
+                ultimoRegistroResumen = ultimoResumen,
+                permiteAnular = total > 0
+            )
+        }
+    }
     fun onGuardarRegistro(context: Context) {
         val estado = _uiState.value
         val resumen = "${estado.clasificacionSeleccionada.etiqueta} · ${estado.rangoEtarioSeleccionado.etiqueta} · ${estado.companiaSeleccionada.etiqueta}"
