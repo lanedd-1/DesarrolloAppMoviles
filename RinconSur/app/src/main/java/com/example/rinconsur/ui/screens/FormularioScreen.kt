@@ -74,7 +74,7 @@ fun FormularioScreen(
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
     onIrGestionAccesos: () -> Unit = {},
-    onIrGestionUsuarios: () -> Unit,
+    onIrGestionUsuarios: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
     onMostrarCerrarSesion: () -> Unit = {},
@@ -108,6 +108,7 @@ fun FormularioScreen(
         onIrMisSesiones = onIrMisSesiones,
         onIrCrearCuenta = onIrCrearCuenta,
         onIrGestionAccesos = onIrGestionAccesos,
+        onIrGestionUsuarios = onIrGestionUsuarios,
         onIrResumenDiario = onIrResumenDiario,
         onCerrarSesion = onCerrarSesion,
         onMostrarCerrarSesion = onMostrarCerrarSesion
@@ -130,6 +131,7 @@ fun FormularioContent(
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
     onIrGestionAccesos: () -> Unit = {},
+    onIrGestionUsuarios: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
     onCerrarMenu: () -> Unit = {},
@@ -193,6 +195,15 @@ fun FormularioContent(
                     onClick = { onCerrarMenu(); onIrCrearCuenta() },
                     modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                 )
+
+                if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR) {
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(R.string.gestion_usuarios_titulo)) },
+                        selected = false,
+                        onClick = { onCerrarMenu(); onIrGestionUsuarios() },
+                        modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                    )
+                }
 
                 Spacer(modifier = Modifier.weight(1f))
                 HorizontalDivider()
@@ -270,120 +281,5 @@ fun FormularioContent(
                 Spacer(modifier = Modifier.height(Dimens.espacioGrande))
             }
         }
-    }
-}
-
-// ----------------------------- PREVIEWS -----------------------------
-
-@Preview(showBackground = true, showSystemUi = true, name = "1. Registro Limpio (Jefe de Tienda)")
-@Composable
-private fun FormularioLimpioPreview() {
-    RinconSurTheme {
-        FormularioContent(
-            usuarioActual = Usuario(
-                id = 1L,
-                nombre = "Rodrigo Saavedra",
-                correo = "supervisor@rinconsur.cl",
-                contrasena = "",
-                rolId = Rol.ID_JEFE_TIENDA,
-                rolNombre = "Jefe de Tienda"
-            ),
-            uiState = FormularioUiState(
-                nombre = "Cristopher Bustamante",
-                correo = "cbustamante@rinconsur.cl",
-                rolesDisponibles = listOf("Observador de Pasillo", "Jefe de Tienda"),
-                rolSeleccionado = "Observador de Pasillo"
-            ),
-            onNombreCambia = {},
-            onCorreoCambia = {},
-            onRolSeleccionado = {},
-            onContrasenaCambia = {},
-            onConfirmarContrasenaCambia = {},
-            onAlternarVisibilidad = {},
-            onRegistrar = {},
-            onLimpiar = {},
-            onIrMisSesiones = {},
-            onIrCrearCuenta = {},
-            onIrGestionAccesos = {},
-            onIrResumenDiario = {},
-            onCerrarSesion = {},
-            onMostrarCerrarSesion = {}
-
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "2. Registro Exitoso con Banner")
-@Composable
-private fun FormularioExitosoPreview() {
-    RinconSurTheme {
-        FormularioContent(
-            usuarioActual = Usuario(
-                id = 1L,
-                nombre = "Rodrigo Saavedra",
-                correo = "supervisor@rinconsur.cl",
-                contrasena = "",
-                rolId = Rol.ID_JEFE_TIENDA,
-                rolNombre = "Jefe de Tienda"
-            ),
-            uiState = FormularioUiState(
-                nombre = "Cristopher Bustamante",
-                correo = "cbustamante@rinconsur.cl",
-                rolesDisponibles = listOf("Observador de Pasillo", "Jefe de Tienda"),
-                rolSeleccionado = "Observador de Pasillo",
-                mensajeExito = "Cuenta creada para Cristopher Bustamante con éxito!"
-            ),
-            onNombreCambia = {},
-            onCorreoCambia = {},
-            onRolSeleccionado = {},
-            onContrasenaCambia = {},
-            onConfirmarContrasenaCambia = {},
-            onAlternarVisibilidad = {},
-            onRegistrar = {},
-            onLimpiar = {},
-            onIrMisSesiones = {},
-            onIrCrearCuenta = {},
-            onIrGestionAccesos = {},
-            onIrResumenDiario = {},
-            onCerrarSesion = {}
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true, name = "3. Registro Con Errores")
-@Composable
-private fun FormularioConErroresPreview() {
-    RinconSurTheme {
-        FormularioContent(
-            usuarioActual = Usuario(
-                id = 1L,
-                nombre = "Rodrigo Saavedra",
-                correo = "supervisor@rinconsur.cl",
-                contrasena = "",
-                rolId = Rol.ID_JEFE_TIENDA,
-                rolNombre = "Jefe de Tienda"
-            ),
-            uiState = FormularioUiState(
-                correo = "usuario@gmail.com",
-                errorNombre = "El nombre completo es obligatorio",
-                errorCorreo = "Debe ser un correo institucional (@rinconsur.cl)",
-                errorRol = "Debes seleccionar un rol para el colaborador",
-                errorContrasena = "Mínimo 8 caracteres",
-                errorConfirmarContrasena = "Las contraseñas no coinciden"
-            ),
-            onNombreCambia = {},
-            onCorreoCambia = {},
-            onRolSeleccionado = {},
-            onContrasenaCambia = {},
-            onConfirmarContrasenaCambia = {},
-            onAlternarVisibilidad = {},
-            onRegistrar = {},
-            onLimpiar = {},
-            onIrMisSesiones = {},
-            onIrCrearCuenta = {},
-            onIrGestionAccesos = {},
-            onIrResumenDiario = {},
-            onCerrarSesion = {}
-        )
     }
 }

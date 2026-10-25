@@ -1,10 +1,8 @@
 package com.example.rinconsur.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,13 +14,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
 import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.components.BannerNotificacion
+import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.viewmodel.GestionUsuariosViewModel
@@ -53,6 +51,9 @@ fun GestionUsuariosScreen(
                             Icon(painterResource(R.drawable.ic_volver), contentDescription = null, tint = Color.White)
                         }
                     },
+                    actions = {
+                        LogoTopBarRinconSur()
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
                 )
             }
@@ -72,6 +73,9 @@ fun GestionUsuariosScreen(
                     IconButton(onClick = onVolver) {
                         Icon(painterResource(R.drawable.ic_volver), contentDescription = stringResource(id = R.string.gestion_usuarios_cd_volver), tint = Color.White)
                     }
+                },
+                actions = {
+                    LogoTopBarRinconSur() // <-- LOGO AGREGADO AQUÍ
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
             )
@@ -96,6 +100,7 @@ fun GestionUsuariosScreen(
                     items(uiState.usuarios) { usuario ->
                         ItemUsuarioAdmin(
                             usuario = usuario,
+                            usuarioActual = usuarioActual, // PASAMOS EL USUARIO ACTUAL
                             onCambiarEstado = { nuevoEstado ->
                                 viewModel.cambiarEstadoUsuario(contexto, usuario, nuevoEstado, mensajePlantilla)
                             }
@@ -109,7 +114,14 @@ fun GestionUsuariosScreen(
 }
 
 @Composable
-fun ItemUsuarioAdmin(usuario: Usuario, onCambiarEstado: (Boolean) -> Unit) {
+fun ItemUsuarioAdmin(
+    usuario: Usuario,
+    usuarioActual: Usuario?,
+    onCambiarEstado: (Boolean) -> Unit
+) {
+    // BLOQUEO: Evita modificar si es la propia cuenta del usuario o si es un Administrador
+    val bloquearEdicion = usuario.id == usuarioActual?.id || usuario.rolId == Rol.ID_ADMINISTRADOR
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -129,12 +141,21 @@ fun ItemUsuarioAdmin(usuario: Usuario, onCambiarEstado: (Boolean) -> Unit) {
                 Switch(
                     checked = usuario.activo,
                     onCheckedChange = onCambiarEstado,
-                    colors = SwitchDefaults.colors(checkedTrackColor = BurdeoRincon)
+                    enabled = !bloquearEdicion, // DESACTIVA EL BOTÓN SI ES ADMIN
+                    colors = SwitchDefaults.colors(
+                        checkedTrackColor = BurdeoRincon,
+                        // Añadimos opacidad para que el Administrador se vea activo pero "bloqueado" visualmente
+                        disabledCheckedTrackColor = BurdeoRincon.copy(alpha = 0.5f)
+                    )
                 )
                 Text(
                     text = stringResource(id = if (usuario.activo) R.string.gestion_usuarios_estado_activo else R.string.gestion_usuarios_estado_suspendido),
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (usuario.activo) Color(0xFF2E7D32) else Color.Red
+                    color = if (usuario.activo) {
+                        if (bloquearEdicion) Color(0xFF2E7D32).copy(alpha = 0.5f) else Color(0xFF2E7D32)
+                    } else {
+                        Color.Red
+                    }
                 )
             }
         }

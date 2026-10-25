@@ -41,7 +41,7 @@ fun AppNavegacion() {
 
     NavHost(
         navController = navController,
-        startDestination = Ruta.MisSesiones.ruta
+        startDestination = Ruta.Login.ruta
     ) {
         composable(Ruta.Login.ruta) {
             LoginScreen(
@@ -89,7 +89,7 @@ fun AppNavegacion() {
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
                 onIrResumenDiario = { navController.navigate(Ruta.ResumenDiario.ruta) },
                 onIrGestionAccesos = { navController.navigate(Ruta.GestionAccesos.ruta) },
-                onIrGestionUsuarios = { navController.navigate(Ruta.GestionUsuarios.ruta) }, // <-- CONEXIÓN AGREGADA
+                onIrGestionUsuarios = { navController.navigate(Ruta.GestionUsuarios.ruta) },
                 onCerrarSesion = {
                     sesionViewModel.cerrarSesion()
                     SesionPreferencias(contexto).limpiar()
@@ -179,6 +179,7 @@ fun AppNavegacion() {
                     }
                 },
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
+                onIrGestionUsuarios = { navController.navigate(Ruta.GestionUsuarios.ruta) },
                 onCerrarSesion = {
                     sesionViewModel.cerrarSesion()
                     SesionPreferencias(contexto).limpiar()
@@ -200,7 +201,7 @@ fun AppNavegacion() {
                 onIrCrearCuenta = { },
                 onIrResumenDiario = { navController.navigate(Ruta.ResumenDiario.ruta) },
                 onIrGestionAccesos = { navController.navigate(Ruta.GestionAccesos.ruta) },
-                onIrGestionUsuarios = { navController.navigate(Ruta.GestionUsuarios.ruta) }, // <-- CONEXIÓN AGREGADA
+                onIrGestionUsuarios = { navController.navigate(Ruta.GestionUsuarios.ruta) },
                 onCerrarSesion = {
                     sesionViewModel.cerrarSesion()
                     SesionPreferencias(contexto).limpiar()

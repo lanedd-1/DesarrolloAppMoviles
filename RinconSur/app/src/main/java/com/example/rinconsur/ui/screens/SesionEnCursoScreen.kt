@@ -86,6 +86,7 @@ fun SesionEnCursoScreen(
     onIrCrearCuenta: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
     onIrGestionAccesos: () -> Unit = {},
+    onIrGestionUsuarios: () -> Unit = {},
     onCerrarMenu: () -> Unit = {},
     onMostrarCerrarSesion: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {},
@@ -116,6 +117,7 @@ fun SesionEnCursoScreen(
         onIrCrearCuenta = onIrCrearCuenta,
         onCerrarSesion = onCerrarSesion,
         onIrGestionAccesos = onIrGestionAccesos,
+        onIrGestionUsuarios = onIrGestionUsuarios,
         onCerrarMenu = onCerrarMenu,
         onMostrarCerrarSesion = onMostrarCerrarSesion,
         onIrResumenDiario = onIrResumenDiario
@@ -139,6 +141,7 @@ fun SesionEnCursoContent(
     onIrCrearCuenta: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
     onIrGestionAccesos: () -> Unit = {},
+    onIrGestionUsuarios: () -> Unit = {},
     onCerrarMenu: () -> Unit = {},
     onMostrarCerrarSesion: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {}
@@ -209,6 +212,15 @@ fun SesionEnCursoContent(
                         label = { Text(stringResource(R.string.menu_lateral_registrar_colaborador)) },
                         selected = false,
                         onClick = { scope.launch { drawerState.close() }; onIrCrearCuenta() },
+                        modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+                    )
+                }
+
+                if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR) {
+                    NavigationDrawerItem(
+                        label = { Text(stringResource(R.string.gestion_usuarios_titulo)) },
+                        selected = false,
+                        onClick = { onCerrarMenu(); onIrGestionUsuarios() },
                         modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
                     )
                 }
@@ -308,7 +320,7 @@ private fun CabeceraSesion(uiState: SesionEnCursoUiState, usuarioActual: Usuario
                 Text(text = stringResource(R.string.sesion_curso_estado_en_curso, uiState.accesoNombre), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
             Text(
-                text = "${uiState.ubicacionAcceso} · ${usuarioActual?.nombre ?: "Cargando..."}",
+                text = "${uiState.ubicacionAcceso} ·${usuarioActual?.nombre ?: "Cargando..."}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
@@ -424,13 +436,5 @@ private fun BotonOpcionTactil(
                 color = if (seleccionado) BurdeoRincon else Color(0xFF1A1C1E)
             )
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun SesionEnCursoPreview() {
-    RinconSurTheme {
-        SesionEnCursoScreen(usuarioActual = null)
     }
 }
