@@ -74,6 +74,7 @@ fun FormularioScreen(
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
     onIrGestionAccesos: () -> Unit = {},
+    onIrGestionUsuarios: () -> Unit,
     onIrResumenDiario: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
     onMostrarCerrarSesion: () -> Unit = {},

@@ -18,6 +18,7 @@ import com.example.rinconsur.ui.screens.CambiarContrasenaScreen
 import com.example.rinconsur.ui.screens.DetalleResumenScreen
 import com.example.rinconsur.ui.screens.FormularioScreen
 import com.example.rinconsur.ui.screens.GestionAccesosScreen
+import com.example.rinconsur.ui.screens.GestionUsuariosScreen
 import com.example.rinconsur.ui.screens.LoginScreen
 import com.example.rinconsur.ui.screens.MisSesionesScreen
 import com.example.rinconsur.ui.screens.OlvideContrasenaScreen
@@ -88,6 +89,7 @@ fun AppNavegacion() {
                 onIrCrearCuenta = { navController.navigate(Ruta.Formulario.ruta) },
                 onIrResumenDiario = { navController.navigate(Ruta.ResumenDiario.ruta) },
                 onIrGestionAccesos = { navController.navigate(Ruta.GestionAccesos.ruta) },
+                onIrGestionUsuarios = { navController.navigate(Ruta.GestionUsuarios.ruta) }, // <-- CONEXIÓN AGREGADA
                 onCerrarSesion = {
                     sesionViewModel.cerrarSesion()
                     SesionPreferencias(contexto).limpiar()
@@ -113,6 +115,14 @@ fun AppNavegacion() {
                 }
             )
         }
+
+        composable(Ruta.GestionUsuarios.ruta) {
+            GestionUsuariosScreen(
+                usuarioActual = usuarioActual,
+                onVolver = { navController.navigateUp() }
+            )
+        }
+
         composable(
             route = Ruta.VerResumen.ruta,
             arguments = listOf(
@@ -190,6 +200,7 @@ fun AppNavegacion() {
                 onIrCrearCuenta = { },
                 onIrResumenDiario = { navController.navigate(Ruta.ResumenDiario.ruta) },
                 onIrGestionAccesos = { navController.navigate(Ruta.GestionAccesos.ruta) },
+                onIrGestionUsuarios = { navController.navigate(Ruta.GestionUsuarios.ruta) }, // <-- CONEXIÓN AGREGADA
                 onCerrarSesion = {
                     sesionViewModel.cerrarSesion()
                     SesionPreferencias(contexto).limpiar()

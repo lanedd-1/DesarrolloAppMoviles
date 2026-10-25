@@ -97,6 +97,7 @@ fun MisSesionesScreen(
     onIrCrearCuenta: () -> Unit = {},
     onIrResumenDiario: () -> Unit = {},
     onIrGestionAccesos: () -> Unit = {},
+    onIrGestionUsuarios: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
     viewModel: SesionViewModel = viewModel()
 ) {
@@ -129,6 +130,7 @@ fun MisSesionesScreen(
         onIrCrearCuenta = onIrCrearCuenta,
         onIrResumenDiario = onIrResumenDiario,
         onIrGestionAccesos = onIrGestionAccesos,
+        onIrGestionUsuarios = onIrGestionUsuarios,
         onCerrarSesion = onCerrarSesion,
         onCrearNuevaSesion = { accesoSeleccionado ->
             if (uiState.usuarioActual != null) {
@@ -169,6 +171,7 @@ fun MisSesionesContent(
     onIrCrearCuenta: () -> Unit,
     onIrResumenDiario: () -> Unit,
     onIrGestionAccesos: () -> Unit,
+    onIrGestionUsuarios: () -> Unit,
     onCerrarSesion: () -> Unit,
     onCrearNuevaSesion: (String) -> Unit
 ) {
@@ -251,6 +254,7 @@ fun MisSesionesContent(
                 onIrResumenDiario = onIrResumenDiario,
                 onIrCrearCuenta = onIrCrearCuenta,
                 onIrGestionAccesos = onIrGestionAccesos,
+                onIrGestionUsuarios = onIrGestionUsuarios,
                 onMostrarCerrarSesion = { mostrarDialogoCerrar = true }
             )
         }
@@ -318,6 +322,7 @@ private fun MenuLateral(
     onIrResumenDiario: () -> Unit,
     onIrCrearCuenta: () -> Unit,
     onIrGestionAccesos: () -> Unit,
+    onIrGestionUsuarios: () -> Unit,
     onMostrarCerrarSesion: () -> Unit
 ) {
     ModalDrawerSheet {
@@ -352,6 +357,16 @@ private fun MenuLateral(
                 label = { Text(stringResource(R.string.menu_lateral_registrar_colaborador)) },
                 selected = false,
                 onClick = { onCerrarMenu(); onIrCrearCuenta() },
+                modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
+            )
+        }
+
+        // NUEVO BOTÓN: Gestión de Usuarios (Solo Administrador)
+        if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR) {
+            NavigationDrawerItem(
+                label = { Text(stringResource(R.string.gestion_usuarios_titulo)) },
+                selected = false,
+                onClick = { onCerrarMenu(); onIrGestionUsuarios() },
                 modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)
             )
         }
@@ -497,7 +512,7 @@ private fun MisSesionesPreview() {
             onGuardarFotoBitmap = {},
             onGuardarFotoUri = {},
             onIniciarSesionConteo = { _, _ -> },
-            onIrCrearCuenta = {}, onIrResumenDiario = {}, onIrGestionAccesos = {}, onCerrarSesion = {}, onCrearNuevaSesion = {}
+            onIrCrearCuenta = {}, onIrResumenDiario = {}, onIrGestionAccesos = {}, onIrGestionUsuarios = {}, onCerrarSesion = {}, onCrearNuevaSesion = {}
         )
     }
 }

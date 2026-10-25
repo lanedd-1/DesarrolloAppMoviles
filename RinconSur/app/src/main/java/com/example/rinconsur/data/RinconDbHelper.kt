@@ -12,13 +12,15 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "rinconsur.db"
-        private const val DATABASE_VERSION = 11
+        private const val DATABASE_VERSION = 12
 
         private const val BCRYPT_COSTO = 10
 
         private const val TABLA_ROLES = "roles"
         private const val ROL_ID = "rol_id"
         private const val ROL_NOMBRE = "rol_nombre"
+
+        private const val USU_ACTIVO = "usu_activo"
 
         private const val TABLA_USUARIOS = "usuarios"
         private const val USU_ID = "usu_id"
@@ -61,7 +63,8 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     "$USU_CORREO TEXT NOT NULL UNIQUE, " +
                     "$USU_CONTRASENA TEXT NOT NULL, " +
                     "$USU_ROL INTEGER NOT NULL REFERENCES $TABLA_ROLES($ROL_ID), " +
-                    "$USU_FOTO_PERFIL TEXT)"
+                    "$USU_FOTO_PERFIL TEXT, " +
+                    "$USU_ACTIVO INTEGER NOT NULL DEFAULT 1)"
         private const val SQL_CREAR_SESIONES =
             "CREATE TABLE $TABLA_SESIONES (" +
                     "$SES_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -565,7 +568,48 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         cursor.close()
         return lista
     }
+    fun obtenerTodosLosUsuarios(): List<Usuario> {
+        val db = this.readableDatabase
+        val usuarios = mutableListOf<Usuario>()
+        val cursor = db.rawQuery(
+            "SELECT u.*, r.$ROL_NOMBRE AS $ROL_NOMBRE FROM $TABLA_USUARIOS u INNER JOIN $TABLA_ROLES r ON u.$USU_ROL = r.$ROL_ID ORDER BY u.$USU_NOMBRE ASC",
+            null
+        )
+        if (cursor.moveToFirst()) {
+            do {
+                usuarios.add(
+                    Usuario(
+                        id = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ID)),
+                        nombre = cursor.getString(cursor.getColumnIndexOrThrow(USU_NOMBRE)),
+                        correo = cursor.getString(cursor.getColumnIndexOrThrow(USU_CORREO)),
+                        contrasena = cursor.getString(cursor.getColumnIndexOrThrow(USU_CONTRASENA)),
+                        rolId = cursor.getLong(cursor.getColumnIndexOrThrow(USU_ROL)),
+                        rolNombre = cursor.getString(cursor.getColumnIndexOrThrow(ROL_NOMBRE)),
+                        fotoPerfilRuta = cursor.getString(cursor.getColumnIndexOrThrow(USU_FOTO_PERFIL)),
+                        activo = cursor.getInt(cursor.getColumnIndexOrThrow(USU_ACTIVO)) == 1
+                    )
+                )
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return usuarios
+    }
 
+    fun cambiarEstadoUsuario(usuarioId: Long, activo: Boolean): Boolean {
+        val db = this.writableDatabase
+        val valores = ContentValues().apply { put(USU_ACTIVO, if (activo) 1 else 0) }
+        return db.update(TABLA_USUARIOS, valores, "$USU_ID = ?", arrayOf(usuarioId.toString())) > 0
+    }
+    fun estaCuentaActiva(correo: String): Boolean {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT usu_activo FROM $TABLA_USUARIOS WHERE $USU_CORREO = ?", arrayOf(correo.trim().lowercase()))
+        var activa = true // Por defecto true. Si no existe, validarLogin fallará primero.
+        if (cursor.moveToFirst()) {
+            activa = cursor.getInt(0) == 1
+        }
+        cursor.close()
+        return activa
+    }
 }
 data class RegistroDetalleItem(
     val id: Long,

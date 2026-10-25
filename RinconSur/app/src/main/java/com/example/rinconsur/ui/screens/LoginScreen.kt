@@ -34,6 +34,7 @@ import com.example.rinconsur.model.LoginUiState
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
 import com.example.rinconsur.ui.components.CampoTexto
+import com.example.rinconsur.ui.components.DialogoCuentaSuspendida
 import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
@@ -56,6 +57,7 @@ fun LoginScreen(
         onCorreoCambia = viewModel::onCorreoCambia,
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
+        onCerrarDialogoSuspendido = viewModel::onCerrarDialogoSuspendido,
         onIngresar = {
             if (viewModel.onIngresar(contexto)) {
                 onLoginExitoso()
@@ -73,10 +75,17 @@ fun LoginContent(
     onCorreoCambia: (String) -> Unit,
     onContrasenaCambia: (String) -> Unit,
     onAlternarVisibilidad: () -> Unit,
+    onCerrarDialogoSuspendido: () -> Unit,
     onIngresar: () -> Unit,
     onOlvidasteContrasena: () -> Unit = {},
     onVolver: () -> Unit = {}
 ) {
+    if (uiState.mostrarDialogoSuspendido) {
+        DialogoCuentaSuspendida(
+            onEntendido = onCerrarDialogoSuspendido
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -174,6 +183,7 @@ private fun LoginScreenPreview() {
             onCorreoCambia = {},
             onContrasenaCambia = {},
             onAlternarVisibilidad = {},
+            onCerrarDialogoSuspendido = {},
             onIngresar = {},
             onOlvidasteContrasena = {},
             onVolver = {}

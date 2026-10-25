@@ -16,6 +16,7 @@
     <string name="login_error_contrasena_obligatoria">La contraseña es obligatoria</string>
     <string name="login_error_contrasena_corta">Mínimo 6 caracteres</string>
     <string name="login_error_credenciales_incorrectas">Correo o contraseña incorrectos</string>
+    <string name="login_error_cuenta_suspendida">Tu cuenta ha sido suspendida. Contacta al Administrador.</string>
 
     <!-- Textos Olvidaste Contraseña -->
     <string name="olvide_titulo">Recuperar Contraseña</string>
@@ -273,4 +274,19 @@
     <string name="dialogo_pausar_titulo">¿Pausar sesión?</string>
     <string name="dialogo_pausar_mensaje">Si vuelves atrás, la sesión quedará en curso y podrás retomarla más tarde desde Mis Sesiones. No perderás tus registros.</string>
     <string name="dialogo_pausar_confirmar">Sí, pausar</string>
+
+    <!-- Diálogo Cuenta Suspendida -->
+    <string name="dialogo_suspendida_titulo">Acceso Denegado</string>
+    <string name="dialogo_suspendida_entendido">Entendido</string>
+
+    <!-- Textos Gestión de Usuarios -->
+    <string name="gestion_usuarios_titulo">Gestión de Usuarios</string>
+    <string name="gestion_usuarios_cd_volver">Volver</string>
+    <string name="gestion_usuarios_estado_activo">Activo</string>
+    <string name="gestion_usuarios_estado_suspendido">Suspendido</string>
+    <string name="gestion_usuarios_mensaje_modificado">%1$s modificado correctamente</string>
+    <string name="gestion_usuarios_sin_usuarios">No hay usuarios registrados.</string>
+    <string name="gestion_usuarios_restringido_titulo">Acceso Restringido</string>
+    <string name="gestion_usuarios_restringido_mensaje">Solo el Administrador tiene permisos para gestionar las cuentas de usuario.</string>
+
 </resources>

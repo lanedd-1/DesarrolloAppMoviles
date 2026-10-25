@@ -25,4 +25,5 @@ sealed class Ruta(val ruta: String) {
     data object SesionEnCurso : Ruta("sesion_en_curso/{id}/{acceso}") {
         fun crear(id: Long, acceso: String) = "sesion_en_curso/$id/$acceso"
     }
+    data object GestionUsuarios : Ruta("gestion_usuarios")
 }
