@@ -19,7 +19,8 @@ data class OlvideContrasenaUiState(
     val codigoEnviado: Boolean = false,
     val errorCorreo: String? = null,
     val errorCodigo: String? = null,
-    val mensajeExito: String? = null
+    val mensajeExito: String? = null,
+    val mostrarDialogoSuspendido: Boolean = false // <-- NUEVO
 )
 
 class OlvideContrasenaViewModel : ViewModel() {
@@ -48,6 +49,10 @@ class OlvideContrasenaViewModel : ViewModel() {
         }
     }
 
+    fun onCerrarDialogoSuspendido() {
+        _uiState.update { it.copy(mostrarDialogoSuspendido = false) }
+    }
+
     fun onEnviarCodigo(contexto: Context): Boolean {
         val correo = _uiState.value.correo
         var error = when {
@@ -56,8 +61,16 @@ class OlvideContrasenaViewModel : ViewModel() {
             else -> null
         }
 
-        if (error == null && !RinconDbHelper(contexto).existeCorreo(correo)) {
-            error = contexto.getString(R.string.olvide_error_cuenta_no_registrada)
+        if (error == null) {
+            val dbHelper = RinconDbHelper(contexto)
+
+            if (!dbHelper.existeCorreo(correo)) {
+                error = contexto.getString(R.string.olvide_error_cuenta_no_registrada)
+            } else if (!dbHelper.estaCuentaActiva(correo)) {
+                // NUEVA CAPA DE SEGURIDAD: Si está suspendido, mostramos popup y evitamos el envío
+                _uiState.update { it.copy(mostrarDialogoSuspendido = true) }
+                return false
+            }
         }
 
         if (error != null) {

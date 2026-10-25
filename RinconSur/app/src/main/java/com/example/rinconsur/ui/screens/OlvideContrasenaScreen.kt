@@ -39,6 +39,7 @@ import com.example.rinconsur.R
 import com.example.rinconsur.permisos.Permisos
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoTexto
+import com.example.rinconsur.ui.components.DialogoCuentaSuspendida
 import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
@@ -75,6 +76,7 @@ fun OlvideContrasenaScreen(
         uiState = uiState,
         onCorreoCambia = viewModel::onCorreoCambia,
         onCodigoCambia = viewModel::onCodigoCambia,
+        onCerrarDialogoSuspendido = viewModel::onCerrarDialogoSuspendido, // <-- NUEVO
         onEnviarCodigo = {
             if (permisoNoti.isEmpty() || Permisos.tiene(contexto, permisoNoti)) {
                 viewModel.onEnviarCodigo(contexto)
@@ -97,10 +99,17 @@ fun OlvideContrasenaContent(
     uiState: OlvideContrasenaUiState,
     onCorreoCambia: (String) -> Unit,
     onCodigoCambia: (String) -> Unit,
+    onCerrarDialogoSuspendido: () -> Unit,
     onEnviarCodigo: () -> Unit,
     onVerificarCodigo: () -> Unit,
     onVolver: () -> Unit = {}
 ) {
+    if (uiState.mostrarDialogoSuspendido) {
+        DialogoCuentaSuspendida(
+            onEntendido = onCerrarDialogoSuspendido
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -214,6 +223,7 @@ private fun OlvideContrasenaLimpioPreview() {
             uiState = OlvideContrasenaUiState(),
             onCorreoCambia = {},
             onCodigoCambia = {},
+            onCerrarDialogoSuspendido = {},
             onEnviarCodigo = {},
             onVerificarCodigo = {},
             onVolver = {}
@@ -233,6 +243,7 @@ private fun OlvideContrasenaEnviadoPreview() {
             ),
             onCorreoCambia = {},
             onCodigoCambia = {},
+            onCerrarDialogoSuspendido = {},
             onEnviarCodigo = {},
             onVerificarCodigo = {},
             onVolver = {}
