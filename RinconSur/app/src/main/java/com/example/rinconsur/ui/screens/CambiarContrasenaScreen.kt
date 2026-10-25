@@ -1,5 +1,6 @@
 package com.example.rinconsur.ui.screens
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -78,6 +79,12 @@ fun CambiarContrasenaContent(
     onGuardarContrasena: () -> Unit,
     onVolver: () -> Unit = {}
 ) {
+    val esTemaOscuro = isSystemInDarkTheme()
+
+    // Definición de colores según el modo del dispositivo
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenido = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -86,7 +93,7 @@ fun CambiarContrasenaContent(
                         text = stringResource(R.string.cambiar_titulo),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = colorContenido
                     )
                 },
                 navigationIcon = {
@@ -94,14 +101,19 @@ fun CambiarContrasenaContent(
                         Icon(
                             painter = painterResource(R.drawable.ic_volver),
                             contentDescription = stringResource(R.string.cambiar_cd_volver),
-                            tint = Color.White
+                            tint = colorContenido
                         )
                     }
                 },
                 actions = {
                     LogoTopBarRinconSur()
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = fondoTopAppBar,
+                    titleContentColor = colorContenido,
+                    navigationIconContentColor = colorContenido,
+                    actionIconContentColor = colorContenido
+                )
             )
         },
         containerColor = MaterialTheme.colorScheme.background

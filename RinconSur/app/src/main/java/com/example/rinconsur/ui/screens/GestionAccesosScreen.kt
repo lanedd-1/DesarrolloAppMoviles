@@ -1,5 +1,6 @@
 package com.example.rinconsur.ui.screens
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -81,19 +82,28 @@ fun GestionAccesosContent(
     onVolver: () -> Unit,
     onCambiarEstado: (String, Boolean) -> Unit
 ) {
+    val esTemaOscuro = isSystemInDarkTheme()
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.gestion_accesos_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White) },
+                title = { Text(stringResource(R.string.gestion_accesos_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = colorContenidoTopAppBar) },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
-                        Icon(painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.gestion_accesos_cd_volver), tint = Color.White)
+                        Icon(painterResource(R.drawable.ic_volver), contentDescription = stringResource(R.string.gestion_accesos_cd_volver), tint = colorContenidoTopAppBar)
                     }
                 },
                 actions = {
                     LogoTopBarRinconSur()
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = fondoTopAppBar,
+                    titleContentColor = colorContenidoTopAppBar,
+                    navigationIconContentColor = colorContenidoTopAppBar,
+                    actionIconContentColor = colorContenidoTopAppBar
+                )
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -119,7 +129,8 @@ fun GestionAccesosContent(
                 Text(
                     text = stringResource(R.string.gestion_accesos_seccion_titulo),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = stringResource(R.string.gestion_accesos_instrucciones),
@@ -151,7 +162,10 @@ private fun ItemOpcionAcceso(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Row(
             modifier = Modifier
@@ -161,11 +175,16 @@ private fun ItemOpcionAcceso(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(text = accesoNombre, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    text = accesoNombre,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Text(
                     text = if (habilitado) stringResource(R.string.gestion_accesos_estado_habilitado) else stringResource(R.string.gestion_accesos_estado_cerrado),
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (habilitado) Color(0xFF2E7D32) else Color.Red,
+                    color = if (habilitado) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -173,8 +192,8 @@ private fun ItemOpcionAcceso(
                 checked = habilitado,
                 onCheckedChange = onCambiarEstado,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = BurdeoRincon
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary
                 )
             )
         }

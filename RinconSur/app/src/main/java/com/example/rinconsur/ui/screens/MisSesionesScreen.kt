@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -185,6 +186,10 @@ fun MisSesionesContent(
     var mostrarDialogoNuevaSesion by remember { mutableStateOf(false) }
     var accesosCerrados by remember { mutableStateOf<List<String>>(emptyList()) }
 
+    val esTemaOscuro = isSystemInDarkTheme()
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
     LaunchedEffect(mensajeExito) {
         mensajeExito?.let { mensaje ->
             snackbarHostState.showSnackbar(mensaje, duration = SnackbarDuration.Short)
@@ -271,16 +276,21 @@ fun MisSesionesContent(
             },
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.mis_sesiones_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color.White) },
+                    title = { Text(stringResource(R.string.mis_sesiones_titulo), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = colorContenidoTopAppBar) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.mis_sesiones_cd_menu), tint = Color.White)
+                            Icon(painterResource(R.drawable.ic_menu), stringResource(R.string.mis_sesiones_cd_menu), tint = colorContenidoTopAppBar)
                         }
                     },
                     actions = {
                         LogoTopBarRinconSur()
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = fondoTopAppBar,
+                        titleContentColor = colorContenidoTopAppBar,
+                        navigationIconContentColor = colorContenidoTopAppBar,
+                        actionIconContentColor = colorContenidoTopAppBar
+                    )
                 )
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -476,6 +486,9 @@ private fun ItemSesion(sesion: SesionItem, onIniciar: () -> Unit) {
         stringResource(R.string.mis_sesiones_item_boton_iniciar)
     }
 
+    val fondoEtiquetaEstado = if (esActiva) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.LightGray.copy(alpha = 0.3f)
+    val textoEtiquetaEstado = if (esActiva) MaterialTheme.colorScheme.primary else Color.DarkGray
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = if (esActiva) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surface)
@@ -485,8 +498,8 @@ private fun ItemSesion(sesion: SesionItem, onIniciar: () -> Unit) {
                 Text(text = sesion.acceso, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 EtiquetaEstado(
                     texto = textoEstado,
-                    colorFondo = if (esActiva) BurdeoRincon.copy(alpha = 0.15f) else Color.LightGray.copy(alpha = 0.3f),
-                    colorTexto = if (esActiva) BurdeoRincon else Color.DarkGray
+                    colorFondo = fondoEtiquetaEstado,
+                    colorTexto = textoEtiquetaEstado
                 )
             }
             Text(text = stringResource(R.string.mis_sesiones_item_codigo, sesion.codigo, sesion.fecha), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))

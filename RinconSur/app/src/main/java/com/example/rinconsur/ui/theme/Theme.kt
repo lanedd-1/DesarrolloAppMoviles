@@ -21,16 +21,15 @@ private val LightColorScheme = lightColorScheme(
     error = RojoAlerta
 )
 
-
 private val DarkColorScheme = darkColorScheme(
-    primary = BurdeoRincon,
-    secondary = TerracotaRincon,
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onBackground = Color(0xFFE0E0E0),
-    onSurface = Color(0xFFFFFFFF),
+    primary = BurdeoRinconDark,          // Distinto: Burdeo pastel legible
+    secondary = TerracotaRinconDark,      // Distinto: Terracota suave
+    background = FondoGrisDark,          // Distinto: Fondo oscuro 0xFF121212
+    surface = BlancoTarjetaDark,         // Distinto: Superficie oscura 0xFF1E1E1E
+    onPrimary = Color(0xFF38000A),       // Distinto: Texto oscuro sobre primario
+    onSecondary = Color.Black,
+    onBackground = TextoPrincipalDark,   // Distinto: Texto claro 0xFFE0E0E0
+    onSurface = Color(0xFFFFFFFF),       // Distinto: Texto blanco
     error = RojoAlerta
 )
 
@@ -50,7 +49,7 @@ fun RinconSurTheme(
 
 private val Azul = Color(0xFF1E5EFF)
 
-// Colores para las barras y los trozos del gráfico circular
+
 val PaletaGraficos = listOf(
     Color(0xFF1E5EFF), // azul
     Color(0xFFF59F00), // amarillo
@@ -59,7 +58,6 @@ val PaletaGraficos = listOf(
     Color(0xFF7950F2), // violeta
     Color(0xFF15AABF)  // celeste
 )
-
 
 @Composable
 fun GraficosAppTheme(
@@ -71,6 +69,3 @@ fun GraficosAppTheme(
         content = content
     )
 }
-
-
-

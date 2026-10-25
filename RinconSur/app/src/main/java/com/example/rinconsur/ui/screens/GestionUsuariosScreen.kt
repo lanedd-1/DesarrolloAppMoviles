@@ -1,6 +1,7 @@
 package com.example.rinconsur.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -47,6 +48,10 @@ fun GestionUsuariosScreen(
     val mensajeEstadoPlantilla = stringResource(id = R.string.gestion_usuarios_mensaje_modificado)
     val mensajeRolPlantilla = stringResource(id = R.string.gestion_usuarios_rol_modificado)
 
+    val esTemaOscuro = isSystemInDarkTheme()
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
     LaunchedEffect(Unit) {
         viewModel.cargarUsuarios(contexto)
     }
@@ -55,19 +60,27 @@ fun GestionUsuariosScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(id = R.string.gestion_usuarios_restringido_titulo), color = Color.White) },
+                    title = { Text(stringResource(id = R.string.gestion_usuarios_restringido_titulo), color = colorContenidoTopAppBar) },
                     navigationIcon = {
                         IconButton(onClick = onVolver) {
-                            Icon(painterResource(R.drawable.ic_volver), contentDescription = null, tint = Color.White)
+                            Icon(painterResource(R.drawable.ic_volver), contentDescription = null, tint = colorContenidoTopAppBar)
                         }
                     },
                     actions = { LogoTopBarRinconSur() },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = fondoTopAppBar,
+                        titleContentColor = colorContenidoTopAppBar,
+                        navigationIconContentColor = colorContenidoTopAppBar,
+                        actionIconContentColor = colorContenidoTopAppBar
+                    )
                 )
             }
         ) { padding ->
             Column(modifier = Modifier.padding(padding).padding(Dimens.espacioPantalla)) {
-                Text(text = stringResource(id = R.string.gestion_usuarios_restringido_mensaje))
+                Text(
+                    text = stringResource(id = R.string.gestion_usuarios_restringido_mensaje),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
         }
         return
@@ -76,14 +89,19 @@ fun GestionUsuariosScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(id = R.string.gestion_usuarios_titulo), fontWeight = FontWeight.Bold, color = Color.White) },
+                title = { Text(stringResource(id = R.string.gestion_usuarios_titulo), fontWeight = FontWeight.Bold, color = colorContenidoTopAppBar) },
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
-                        Icon(painterResource(R.drawable.ic_volver), contentDescription = stringResource(id = R.string.gestion_usuarios_cd_volver), tint = Color.White)
+                        Icon(painterResource(R.drawable.ic_volver), contentDescription = stringResource(id = R.string.gestion_usuarios_cd_volver), tint = colorContenidoTopAppBar)
                     }
                 },
                 actions = { LogoTopBarRinconSur() },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = fondoTopAppBar,
+                    titleContentColor = colorContenidoTopAppBar,
+                    navigationIconContentColor = colorContenidoTopAppBar,
+                    actionIconContentColor = colorContenidoTopAppBar
+                )
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -99,7 +117,10 @@ fun GestionUsuariosScreen(
             Spacer(modifier = Modifier.height(Dimens.espacioMedio))
 
             if (uiState.usuarios.isEmpty()) {
-                Text(stringResource(id = R.string.gestion_usuarios_sin_usuarios), color = Color.Gray)
+                Text(
+                    stringResource(id = R.string.gestion_usuarios_sin_usuarios),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)) {
                     items(uiState.usuarios) { usuario ->
@@ -134,7 +155,10 @@ fun ItemUsuarioAdmin(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
     ) {
         Row(
             modifier = Modifier.padding(Dimens.espacioMedio).fillMaxWidth(),
@@ -142,7 +166,12 @@ fun ItemUsuarioAdmin(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = usuario.nombre, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    text = usuario.nombre,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
                 // Menú Desplegable para el Rol
                 Box {
@@ -153,12 +182,16 @@ fun ItemUsuarioAdmin(
                             .clickable(enabled = !esPropiaCuenta) { menuRolExpandido = true }
                             .padding(vertical = 2.dp)
                     ) {
-                        Text(text = usuario.rolNombre, style = MaterialTheme.typography.labelMedium, color = BurdeoRincon)
+                        Text(
+                            text = usuario.rolNombre,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                         if (!esPropiaCuenta) {
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
                                 contentDescription = "Editar rol",
-                                tint = BurdeoRincon,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -170,21 +203,25 @@ fun ItemUsuarioAdmin(
                         containerColor = MaterialTheme.colorScheme.surface
                     ) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.rol_observador)) },
+                            text = { Text(stringResource(id = R.string.rol_observador), color = MaterialTheme.colorScheme.onSurface) },
                             onClick = { menuRolExpandido = false; onCambiarRol(Rol.ID_OBSERVADOR) }
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.rol_jefe_tienda)) },
+                            text = { Text(stringResource(id = R.string.rol_jefe_tienda), color = MaterialTheme.colorScheme.onSurface) },
                             onClick = { menuRolExpandido = false; onCambiarRol(Rol.ID_JEFE_TIENDA) }
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(id = R.string.rol_administrador)) },
+                            text = { Text(stringResource(id = R.string.rol_administrador), color = MaterialTheme.colorScheme.onSurface) },
                             onClick = { menuRolExpandido = false; onCambiarRol(Rol.ID_ADMINISTRADOR) }
                         )
                     }
                 }
 
-                Text(text = usuario.correo, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(
+                    text = usuario.correo,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -193,8 +230,8 @@ fun ItemUsuarioAdmin(
                     onCheckedChange = onCambiarEstado,
                     enabled = !esPropiaCuenta,
                     colors = SwitchDefaults.colors(
-                        checkedTrackColor = BurdeoRincon,
-                        disabledCheckedTrackColor = BurdeoRincon.copy(alpha = 0.5f)
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        disabledCheckedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                     )
                 )
                 Text(
@@ -203,7 +240,7 @@ fun ItemUsuarioAdmin(
                     color = if (usuario.activo) {
                         if (esPropiaCuenta) Color(0xFF2E7D32).copy(alpha = 0.5f) else Color(0xFF2E7D32)
                     } else {
-                        Color.Red
+                        MaterialTheme.colorScheme.error
                     }
                 )
             }

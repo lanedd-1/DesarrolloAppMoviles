@@ -1,5 +1,6 @@
 package com.example.rinconsur.ui.screens
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -138,6 +139,10 @@ fun FormularioContent(
 
     var mostrarDialogo by remember { mutableStateOf(false) }
 
+    val esTemaOscuro = isSystemInDarkTheme()
+    val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
+    val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
+
     if (mostrarDialogo) {
         DialogoCerrarSesion(
             onConfirmar = {
@@ -219,16 +224,21 @@ fun FormularioContent(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.formulario_titulo), color = Color.White) },
+                    title = { Text(stringResource(R.string.formulario_titulo), color = colorContenidoTopAppBar) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = stringResource(R.string.formulario_cd_menu), tint = Color.White)
+                            Icon(painter = painterResource(R.drawable.ic_menu), contentDescription = stringResource(R.string.formulario_cd_menu), tint = colorContenidoTopAppBar)
                         }
                     },
                     actions = {
                         LogoTopBarRinconSur()
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = BurdeoRincon)
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = fondoTopAppBar,
+                        titleContentColor = colorContenidoTopAppBar,
+                        navigationIconContentColor = colorContenidoTopAppBar,
+                        actionIconContentColor = colorContenidoTopAppBar
+                    )
                 )
             },
             containerColor = MaterialTheme.colorScheme.background
