@@ -332,10 +332,15 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun obtenerSesionesPorUsuario(usuarioId: Long): List<SesionItem> {
         val db = this.readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT ses_id, ses_codigo, ses_acceso, ses_fecha, ses_estado FROM $TABLA_SESIONES WHERE ses_usu_id = ? ORDER BY ses_id DESC",
-            arrayOf(usuarioId.toString())
-        )
+        val query = """
+        SELECT s.ses_id, s.ses_codigo, s.ses_acceso, s.ses_fecha, s.ses_estado,
+               (SELECT COUNT(r.reg_id) FROM registros_conteo r WHERE r.reg_sesion_id = s.ses_id) AS cant
+        FROM sesiones s 
+        WHERE s.ses_usu_id = ? 
+        ORDER BY s.ses_id DESC
+    """.trimIndent()
+
+        val cursor = db.rawQuery(query, arrayOf(usuarioId.toString()))
         val listaItems = mutableListOf<SesionItem>()
         if (cursor.moveToFirst()) {
             do {
@@ -345,7 +350,8 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                         codigo = cursor.getString(1),
                         acceso = cursor.getString(2),
                         fecha = cursor.getString(3),
-                        estado = cursor.getString(4)
+                        estado = cursor.getString(4),
+                        cantidadRegistros = cursor.getInt(5) //
                     )
                 )
             } while (cursor.moveToNext())
@@ -576,7 +582,8 @@ data class SesionItem(
     val codigo: String,
     val acceso: String,
     val fecha: String,
-    val estado: String
+    val estado: String,
+    val cantidadRegistros: Int = 0
 )
 
 data class FlujoAcceso(

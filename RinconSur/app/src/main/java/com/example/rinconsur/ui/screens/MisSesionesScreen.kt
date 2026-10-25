@@ -428,17 +428,14 @@ private fun ListaDeSesiones(
 ) {
     TarjetaSeccion(titulo = stringResource(R.string.mis_sesiones_seccion_asignadas)) {
         if (lista.isEmpty()) {
-            Text(stringResource(R.string.mis_sesiones_sin_sesiones), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(Dimens.espacioMedio))
+            Text(
+                text = stringResource(R.string.mis_sesiones_sin_sesiones),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(Dimens.espacioMedio)
+            )
         } else {
             lista.forEach { sesion ->
-                ItemSesion(
-                    codigo = sesion.codigo,
-                    acceso = sesion.acceso,
-                    fecha = sesion.fecha,
-                    estado = sesion.estado,
-                    esActiva = sesion.estado != "FINALIZADA",
-                    onIniciar = { onIniciar(sesion.id, sesion.acceso) }
-                )
+                ItemSesion(sesion = sesion, onIniciar = { onIniciar(sesion.id, sesion.acceso) })
                 Spacer(modifier = Modifier.height(Dimens.espacioMedio))
             }
         }
@@ -448,24 +445,39 @@ private fun ListaDeSesiones(
 }
 
 @Composable
-private fun ItemSesion(codigo: String, acceso: String, fecha: String, estado: String, esActiva: Boolean, onIniciar: () -> Unit) {
+private fun ItemSesion(sesion: SesionItem, onIniciar: () -> Unit) {
+    val esActiva = sesion.estado != "FINALIZADA"
+    val enPausa = esActiva && sesion.cantidadRegistros > 0
+
+    val textoEstado = when {
+        !esActiva -> stringResource(R.string.mis_sesiones_estado_finalizada)
+        enPausa -> stringResource(R.string.mis_sesiones_estado_pausa)
+        else -> stringResource(R.string.mis_sesiones_estado_curso)
+    }
+
+    val textoBoton = if (enPausa) {
+        stringResource(R.string.mis_sesiones_boton_reanudar)
+    } else {
+        stringResource(R.string.mis_sesiones_item_boton_iniciar)
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = if (esActiva) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(Dimens.espacioMedio), verticalArrangement = Arrangement.spacedBy(Dimens.espacioMini)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = acceso, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(text = sesion.acceso, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 EtiquetaEstado(
-                    texto = estado.replace("_", " "),
+                    texto = textoEstado,
                     colorFondo = if (esActiva) BurdeoRincon.copy(alpha = 0.15f) else Color.LightGray.copy(alpha = 0.3f),
                     colorTexto = if (esActiva) BurdeoRincon else Color.DarkGray
                 )
             }
-            Text(text = stringResource(R.string.mis_sesiones_item_codigo, codigo, fecha), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Text(text = stringResource(R.string.mis_sesiones_item_codigo, sesion.codigo, sesion.fecha), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
             if (esActiva) {
                 Spacer(modifier = Modifier.height(Dimens.espacioChico))
-                BotonPrincipal(texto = stringResource(R.string.mis_sesiones_item_boton_iniciar), onClick = onIniciar, modifier = Modifier.fillMaxWidth())
+                BotonPrincipal(texto = textoBoton, onClick = onIniciar, modifier = Modifier.fillMaxWidth())
             }
         }
     }
