@@ -311,7 +311,6 @@ fun SesionEnCursoContent(
     }
 }
 
-// ----------------------------- COMPONENTES PRIVADOS -----------------------------
 
 @Composable
 private fun CabeceraSesion(uiState: SesionEnCursoUiState, usuarioActual: Usuario?) {

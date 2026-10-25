@@ -20,7 +20,7 @@ data class OlvideContrasenaUiState(
     val errorCorreo: String? = null,
     val errorCodigo: String? = null,
     val mensajeExito: String? = null,
-    val mostrarDialogoSuspendido: Boolean = false // <-- NUEVO
+    val mostrarDialogoSuspendido: Boolean = false
 )
 
 class OlvideContrasenaViewModel : ViewModel() {

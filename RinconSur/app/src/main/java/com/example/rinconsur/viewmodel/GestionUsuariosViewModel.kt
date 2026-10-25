@@ -31,9 +31,8 @@ class GestionUsuariosViewModel : ViewModel() {
         val exito = dbHelper.cambiarEstadoUsuario(usuario.id, nuevoEstado)
 
         if (exito) {
-            cargarUsuarios(context) // Recargar lista
+            cargarUsuarios(context)
 
-            // Mostrar el mensaje en el Banner y ocultarlo después de 3 segundos
             _uiState.update { it.copy(mensajeExito = String.format(mensajePlantilla, usuario.nombre)) }
             viewModelScope.launch {
                 delay(3000)
@@ -46,7 +45,7 @@ class GestionUsuariosViewModel : ViewModel() {
         val exito = dbHelper.actualizarRolUsuario(usuario.id, nuevoRolId)
 
         if (exito) {
-            cargarUsuarios(contexto) // Recargar lista con el nuevo rol
+            cargarUsuarios(contexto)
 
             _uiState.update { it.copy(mensajeExito = String.format(mensajePlantilla, usuario.nombre)) }
             viewModelScope.launch {

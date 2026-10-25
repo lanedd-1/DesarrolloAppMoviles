@@ -13,10 +13,9 @@ data class VerResumenUiState(
     val fecha: String = "",
     val totalMuestras: Int = 0,
 
-    // --- VARIABLES DEL FILTRO DESPLEGABLE ---
     val filtrosDisponibles: List<String> = listOf("Clasificación", "Rango Etario", "Compañía", "Bolsas de otra tienda"),
     val filtroSeleccionado: String = "Clasificación",
-    val datosGrafico: List<Pair<String, Int>> = emptyList(), // Esta es la que lee la pantalla
+    val datosGrafico: List<Pair<String, Int>> = emptyList(),
 
     // --- LISTAS GUARDADAS ---
     val distribucionClasificacion: List<Pair<String, Int>> = emptyList(),
@@ -32,7 +31,6 @@ class VerResumenViewModel : ViewModel() {
     fun cargarDatos(context: Context, acceso: String, fecha: String) {
         val dbHelper = RinconDbHelper(context)
 
-        // TU LÓGICA ORIGINAL INTACTA
         val distribucion = dbHelper.obtenerDistribucionClasificacion(acceso, fecha)
         val total = distribucion.sumOf { it.second }
 
@@ -47,13 +45,11 @@ class VerResumenViewModel : ViewModel() {
                 fecha = fecha,
                 totalMuestras = total,
 
-                // Guardamos todas las listas
                 distribucionClasificacion = distribucion,
                 distribucionEdades = edades,
                 distribucionCompania = companias,
                 distribucionBolsas = bolsas,
 
-                // Asignamos la lista inicial al gráfico (basada en el filtro activo)
                 datosGrafico = when (estadoActual.filtroSeleccionado) {
                     "Rango Etario" -> edades
                     "Compañía" -> companias
@@ -64,7 +60,6 @@ class VerResumenViewModel : ViewModel() {
         }
     }
 
-    // --- NUEVA FUNCIÓN PARA ACTUALIZAR EL GRÁFICO AL TOCAR EL MENÚ ---
     fun cambiarFiltro(nuevoFiltro: String) {
         _uiState.update { estadoActual ->
             val nuevosDatos = when (nuevoFiltro) {

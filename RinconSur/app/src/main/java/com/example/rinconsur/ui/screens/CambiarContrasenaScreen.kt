@@ -81,7 +81,6 @@ fun CambiarContrasenaContent(
 ) {
     val esTemaOscuro = isSystemInDarkTheme()
 
-    // Definición de colores según el modo del dispositivo
     val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
     val colorContenido = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
 

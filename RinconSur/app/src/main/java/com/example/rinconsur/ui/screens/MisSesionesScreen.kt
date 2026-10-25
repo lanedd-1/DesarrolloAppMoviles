@@ -179,7 +179,7 @@ fun MisSesionesContent(
     onCerrarSesion: () -> Unit,
     onCrearNuevaSesion: (String) -> Unit
 ) {
-    // --- MANEJO DEL BOTÓN DE RETROCESO ---
+
     var mostrarDialogoSalirSistema by remember { mutableStateOf(false) }
 
     BackHandler {
