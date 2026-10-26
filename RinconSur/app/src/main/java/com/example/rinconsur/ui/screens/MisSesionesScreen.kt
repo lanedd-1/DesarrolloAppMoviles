@@ -214,7 +214,6 @@ fun MisSesionesContent(
             }
         )
     }
-    // -------------------------------------
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -349,17 +348,19 @@ fun MisSesionesContent(
                     onCambiarFoto = { mostrarDialogoFoto = true }
                 )
 
-                EstadisticasResumen(sesionesCompletadas, sesionesTotales, totalMuestras)
+                if (usuarioActual?.rolId != Rol.ID_ADMINISTRADOR) {
+                    EstadisticasResumen(sesionesCompletadas, sesionesTotales, totalMuestras)
 
-                ListaDeSesiones(
-                    lista = listaSesiones,
-                    onIniciar = onIniciarSesionConteo,
-                    onCrearNueva = {
-                        val dbHelper = RinconDbHelper(contexto)
-                        accesosCerrados = dbHelper.obtenerAccesosCerrados()
-                        mostrarDialogoNuevaSesion = true
-                    }
-                )
+                    ListaDeSesiones(
+                        lista = listaSesiones,
+                        onIniciar = onIniciarSesionConteo,
+                        onCrearNueva = {
+                            val dbHelper = RinconDbHelper(contexto)
+                            accesosCerrados = dbHelper.obtenerAccesosCerrados()
+                            mostrarDialogoNuevaSesion = true
+                        }
+                    )
+                }
             }
         }
     }
