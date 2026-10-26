@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
-import com.example.rinconsur.model.AccesoDestinoEnum
 import com.example.rinconsur.model.ClasificacionPersona
 import com.example.rinconsur.model.RangoEtarioEnum
 import com.example.rinconsur.model.SesionEnCursoUiState
@@ -42,13 +41,12 @@ class SesionEnCursoViewModel : ViewModel() {
 
     fun inicializarSesion(context: Context, idSesion: Long, nombreAcceso: String) {
         val dbHelper = RinconDbHelper(context)
-        val fechaHoy = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
 
-        val registrosExistentes = dbHelper.obtenerRegistrosPorAccesoYFecha(nombreAcceso, fechaHoy)
+        val registrosExistentes = dbHelper.obtenerRegistrosPorSesionId(idSesion)
 
         historialRegistros.clear()
 
-        registrosExistentes.reversed().forEach { item ->
+        registrosExistentes.forEach { item ->
             val clasif = try { ClasificacionPersona.valueOf(item.clasificacion).etiqueta } catch (e: Exception) { item.clasificacion }
             val rango = try { RangoEtarioEnum.valueOf(item.rangoEtario).etiqueta } catch (e: Exception) { item.rangoEtario }
             val comp = try { TipoCompaniaEnum.valueOf(item.compania).etiqueta } catch (e: Exception) { item.compania }
@@ -69,6 +67,7 @@ class SesionEnCursoViewModel : ViewModel() {
             )
         }
     }
+
     fun onGuardarRegistro(context: Context) {
         val estado = _uiState.value
         val resumen = "${estado.clasificacionSeleccionada.etiqueta} · ${estado.rangoEtarioSeleccionado.etiqueta} · ${estado.companiaSeleccionada.etiqueta}"

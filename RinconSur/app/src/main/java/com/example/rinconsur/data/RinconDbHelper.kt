@@ -615,6 +615,34 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val valores = ContentValues().apply { put(USU_ROL, nuevoRolId) }
         return db.update(TABLA_USUARIOS, valores, "$USU_ID = ?", arrayOf(usuarioId.toString())) > 0
     }
+
+    fun obtenerRegistrosPorSesionId(sesionId: Long): List<RegistroDetalleItem> {
+        val db = this.readableDatabase
+        val lista = mutableListOf<RegistroDetalleItem>()
+        val cursor = db.rawQuery(
+            "SELECT reg_id, reg_hora, reg_clasificacion, reg_rango_etario, reg_compania, reg_bolsas, reg_destino " +
+                    "FROM registros_conteo WHERE reg_sesion_id = ? ORDER BY reg_id ASC",
+            arrayOf(sesionId.toString())
+        )
+        if (cursor.moveToFirst()) {
+            do {
+                lista.add(
+                    RegistroDetalleItem(
+                        id = cursor.getLong(0),
+                        hora = cursor.getString(1),
+                        clasificacion = cursor.getString(2),
+                        rangoEtario = cursor.getString(3),
+                        compania = cursor.getString(4),
+                        bolsas = cursor.getInt(5) == 1,
+                        destino = cursor.getString(6)
+                    )
+                )
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return lista
+
+    }
 }
 data class RegistroDetalleItem(
     val id: Long,
