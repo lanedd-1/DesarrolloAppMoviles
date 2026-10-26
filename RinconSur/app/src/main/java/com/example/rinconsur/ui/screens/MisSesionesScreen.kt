@@ -413,7 +413,7 @@ private fun MenuLateral(
 
         if (usuarioActual?.rolId == Rol.ID_ADMINISTRADOR) {
             NavigationDrawerItem(
-                label = { Text(stringResource(R.string.gestion_usuarios_titulo)) },
+                label = { Text(stringResource(R.string.menu_lateral_gestionar_usuarios)) },
                 selected = false,
                 onClick = { onCerrarMenu(); onIrGestionUsuarios() },
                 modifier = Modifier.padding(horizontal = Dimens.espacioChico, vertical = Dimens.espacioMini)

@@ -127,6 +127,7 @@
     <!-- Menú Lateral Drawer -->
     <string name="menu_lateral_Mis_Sesiones">Mis Sesiones</string>
     <string name="menu_lateral_gestionar_accesos">Gestionar Accesos (Puertas)</string>
+    <string name="menu_lateral_gestionar_usuarios">Gestionar Usuarios</string>
     <string name="menu_lateral_resumen_dia">Resumen del Día</string>
     <string name="menu_lateral_registrar_colaborador">Registrar Colaborador</string>
     <string name="menu_lateral_cerrar_sesion">Cerrar sesión</string>
