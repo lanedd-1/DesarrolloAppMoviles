@@ -120,7 +120,8 @@
     <string name="mis_sesiones_sin_sesiones">No tienes sesiones registradas.</string>
 
     <string name="mis_sesiones_boton_crear_nueva">+ Crear nueva sesión</string>
-    <string name="mis_sesiones_item_codigo">Código: %1$s · \%2$s</string>
+    <string name="mis_sesiones_boton_asignar_acceso">+ Asignar acceso a observador</string>
+    <string name="mis_sesiones_item_codigo">Código: %1$s · %2$s</string>
     <string name="mis_sesiones_item_boton_iniciar">Iniciar conteo en puerta</string>
     <string name="mis_sesiones_boton_reanudar">Reanudar conteo en puerta</string>
 
@@ -272,10 +273,17 @@
     <string name="dialogo_foto_camara">Cámara</string>
     <string name="dialogo_foto_galeria">Galería</string>
 
-    <!-- Diálogo Nueva Sesión -->
-    <string name="dialogo_nueva_sesion_titulo">Nueva Sesión de Conteo</string>
-    <string name="dialogo_nueva_sesion_mensaje">Selecciona el acceso asignado:</string>
+    <!-- Diálogo Nueva Sesión / Asignar Acceso -->
+    <string name="dialogo_nueva_sesion_titulo">Asignar Acceso a Observador</string>
+    <string name="dialogo_nueva_sesion_mensaje">Selecciona el observador y el acceso:</string>
     <string name="dialogo_nueva_sesion_no_disponible">%1$s (No disponible)</string>
+    <string name="label_observador_o">Observador (O)</string>
+    <string name="label_acceso_a">Acceso (A)</string>
+    <string name="dialogo_hint_seleccionar_observador">Selecciona un observador</string>
+    <string name="dialogo_hint_seleccionar_acceso">Selecciona un acceso</string>
+    <string name="sin_observadores_disponibles">No hay observadores activos</string>
+    <string name="sin_accesos_disponibles">No hay accesos disponibles</string>
+    <string name="boton_asignar_mayus">ASIGNAR</string>
 
     <!-- Diálogo Pausar Sesión -->
     <string name="dialogo_pausar_titulo">¿Pausar sesión?</string>

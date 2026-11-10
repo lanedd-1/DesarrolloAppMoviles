@@ -91,9 +91,6 @@ import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
 import com.example.rinconsur.viewmodel.SesionViewModel
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun MisSesionesScreen(
@@ -136,25 +133,7 @@ fun MisSesionesScreen(
         onIrGestionAccesos = onIrGestionAccesos,
         onIrGestionUsuarios = onIrGestionUsuarios,
         onCerrarSesion = onCerrarSesion,
-        onCrearNuevaSesion = { accesoSeleccionado ->
-            if (uiState.usuarioActual != null) {
-                val dbHelper = RinconDbHelper(contexto)
-                val cerrados = dbHelper.obtenerAccesosCerrados()
-
-                if (!cerrados.contains(accesoSeleccionado)) {
-                    val codigoAleatorio = "SES-${(100..999).random()}"
-                    val fechaHoy = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-
-                    dbHelper.crearSesion(
-                        codigo = codigoAleatorio,
-                        acceso = accesoSeleccionado,
-                        fecha = fechaHoy,
-                        usuarioId = uiState.usuarioActual!!.id
-                    )
-                    viewModel.cargarDatos(contexto)
-                }
-            }
-        }
+        viewModel = viewModel
     )
 }
 
@@ -177,7 +156,7 @@ fun MisSesionesContent(
     onIrGestionAccesos: () -> Unit,
     onIrGestionUsuarios: () -> Unit,
     onCerrarSesion: () -> Unit,
-    onCrearNuevaSesion: (String) -> Unit
+    viewModel: SesionViewModel
 ) {
 
     var mostrarDialogoSalirSistema by remember { mutableStateOf(false) }
@@ -189,27 +168,16 @@ fun MisSesionesContent(
     if (mostrarDialogoSalirSistema) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoSalirSistema = false },
-            title = {
-                Text(text = "Cerrar sesión")
-            },
-            text = {
-                Text(text = "¿Estás seguro que quieres cerrar sesión y salir de tu cuenta?")
-            },
+            title = { Text(text = stringResource(R.string.dialogo_cerrar_titulo)) },
+            text = { Text(text = stringResource(R.string.dialogo_cerrar_mensaje)) },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        mostrarDialogoSalirSistema = false
-                        onCerrarSesion()
-                    }
-                ) {
-                    Text("Sí, cerrar sesión")
+                TextButton(onClick = { mostrarDialogoSalirSistema = false; onCerrarSesion() }) {
+                    Text(stringResource(R.string.dialogo_cerrar_confirmar))
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { mostrarDialogoSalirSistema = false }
-                ) {
-                    Text("Cancelar")
+                TextButton(onClick = { mostrarDialogoSalirSistema = false }) {
+                    Text(stringResource(R.string.dialogo_cancelar))
                 }
             }
         )
@@ -222,7 +190,10 @@ fun MisSesionesContent(
 
     var mostrarDialogoCerrar by remember { mutableStateOf(false) }
     var mostrarDialogoFoto by remember { mutableStateOf(false) }
-    var mostrarDialogoNuevaSesion by remember { mutableStateOf(false) }
+    var mostrarDialogoAsignarAcceso by remember { mutableStateOf(false) }
+
+    // Estados para alimentar el diálogo con los desplegables de Observador y Acceso
+    var listaObservadores by remember { mutableStateOf<List<Usuario>>(emptyList()) }
     var accesosCerrados by remember { mutableStateOf<List<String>>(emptyList()) }
 
     val esTemaOscuro = isSystemInDarkTheme()
@@ -278,14 +249,15 @@ fun MisSesionesContent(
         )
     }
 
-    if (mostrarDialogoNuevaSesion) {
+    if (mostrarDialogoAsignarAcceso) {
         DialogoNuevaSesion(
+            listaObservadores = listaObservadores,
             accesosCerrados = accesosCerrados,
-            onSeleccionarAcceso = { acceso ->
-                mostrarDialogoNuevaSesion = false
-                if (!accesosCerrados.contains(acceso)) onCrearNuevaSesion(acceso)
+            onAsignarAcceso = { observadorId, acceso ->
+                mostrarDialogoAsignarAcceso = false
+                viewModel.asignarAccesoAObservador(contexto, observadorId, acceso)
             },
-            onCancelar = { mostrarDialogoNuevaSesion = false }
+            onCancelar = { mostrarDialogoAsignarAcceso = false }
         )
     }
 
@@ -352,12 +324,16 @@ fun MisSesionesContent(
                     EstadisticasResumen(sesionesCompletadas, sesionesTotales, totalMuestras)
 
                     ListaDeSesiones(
+                        usuarioActual = usuarioActual,
                         lista = listaSesiones,
                         onIniciar = onIniciarSesionConteo,
-                        onCrearNueva = {
+                        onAsignarAcceso = {
                             val dbHelper = RinconDbHelper(contexto)
+                            val todosLosUsuarios = dbHelper.obtenerTodosLosUsuarios()
+                            // Filtramos exclusivamente los observadores activos
+                            listaObservadores = todosLosUsuarios.filter { it.rolId == Rol.ID_OBSERVADOR && it.activo }
                             accesosCerrados = dbHelper.obtenerAccesosCerrados()
-                            mostrarDialogoNuevaSesion = true
+                            mostrarDialogoAsignarAcceso = true
                         }
                     )
                 }
@@ -487,9 +463,10 @@ private fun EstadisticasResumen(completadas: Int, totales: Int, muestras: Int) {
 
 @Composable
 private fun ListaDeSesiones(
+    usuarioActual: Usuario?,
     lista: List<SesionItem>,
     onIniciar: (Long, String) -> Unit,
-    onCrearNueva: () -> Unit
+    onAsignarAcceso: () -> Unit
 ) {
     TarjetaSeccion(titulo = stringResource(R.string.mis_sesiones_seccion_asignadas)) {
         if (lista.isEmpty()) {
@@ -504,8 +481,16 @@ private fun ListaDeSesiones(
                 Spacer(modifier = Modifier.height(Dimens.espacioMedio))
             }
         }
-        Spacer(modifier = Modifier.height(Dimens.espacioChico))
-        BotonSecundario(texto = stringResource(R.string.mis_sesiones_boton_crear_nueva), onClick = onCrearNueva, modifier = Modifier.fillMaxWidth())
+
+        // Solo el Supervisor / Jefe de Tienda puede asignar accesos a los observadores
+        if (usuarioActual?.rolId == Rol.ID_JEFE_TIENDA) {
+            Spacer(modifier = Modifier.height(Dimens.espacioChico))
+            BotonSecundario(
+                texto = stringResource(R.string.mis_sesiones_boton_asignar_acceso),
+                onClick = onAsignarAcceso,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -565,7 +550,8 @@ private fun MisSesionesPreview() {
             onGuardarFotoBitmap = {},
             onGuardarFotoUri = {},
             onIniciarSesionConteo = { _, _ -> },
-            onIrCrearCuenta = {}, onIrResumenDiario = {}, onIrGestionAccesos = {}, onIrGestionUsuarios = {}, onCerrarSesion = {}, onCrearNuevaSesion = {}
+            onIrCrearCuenta = {}, onIrResumenDiario = {}, onIrGestionAccesos = {}, onIrGestionUsuarios = {}, onCerrarSesion = {},
+            viewModel = viewModel()
         )
     }
 }

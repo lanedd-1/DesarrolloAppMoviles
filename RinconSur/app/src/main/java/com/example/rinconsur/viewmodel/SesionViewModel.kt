@@ -10,6 +10,7 @@ import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.model.MisSesionesUiState
+import com.example.rinconsur.model.Rol
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,6 +68,35 @@ class SesionViewModel : ViewModel() {
                         fotoPerfilBitmap = bitmapCargado
                     )
                 }
+            }
+        }
+    }
+
+
+    fun asignarAccesoAObservador(contexto: Context, observadorId: Long, accesoSeleccionado: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val dbHelper = RinconDbHelper(contexto)
+
+            if (dbHelper.tieneSesionActiva(observadorId)) {
+                _uiState.update {
+                    it.copy(mensajeExito = "Este observador ya tiene un acceso activo asignado.")
+                }
+                return@launch
+            }
+
+            val cerrados = dbHelper.obtenerAccesosCerrados()
+
+            if (!cerrados.contains(accesoSeleccionado)) {
+                val codigoAleatorio = "SES-${(100..999).random()}"
+                val fechaHoy = java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault()).format(java.util.Date())
+
+                dbHelper.crearSesion(
+                    codigo = codigoAleatorio,
+                    acceso = accesoSeleccionado,
+                    fecha = fechaHoy,
+                    usuarioId = observadorId
+                )
+                cargarDatos(contexto)
             }
         }
     }

@@ -12,7 +12,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "rinconsur.db"
-        private const val DATABASE_VERSION = 12
+        private const val DATABASE_VERSION = 14
 
         private const val BCRYPT_COSTO = 10
 
@@ -176,6 +176,18 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
         return db.insert(TABLA_USUARIOS, null, valores)
     }
+
+    fun tieneSesionActiva(usuarioId: Long): Boolean {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT 1 FROM $TABLA_SESIONES WHERE $SES_USU_ID = ? AND $SES_ESTADO != 'FINALIZADA'",
+            arrayOf(usuarioId.toString())
+        )
+        val existe = cursor.moveToFirst()
+        cursor.close()
+        return existe
+    }
+
 
     fun validarLogin(correo: String, contrasenaPlana: String): Boolean {
         val db = this.readableDatabase
