@@ -260,8 +260,32 @@ fun FormularioContent(
                 }
 
                 TarjetaSeccion(titulo = stringResource(R.string.formulario_seccion_datos)) {
-                    CampoTexto(valor = uiState.nombre, onValorCambia = onNombreCambia, etiqueta = stringResource(R.string.formulario_etiqueta_nombre), icono = R.drawable.ic_persona, error = uiState.errorNombre)
-                    CampoTexto(valor = uiState.correo, onValorCambia = onCorreoCambia, etiqueta = stringResource(R.string.formulario_etiqueta_correo), icono = R.drawable.ic_correo, error = uiState.errorCorreo, tipoTeclado = KeyboardType.Email)
+                    CampoTexto(
+                        valor = uiState.nombre,
+                        onValorCambia = { nuevoTexto ->
+
+                            if (nuevoTexto.length <= 50 && nuevoTexto.all { it.isLetter() || it.isWhitespace() }) {
+                                onNombreCambia(nuevoTexto)
+                            }
+                        },
+                        etiqueta = stringResource(R.string.formulario_etiqueta_nombre),
+                        icono = R.drawable.ic_persona,
+                        error = uiState.errorNombre
+                    )
+
+                    CampoTexto(
+                        valor = uiState.correo,
+                        onValorCambia = { nuevoTexto ->
+                            // Bloqueo físico: Máximo 50 caracteres
+                            if (nuevoTexto.length <= 50) {
+                                onCorreoCambia(nuevoTexto)
+                            }
+                        },
+                        etiqueta = stringResource(R.string.formulario_etiqueta_correo),
+                        icono = R.drawable.ic_correo,
+                        error = uiState.errorCorreo,
+                        tipoTeclado = KeyboardType.Email
+                    )
 
                     var expandido by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(expanded = expandido, onExpandedChange = { expandido = it }) {

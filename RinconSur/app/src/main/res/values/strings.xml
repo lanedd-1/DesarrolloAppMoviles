@@ -91,7 +91,11 @@
     <string name="rol_administrador">Administrador</string>
 
     <!-- Errores y Mensajes de Formulario -->
+    <!-- Nuevas validaciones de texto y longitud -->
+    <string name="formulario_error_nombre_numeros">El nombre solo puede contener letras y espacios</string>
+    <string name="formulario_error_nombre_largo">El nombre no puede superar los 50 caracteres</string>
     <string name="formulario_error_nombre_obligatorio">El nombre completo es obligatorio</string>
+    <string name="formulario_error_correo_largo">El correo no puede superar los 50 caracteres</string>
     <string name="formulario_error_correo_obligatorio">El correo es obligatorio</string>
     <string name="formulario_error_correo_invalido">Ingresa un correo válido</string>
     <string name="formulario_error_correo_institucional">Debe ser un correo institucional (@rinconsur.cl)</string>

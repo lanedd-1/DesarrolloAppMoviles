@@ -17,7 +17,9 @@ class LoginViewModel : ViewModel() {
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     fun onCorreoCambia(valor: String) {
-        _uiState.update { it.copy(correo = valor.trim(), errorCorreo = null, loginExitoso = false) }
+        if (valor.length <= 50) {
+            _uiState.update { it.copy(correo = valor.trim(), errorCorreo = null, loginExitoso = false) }
+        }
     }
 
     fun onContrasenaCambia(valor: String) {
@@ -28,7 +30,6 @@ class LoginViewModel : ViewModel() {
         _uiState.update { it.copy(contrasenaVisible = !it.contrasenaVisible) }
     }
 
-    // NUEVO: Función para cerrar el popup
     fun onCerrarDialogoSuspendido() {
         _uiState.update { it.copy(mostrarDialogoSuspendido = false) }
     }
@@ -39,6 +40,8 @@ class LoginViewModel : ViewModel() {
 
         var errorCorreo = if (correoLimpio.isBlank()) {
             contexto.getString(R.string.login_error_correo_obligatorio)
+        } else if (correoLimpio.length > 50) {
+            contexto.getString(R.string.formulario_error_correo_largo)
         } else if (!correoLimpio.endsWith("@rinconsur.cl")) {
             contexto.getString(R.string.login_error_correo_institucional)
         } else { null }
@@ -82,9 +85,5 @@ class LoginViewModel : ViewModel() {
         }
 
         return !hayErrores
-    }
-
-    fun onLimpiar() {
-        _uiState.value = LoginUiState()
     }
 }

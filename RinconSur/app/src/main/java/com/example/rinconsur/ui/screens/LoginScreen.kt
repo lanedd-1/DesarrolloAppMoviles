@@ -137,7 +137,12 @@ fun LoginContent(
 
                 CampoTexto(
                     valor = uiState.correo,
-                    onValorCambia = onCorreoCambia,
+                    onValorCambia = { nuevoTexto ->
+
+                        if (nuevoTexto.length <= 50) {
+                            onCorreoCambia(nuevoTexto)
+                        }
+                    },
                     etiqueta = stringResource(R.string.login_etiqueta_correo),
                     icono = R.drawable.ic_correo,
                     error = uiState.errorCorreo,

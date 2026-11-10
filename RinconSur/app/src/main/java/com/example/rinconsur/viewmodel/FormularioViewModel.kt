@@ -38,11 +38,15 @@ class FormularioViewModel : ViewModel() {
     }
 
     fun onNombreCambia(valor: String) {
-        _uiState.update { it.copy(nombre = valor, errorNombre = null, registroExitoso = false, mensajeExito = null) }
+        if (valor.length <= 50) {
+            _uiState.update { it.copy(nombre = valor, errorNombre = null, registroExitoso = false, mensajeExito = null) }
+        }
     }
 
     fun onCorreoCambia(valor: String) {
-        _uiState.update { it.copy(correo = valor.trim().lowercase(), errorCorreo = null, registroExitoso = false, mensajeExito = null) }
+        if (valor.length <= 50) {
+            _uiState.update { it.copy(correo = valor.trim().lowercase(), errorCorreo = null, registroExitoso = false, mensajeExito = null) }
+        }
     }
 
     fun onRolSeleccionado(rol: String) {
@@ -78,10 +82,22 @@ class FormularioViewModel : ViewModel() {
         val estado = _uiState.value
         val correoLimpio = estado.correo.trim().lowercase()
 
-        val errorNombre = if (estado.nombre.isBlank()) contexto.getString(R.string.formulario_error_nombre_obligatorio) else null
+        val patronSoloLetras = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$".toRegex()
+
+        val errorNombre = if (estado.nombre.isBlank()) {
+            contexto.getString(R.string.formulario_error_nombre_obligatorio)
+        } else if (estado.nombre.length > 50) {
+            contexto.getString(R.string.formulario_error_nombre_largo)
+        } else if (!estado.nombre.matches(patronSoloLetras)) {
+            contexto.getString(R.string.formulario_error_nombre_numeros)
+        } else {
+            null
+        }
 
         var errorCorreo = if (correoLimpio.isBlank()) {
             contexto.getString(R.string.formulario_error_correo_obligatorio)
+        } else if (correoLimpio.length > 50) {
+            contexto.getString(R.string.formulario_error_correo_largo)
         } else if (!correoLimpio.contains("@")) {
             contexto.getString(R.string.formulario_error_correo_invalido)
         } else if (!correoLimpio.endsWith("@rinconsur.cl")) {
