@@ -14,7 +14,7 @@
     <string name="login_error_correo_obligatorio">El correo es obligatorio</string>
     <string name="login_error_correo_institucional">Debe ingresar su correo corporativo (@RinconSur.cl)</string>
     <string name="login_error_contrasena_obligatoria">La contraseña es obligatoria</string>
-    <string name="login_error_contrasena_corta">Mínimo 6 caracteres</string>
+    <string name="login_error_contrasena_corta">Mínimo 8 caracteres</string>
     <string name="login_error_credenciales_incorrectas">Correo o contraseña incorrectos</string>
     <string name="login_error_cuenta_suspendida">Tu cuenta ha sido suspendida. Contacta al Administrador.</string>
 

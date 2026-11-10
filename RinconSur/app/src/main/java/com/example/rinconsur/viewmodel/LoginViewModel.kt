@@ -48,7 +48,7 @@ class LoginViewModel : ViewModel() {
 
         var errorContrasena = if (estado.contrasena.isBlank()) {
             contexto.getString(R.string.login_error_contrasena_obligatoria)
-        } else if (estado.contrasena.length < 6) {
+        } else if (estado.contrasena.length < 8) {
             contexto.getString(R.string.login_error_contrasena_corta)
         } else { null }
 
