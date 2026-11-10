@@ -643,6 +643,53 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return lista
 
     }
+    fun obtenerDistribucionRangoEtario(acceso: String, fecha: String): List<Pair<String, Int>> {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT r.reg_rango_etario, COUNT(r.reg_id) FROM registros_conteo r INNER JOIN sesiones s ON r.reg_sesion_id = s.ses_id WHERE s.ses_acceso = ? AND s.ses_fecha = ? GROUP BY r.reg_rango_etario",
+            arrayOf(acceso, fecha)
+        )
+        val lista = mutableListOf<Pair<String, Int>>()
+        if (cursor.moveToFirst()) {
+            do {
+                lista.add(Pair(cursor.getString(0), cursor.getInt(1)))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return lista
+    }
+
+    fun obtenerDistribucionCompania(acceso: String, fecha: String): List<Pair<String, Int>> {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT r.reg_compania, COUNT(r.reg_id) FROM registros_conteo r INNER JOIN sesiones s ON r.reg_sesion_id = s.ses_id WHERE s.ses_acceso = ? AND s.ses_fecha = ? GROUP BY r.reg_compania",
+            arrayOf(acceso, fecha)
+        )
+        val lista = mutableListOf<Pair<String, Int>>()
+        if (cursor.moveToFirst()) {
+            do {
+                lista.add(Pair(cursor.getString(0), cursor.getInt(1)))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return lista
+    }
+
+    fun obtenerDistribucionBolsas(acceso: String, fecha: String): List<Pair<String, Int>> {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT CASE WHEN r.reg_bolsas = 1 THEN 'Sí trae' ELSE 'No trae' END, COUNT(r.reg_id) FROM registros_conteo r INNER JOIN sesiones s ON r.reg_sesion_id = s.ses_id WHERE s.ses_acceso = ? AND s.ses_fecha = ? GROUP BY r.reg_bolsas",
+            arrayOf(acceso, fecha)
+        )
+        val lista = mutableListOf<Pair<String, Int>>()
+        if (cursor.moveToFirst()) {
+            do {
+                lista.add(Pair(cursor.getString(0), cursor.getInt(1)))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return lista
+    }
 }
 data class RegistroDetalleItem(
     val id: Long,

@@ -31,13 +31,13 @@ class VerResumenViewModel : ViewModel() {
     fun cargarDatos(context: Context, acceso: String, fecha: String) {
         val dbHelper = RinconDbHelper(context)
 
+        // Usamos la DB real para todos los datos
         val distribucion = dbHelper.obtenerDistribucionClasificacion(acceso, fecha)
+        val edades = dbHelper.obtenerDistribucionRangoEtario(acceso, fecha)
+        val companias = dbHelper.obtenerDistribucionCompania(acceso, fecha)
+        val bolsas = dbHelper.obtenerDistribucionBolsas(acceso, fecha)
+
         val total = distribucion.sumOf { it.second }
-
-
-        val edades = listOf("18-25" to (total / 4), "26-40" to (total / 2), "41-60" to (total / 8), "60+" to (total / 8))
-        val companias = listOf("Solo" to (total / 3), "Pareja" to (total / 3), "Familia" to (total - (total/3)*2))
-        val bolsas = listOf("Sí trae" to (total / 4), "No trae" to (total - (total / 4)))
 
         _uiState.update { estadoActual ->
             estadoActual.copy(
