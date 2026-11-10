@@ -132,9 +132,9 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
         val sqlPrecargarSesiones = """
             INSERT INTO $TABLA_SESIONES ($SES_CODIGO, $SES_ACCESO, $SES_FECHA, $SES_ESTADO, $SES_USU_ID) VALUES 
-            ('SES-A1-859', 'Acceso A1', '$fechaHoy', 'FINALIZADA', 1),
-            ('SES-A2-442', 'Acceso A2', '$fechaHoy', 'FINALIZADA', 1),
-            ('SES-A3-001', 'Acceso A3', '$fechaHoy', 'EN_CURSO', 1)
+            ('SES-A1-859', 'Acceso A1', '01-11-2026', 'FINALIZADA', 1),
+            ('SES-A2-442', 'Acceso A2', '01-11-2026', 'FINALIZADA', 1),
+            ('SES-A3-001', 'Acceso A3', '01-11-2026', 'EN_CURSO', 1)
         """.trimIndent()
         db.execSQL(sqlPrecargarSesiones)
 
