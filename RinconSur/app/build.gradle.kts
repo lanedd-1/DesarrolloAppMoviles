@@ -47,7 +47,11 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
     testImplementation(libs.junit)
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -55,12 +59,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
-    //Librerias nuevas
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.1")
     implementation("at.favre.lib:bcrypt:0.10.2")
 
-    // NUEVO (Bloque 1): navegación entre pantallas (NavHost, NavController)
     implementation("androidx.navigation:navigation-compose:2.8.7")
-
 }
