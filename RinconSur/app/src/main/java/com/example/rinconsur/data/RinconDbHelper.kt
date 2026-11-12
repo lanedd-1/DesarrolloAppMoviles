@@ -12,7 +12,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "rinconsur.db"
-        private const val DATABASE_VERSION = 14
+        private const val DATABASE_VERSION = 15
 
         private const val BCRYPT_COSTO = 10
 
@@ -53,6 +53,10 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val ACC_NOMBRE = "acceso_nombre"
         private const val ACC_DISPONIBLE = "disponible"
 
+        private const val TABLA_TOKENS = "tokens_recuperacion"
+        private const val TOK_CORREO = "tok_correo"
+        private const val TOK_CODIGO = "tok_codigo"
+
         private const val SQL_CREAR_ROLES =
             "CREATE TABLE $TABLA_ROLES ($ROL_ID INTEGER PRIMARY KEY, $ROL_NOMBRE TEXT NOT NULL)"
 
@@ -90,6 +94,11 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                     "$ACC_NOMBRE TEXT PRIMARY KEY, " +
                     "$ACC_DISPONIBLE INTEGER NOT NULL DEFAULT 1)"
 
+        private const val SQL_CREAR_TOKENS =
+            "CREATE TABLE $TABLA_TOKENS (" +
+                    "$TOK_CORREO TEXT PRIMARY KEY, " +
+                    "$TOK_CODIGO TEXT NOT NULL)"
+
         private const val SQL_PRECARGAR_ROLES =
             "INSERT INTO $TABLA_ROLES ($ROL_ID, $ROL_NOMBRE) VALUES " +
                     "(${Rol.ID_OBSERVADOR}, 'Observador de Pasillo'), " +
@@ -115,6 +124,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db.execSQL(SQL_CREAR_SESIONES)
         db.execSQL(SQL_CREAR_REGISTROS)
         db.execSQL(SQL_CREAR_ACCESOS_CONFIG)
+        db.execSQL(SQL_CREAR_TOKENS)
 
         db.execSQL(SQL_PRECARGAR_ROLES)
         db.execSQL(SQL_PRECARGAR_ACCESOS)
@@ -162,6 +172,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db.execSQL("DROP TABLE IF EXISTS $TABLA_SESIONES")
         db.execSQL("DROP TABLE IF EXISTS $TABLA_USUARIOS")
         db.execSQL("DROP TABLE IF EXISTS $TABLA_ROLES")
+        db.execSQL("DROP TABLE IF EXISTS $TABLA_TOKENS")
         onCreate(db)
     }
 
@@ -492,11 +503,9 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return lista
     }
 
-    // ¡AQUÍ ESTÁ LA CORRECCIÓN DE LA FUNCIÓN QUE CAUSÓ EL CRASH!
     fun obtenerFechasDisponibles(): List<String> {
         val db = this.readableDatabase
         val fechas = mutableListOf<String>()
-        // Cambiamos DISTINCT por GROUP BY para que sea 100% compatible con SQLite al usar ORDER BY
         val cursor = db.rawQuery(
             "SELECT ses_fecha FROM $TABLA_SESIONES GROUP BY ses_fecha ORDER BY MAX(ses_id) DESC",
             null
@@ -615,7 +624,7 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     fun estaCuentaActiva(correo: String): Boolean {
         val db = this.readableDatabase
         val cursor = db.rawQuery("SELECT usu_activo FROM $TABLA_USUARIOS WHERE $USU_CORREO = ?", arrayOf(correo.trim().lowercase()))
-        var activa = true // Por defecto true. Si no existe, validarLogin fallará primero.
+        var activa = true
         if (cursor.moveToFirst()) {
             activa = cursor.getInt(0) == 1
         }
@@ -653,7 +662,6 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
         cursor.close()
         return lista
-
     }
     fun obtenerDistribucionRangoEtario(acceso: String, fecha: String): List<Pair<String, Int>> {
         val db = this.readableDatabase
@@ -701,6 +709,34 @@ class RinconDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
         cursor.close()
         return lista
+    }
+
+    fun guardarTokenRecuperacion(correo: String, codigo: String): Boolean {
+        val db = this.writableDatabase
+        db.delete(TABLA_TOKENS, "$TOK_CORREO = ?", arrayOf(correo.trim().lowercase()))
+        val valores = ContentValues().apply {
+            put(TOK_CORREO, correo.trim().lowercase())
+            put(TOK_CODIGO, codigo)
+        }
+        val insertado = db.insert(TABLA_TOKENS, null, valores)
+        return insertado != -1L
+    }
+
+    fun validarTokenRecuperacion(correo: String, codigo: String): Boolean {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT 1 FROM $TABLA_TOKENS WHERE $TOK_CORREO = ? AND $TOK_CODIGO = ?",
+            arrayOf(correo.trim().lowercase(), codigo)
+        )
+        val valido = cursor.moveToFirst()
+        cursor.close()
+        return valido
+    }
+
+    fun eliminarTokenRecuperacion(correo: String): Boolean {
+        val db = this.writableDatabase
+        val eliminados = db.delete(TABLA_TOKENS, "$TOK_CORREO = ?", arrayOf(correo.trim().lowercase()))
+        return eliminados > 0
     }
 }
 data class RegistroDetalleItem(

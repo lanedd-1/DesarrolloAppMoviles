@@ -80,13 +80,15 @@ fun OlvideContrasenaScreen(
         onCerrarDialogoSuspendido = viewModel::onCerrarDialogoSuspendido, // <-- NUEVO
         onEnviarCodigo = {
             if (permisoNoti.isEmpty() || Permisos.tiene(contexto, permisoNoti)) {
-                viewModel.onEnviarCodigo(contexto)
+                val dbHelper = com.example.rinconsur.data.RinconDbHelper(contexto)
+                viewModel.onEnviarCodigo(contexto, dbHelper)
             } else {
                 Permisos.abrirAjustes(contexto)
             }
         },
         onVerificarCodigo = {
-            if (viewModel.onVerificarCodigo(contexto)) {
+            val dbHelper = com.example.rinconsur.data.RinconDbHelper(contexto)
+            if (viewModel.onVerificarCodigo(contexto, dbHelper)) {
                 onCodigoVerificado(uiState.correo)
             }
         },
