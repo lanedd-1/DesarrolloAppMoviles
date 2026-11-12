@@ -34,7 +34,7 @@ class LoginViewModel : ViewModel() {
         _uiState.update { it.copy(mostrarDialogoSuspendido = false) }
     }
 
-    fun onIngresar(contexto: Context): Boolean {
+    fun onIngresar(contexto: Context, dbHelper: RinconDbHelper = RinconDbHelper(contexto)): Boolean {
         val estado = _uiState.value
         val correoLimpio = estado.correo.trim().lowercase()
 
@@ -48,14 +48,11 @@ class LoginViewModel : ViewModel() {
 
         var errorContrasena = if (estado.contrasena.isBlank()) {
             contexto.getString(R.string.login_error_contrasena_obligatoria)
-        } else if (estado.contrasena.length < 8) {
-            contexto.getString(R.string.login_error_contrasena_corta)
         } else { null }
 
         var hayErrores = errorCorreo != null || errorContrasena != null
 
         if (!hayErrores) {
-            val dbHelper = RinconDbHelper(contexto)
             val credencialesCorrectas = dbHelper.validarLogin(correoLimpio, estado.contrasena)
 
             if (!credencialesCorrectas) {
