@@ -19,7 +19,7 @@ import com.google.gson.JsonParser
 import retrofit2.HttpException
 import java.io.IOException
 
-class ApiException(val codigo: Int, mensaje: String) : Exception(mensaje)
+class ApiException(val codigo: Int, val mensajeServidor: String? = null) : Exception(mensajeServidor)
 
 class UsuarioRepository(
     private val usuarioApi: UsuarioApi = RetrofitClient.usuarioApi
@@ -66,16 +66,16 @@ class UsuarioRepository(
     } catch (e: HttpException) {
         throw ApiException(e.code(), mensajeDelServidor(e))
     } catch (e: IOException) {
-        throw ApiException(0, "No se pudo conectar con el servidor")
+        throw ApiException(0)
     }
 
-    private fun mensajeDelServidor(e: HttpException): String {
+    private fun mensajeDelServidor(e: HttpException): String? {
         val cuerpo = e.response()?.errorBody()?.string()
-        val mensaje = try {
-            JsonParser.parseString(cuerpo ?: "").asJsonObject.get("message")?.asString ?: ""
+        return try {
+            JsonParser.parseString(cuerpo ?: "").asJsonObject
+                .get("message")?.asString?.takeIf { it.isNotBlank() }
         } catch (ex: Exception) {
-            ""
+            null
         }
-        return mensaje.ifBlank { "Error del servidor (${e.code()})" }
     }
 }

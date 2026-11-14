@@ -7,5 +7,6 @@ data class LoginUiState(
     val errorCorreo: String? = null,
     val errorContrasena: String? = null,
     val loginExitoso: Boolean = false,
-    val mostrarDialogoSuspendido: Boolean = false
+    val mostrarDialogoSuspendido: Boolean = false,
+    val cargando: Boolean = false
 )

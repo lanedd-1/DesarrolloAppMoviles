@@ -19,6 +19,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +43,9 @@ import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
 import com.example.rinconsur.viewmodel.LoginViewModel
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 
 @Composable
 fun LoginScreen(
@@ -53,17 +57,28 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
 
+    val lanzadorRedLocal = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= 37) {
+            lanzadorRedLocal.launch("android.permission.ACCESS_LOCAL_NETWORK")
+        }
+    }
+
+    // Cuando el servidor acepta las credenciales, se navega
+    LaunchedEffect(uiState.loginExitoso) {
+        if (uiState.loginExitoso) onLoginExitoso()
+    }
+
     LoginContent(
         uiState = uiState,
         onCorreoCambia = viewModel::onCorreoCambia,
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
         onCerrarDialogoSuspendido = viewModel::onCerrarDialogoSuspendido,
-        onIngresar = {
-            if (viewModel.onIngresar(contexto)) {
-                onLoginExitoso()
-            }
-        },
+        onIngresar = { viewModel.onIngresar(contexto) },
         onOlvidasteContrasena = onOlvidasteContrasena,
         onVolver = onVolver
     )
@@ -177,7 +192,7 @@ fun LoginContent(
                 Spacer(modifier = Modifier.height(Dimens.espacioMini))
 
                 BotonPrincipal(
-                    texto = stringResource(R.string.login_boton_ingresar),
+                    texto = if (uiState.cargando) stringResource(R.string.login_boton_ingresando) else stringResource(R.string.login_boton_ingresar),
                     onClick = onIngresar,
                     modifier = Modifier.fillMaxWidth()
                 )
