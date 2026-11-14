@@ -21,5 +21,7 @@ data class FormularioUiState(
     val errorConfirmarContrasena: String? = null,
 
     val registroExitoso: Boolean = false,
-    val mensajeExito: String? = null
+    val mensajeExito: String? = null,
+    val cargando: Boolean = false,
+    val usuarioCreado: Usuario? = null
 )

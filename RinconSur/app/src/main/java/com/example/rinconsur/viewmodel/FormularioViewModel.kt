@@ -2,17 +2,23 @@ package com.example.rinconsur.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.rinconsur.R
-import com.example.rinconsur.data.RinconDbHelper
+import com.example.rinconsur.data.ApiException
+import com.example.rinconsur.data.UsuarioRepository
 import com.example.rinconsur.model.FormularioUiState
 import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class FormularioViewModel : ViewModel() {
+class FormularioViewModel(
+    private val repositorio: UsuarioRepository = UsuarioRepository()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FormularioUiState())
     val uiState: StateFlow<FormularioUiState> = _uiState.asStateFlow()
@@ -78,8 +84,10 @@ class FormularioViewModel : ViewModel() {
         }
     }
 
-    fun onRegistrar(contexto: Context): Usuario? {
+    fun onRegistrar(contexto: Context) {
         val estado = _uiState.value
+        if (estado.cargando) return
+
         val correoLimpio = estado.correo.trim().lowercase()
 
         val patronSoloLetras = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$".toRegex()
@@ -94,7 +102,7 @@ class FormularioViewModel : ViewModel() {
             null
         }
 
-        var errorCorreo = if (correoLimpio.isBlank()) {
+        val errorCorreo = if (correoLimpio.isBlank()) {
             contexto.getString(R.string.formulario_error_correo_obligatorio)
         } else if (correoLimpio.length > 50) {
             contexto.getString(R.string.formulario_error_correo_largo)
@@ -127,55 +135,71 @@ class FormularioViewModel : ViewModel() {
             null
         }
 
-        var hayErrores = listOf(
+        val hayErrores = listOf(
             errorNombre, errorCorreo, errorRol, errorContrasena, errorConfirmarContrasena
         ).any { it != null }
 
-        var usuarioCreado: Usuario? = null
-
-        if (!hayErrores && rolId != null) {
-            val dbHelper = RinconDbHelper(contexto)
-
-            if (dbHelper.existeCorreo(correoLimpio)) {
-                errorCorreo = contexto.getString(R.string.formulario_error_correo_existente)
-                hayErrores = true
-            } else {
-                val nuevoId = dbHelper.crearUsuario(
-                    nombre = estado.nombre,
-                    correo = correoLimpio,
-                    contrasenaPlana = estado.contrasena,
-                    rolId = rolId
+        if (hayErrores || rolId == null) {
+            _uiState.update {
+                it.copy(
+                    errorNombre = errorNombre,
+                    errorCorreo = errorCorreo,
+                    errorRol = errorRol,
+                    errorContrasena = errorContrasena,
+                    errorConfirmarContrasena = errorConfirmarContrasena,
+                    registroExitoso = false,
+                    mensajeExito = null
                 )
-                if (nuevoId == -1L) {
-                    errorCorreo = contexto.getString(R.string.formulario_error_creacion_fallida)
-                    hayErrores = true
-                } else {
-                    usuarioCreado = Usuario(
-                        id = nuevoId,
-                        nombre = estado.nombre.trim(),
-                        correo = correoLimpio,
-                        rolId = rolId,
-                        rolNombre = estado.rolSeleccionado
-                    )
-                }
             }
+            return
+        }
+
+        _uiState.update {
+            it.copy(
+                errorNombre = null,
+                errorCorreo = null,
+                errorRol = null,
+                errorContrasena = null,
+                errorConfirmarContrasena = null,
+                cargando = true
+            )
         }
 
         val nombreIngresado = estado.nombre.trim()
 
-        _uiState.update {
-            it.copy(
-                errorNombre = errorNombre,
-                errorCorreo = errorCorreo,
-                errorRol = errorRol,
-                errorContrasena = errorContrasena,
-                errorConfirmarContrasena = errorConfirmarContrasena,
-                registroExitoso = !hayErrores,
-                mensajeExito = if (!hayErrores) contexto.getString(R.string.formulario_mensaje_exito, nombreIngresado) else null
-            )
+        viewModelScope.launch {
+            try {
+                val usuario = repositorio.registrar(nombreIngresado, correoLimpio, estado.contrasena, rolId)
+                _uiState.update {
+                    it.copy(
+                        cargando = false,
+                        registroExitoso = true,
+                        mensajeExito = contexto.getString(R.string.formulario_mensaje_exito, nombreIngresado),
+                        usuarioCreado = usuario
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ApiException) {
+                val mensaje = if (e.codigo == 409) {
+                    contexto.getString(R.string.formulario_error_correo_existente)
+                } else {
+                    e.textoParaUsuario(contexto)
+                }
+                _uiState.update { it.copy(cargando = false, errorCorreo = mensaje) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        cargando = false,
+                        errorCorreo = contexto.getString(R.string.formulario_error_creacion_fallida)
+                    )
+                }
+            }
         }
+    }
 
-        return if (hayErrores) null else usuarioCreado
+    fun consumirUsuarioCreado() {
+        _uiState.update { it.copy(usuarioCreado = null) }
     }
 
     fun limpiarMensaje() {
