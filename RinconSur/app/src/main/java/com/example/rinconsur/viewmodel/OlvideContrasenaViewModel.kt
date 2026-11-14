@@ -13,16 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.random.Random
-
-data class OlvideContrasenaUiState(
-    val correo: String = "",
-    val codigoCorreo: String = "", // Tu variable original
-    val errorCorreo: String? = null,
-    val errorCodigo: String? = null,
-    val codigoEnviado: Boolean = false,
-    val mensajeExito: String? = null, // Tu variable original
-    val mostrarDialogoSuspendido: Boolean = false // Tu variable original
-)
+import com.example.rinconsur.model.OlvideContrasenaUiState
 
 class OlvideContrasenaViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(OlvideContrasenaUiState())

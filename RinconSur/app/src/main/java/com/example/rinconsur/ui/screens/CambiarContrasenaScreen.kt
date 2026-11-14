@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
 import com.example.rinconsur.data.RinconDbHelper
+import com.example.rinconsur.model.CambiarContrasenaUiState
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
 import com.example.rinconsur.ui.components.LogoTopBarRinconSur
@@ -41,7 +42,6 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
-import com.example.rinconsur.viewmodel.CambiarContrasenaUiState
 import com.example.rinconsur.viewmodel.CambiarContrasenaViewModel
 
 @Composable

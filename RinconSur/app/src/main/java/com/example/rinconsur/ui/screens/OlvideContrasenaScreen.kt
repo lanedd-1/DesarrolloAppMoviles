@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
+import com.example.rinconsur.model.OlvideContrasenaUiState
 import com.example.rinconsur.permisos.Permisos
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoTexto
@@ -46,7 +47,6 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
-import com.example.rinconsur.viewmodel.OlvideContrasenaUiState
 import com.example.rinconsur.viewmodel.OlvideContrasenaViewModel
 
 @Composable

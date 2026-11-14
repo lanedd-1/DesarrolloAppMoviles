@@ -8,15 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import com.example.rinconsur.model.CambiarContrasenaUiState
 
-data class CambiarContrasenaUiState(
-    val contrasenaNueva: String = "",
-    val confirmarContrasena: String = "",
-    val contrasenaVisible: Boolean = false,
-    val errorContrasenaNueva: String? = null,
-    val errorConfirmarContrasena: String? = null,
-    val cambioExitoso: Boolean = false
-)
 
 class CambiarContrasenaViewModel : ViewModel() {
 
