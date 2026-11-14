@@ -51,7 +51,7 @@ import com.example.rinconsur.viewmodel.OlvideContrasenaViewModel
 
 @Composable
 fun OlvideContrasenaScreen(
-    onCodigoVerificado: (String) -> Unit = {},
+    onCodigoVerificado: (String, String) -> Unit = { _, _ -> },
     onVolver: () -> Unit = {},
     viewModel: OlvideContrasenaViewModel = viewModel()
 ) {
@@ -73,25 +73,25 @@ fun OlvideContrasenaScreen(
         }
     }
 
+    LaunchedEffect(uiState.codigoVerificado) {
+        if (uiState.codigoVerificado) {
+            onCodigoVerificado(uiState.correo.trim().lowercase(), uiState.codigoCorreo)
+        }
+    }
+
     OlvideContrasenaContent(
         uiState = uiState,
         onCorreoCambia = viewModel::onCorreoCambia,
         onCodigoCambia = viewModel::onCodigoCambia,
-        onCerrarDialogoSuspendido = viewModel::onCerrarDialogoSuspendido, // <-- NUEVO
+        onCerrarDialogoSuspendido = viewModel::onCerrarDialogoSuspendido,
         onEnviarCodigo = {
             if (permisoNoti.isEmpty() || Permisos.tiene(contexto, permisoNoti)) {
-                val dbHelper = com.example.rinconsur.data.RinconDbHelper(contexto)
-                viewModel.onEnviarCodigo(contexto, dbHelper)
+                viewModel.onEnviarCodigo(contexto)
             } else {
                 Permisos.abrirAjustes(contexto)
             }
         },
-        onVerificarCodigo = {
-            val dbHelper = com.example.rinconsur.data.RinconDbHelper(contexto)
-            if (viewModel.onVerificarCodigo(contexto, dbHelper)) {
-                onCodigoVerificado(uiState.correo)
-            }
-        },
+        onVerificarCodigo = { viewModel.onVerificarCodigo(contexto) },
         onVolver = onVolver
     )
 }

@@ -1,6 +1,5 @@
 package com.example.rinconsur.model
 
-
 data class OlvideContrasenaUiState(
     val correo: String = "",
     val codigoCorreo: String = "",
@@ -8,5 +7,7 @@ data class OlvideContrasenaUiState(
     val errorCodigo: String? = null,
     val codigoEnviado: Boolean = false,
     val mensajeExito: String? = null,
-    val mostrarDialogoSuspendido: Boolean = false
+    val mostrarDialogoSuspendido: Boolean = false,
+    val cargando: Boolean = false,
+    val codigoVerificado: Boolean = false
 )

@@ -4,12 +4,11 @@ sealed class Ruta(val ruta: String) {
     data object Login : Ruta("login")
     data object OlvideContrasena : Ruta("olvide_contrasena")
 
-    data object CambiarContrasena : Ruta("cambiar_contrasena/{correo}") {
-        fun crear(correo: String) = "cambiar_contrasena/$correo"
+    data object CambiarContrasena : Ruta("cambiar_contrasena/{correo}/{codigo}") {
+        fun crear(correo: String, codigo: String) = "cambiar_contrasena/$correo/$codigo"
     }
     data object ResumenDiario : Ruta("resumen_diario")
 
-    // ESTA ES LA NUEVA RUTA DEL GRÁFICO
     data object VerResumen : Ruta("ver_resumen/{acceso}/{fecha}") {
         fun crear(acceso: String, fecha: String) = "ver_resumen/$acceso/$fecha"
     }
