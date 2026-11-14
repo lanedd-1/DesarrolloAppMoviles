@@ -7,10 +7,13 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rinconsur.R
+import com.example.rinconsur.data.ApiException
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionPreferencias
+import com.example.rinconsur.data.UsuarioRepository
 import com.example.rinconsur.model.MisSesionesUiState
-import com.example.rinconsur.model.Rol
+import com.example.rinconsur.model.Usuario
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,21 +23,33 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
-class SesionViewModel : ViewModel() {
+class SesionViewModel(
+    private val repositorio: UsuarioRepository = UsuarioRepository()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MisSesionesUiState())
     val uiState: StateFlow<MisSesionesUiState> = _uiState.asStateFlow()
 
-    private val _usuarioActual = MutableStateFlow<com.example.rinconsur.model.Usuario?>(null)
-    val usuarioActual: StateFlow<com.example.rinconsur.model.Usuario?> = _usuarioActual.asStateFlow()
+    private val _usuarioActual = MutableStateFlow<Usuario?>(null)
+    val usuarioActual: StateFlow<Usuario?> = _usuarioActual.asStateFlow()
 
     fun cargarUsuario(contexto: Context) {
         val idUsuario = SesionPreferencias(contexto).obtenerIdUsuario()
-        if (idUsuario != -1L) {
-            val dbHelper = RinconDbHelper(contexto)
-            _usuarioActual.value = dbHelper.buscarPorId(idUsuario)
-        } else {
+        if (idUsuario == -1L) {
             _usuarioActual.value = null
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                _usuarioActual.value = repositorio.obtener(idUsuario)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ApiException) {
+                if (e.codigo == 404) _usuarioActual.value = null
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -43,16 +58,27 @@ class SesionViewModel : ViewModel() {
             val idLogueado = SesionPreferencias(contexto).obtenerIdUsuario()
             if (idLogueado != -1L) {
                 val dbHelper = RinconDbHelper(contexto)
-                val usuario = dbHelper.buscarPorId(idLogueado)
+
+                // El usuario viene del servidor; si falla, se usa el que ya estaba cargado
+                val usuario: Usuario? = try {
+                    repositorio.obtener(idLogueado)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    _usuarioActual.value
+                }
+
                 val muestras = dbHelper.obtenerMuestrasRegistradasUsuario(idLogueado)
                 val stats = dbHelper.obtenerEstadisticasSesiones(idLogueado)
                 val sesiones = dbHelper.obtenerSesionesPorUsuario(idLogueado)
 
                 _usuarioActual.value = usuario
 
+                // La foto sigue siendo local hasta que migremos la subida al servidor
+                val rutaFotoLocal = dbHelper.buscarPorId(idLogueado)?.fotoPerfilRuta
                 var bitmapCargado: Bitmap? = null
-                if (!usuario?.fotoPerfilRuta.isNullOrEmpty()) {
-                    val archivo = File(usuario!!.fotoPerfilRuta!!)
+                if (!rutaFotoLocal.isNullOrEmpty()) {
+                    val archivo = File(rutaFotoLocal)
                     if (archivo.exists()) {
                         bitmapCargado = BitmapFactory.decodeFile(archivo.absolutePath)
                     }
