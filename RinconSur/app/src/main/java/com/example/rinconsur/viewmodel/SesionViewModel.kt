@@ -20,8 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
+import java.io.ByteArrayOutputStream
 
 class SesionViewModel(
     private val repositorio: UsuarioRepository = UsuarioRepository()
@@ -46,6 +45,7 @@ class SesionViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: ApiException) {
+                // 404: el usuario ya no existe en el servidor
                 if (e.codigo == 404) _usuarioActual.value = null
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -74,14 +74,14 @@ class SesionViewModel(
 
                 _usuarioActual.value = usuario
 
-                // La foto sigue siendo local hasta que migremos la subida al servidor
-                val rutaFotoLocal = dbHelper.buscarPorId(idLogueado)?.fotoPerfilRuta
-                var bitmapCargado: Bitmap? = null
-                if (!rutaFotoLocal.isNullOrEmpty()) {
-                    val archivo = File(rutaFotoLocal)
-                    if (archivo.exists()) {
-                        bitmapCargado = BitmapFactory.decodeFile(archivo.absolutePath)
-                    }
+                // La foto viene del servidor; si no tiene (404) o no hay conexion, queda null
+                val bitmapCargado: Bitmap? = try {
+                    val bytes = repositorio.obtenerFoto(idLogueado)
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    null
                 }
 
                 _uiState.update {
@@ -91,7 +91,7 @@ class SesionViewModel(
                         sesionesCompletadas = stats.first,
                         sesionesTotales = stats.second,
                         listaSesiones = sesiones,
-                        fotoPerfilBitmap = bitmapCargado
+                        fotoPerfilBitmap = bitmapCargado ?: it.fotoPerfilBitmap
                     )
                 }
             }
@@ -130,23 +130,31 @@ class SesionViewModel(
     fun guardarFotoBitmap(contexto: Context, bitmap: Bitmap) {
         val usuario = _uiState.value.usuarioActual ?: _usuarioActual.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val rutaGuardada = guardarBitmapEnDisco(contexto, bitmap, usuario.id)
-            if (rutaGuardada != null) {
-                val dbHelper = RinconDbHelper(contexto)
-                dbHelper.actualizarFotoPerfil(usuario.id, rutaGuardada)
+            try {
+                // Se reduce para no pasar el limite de tamaño del servidor
+                val reducido = reducirBitmap(bitmap, 1024)
+                val salida = ByteArrayOutputStream()
+                reducido.compress(Bitmap.CompressFormat.JPEG, 85, salida)
+
+                repositorio.subirFoto(usuario.id, salida.toByteArray())
 
                 _uiState.update {
                     it.copy(
-                        fotoPerfilBitmap = bitmap,
+                        fotoPerfilBitmap = reducido,
                         mensajeExito = contexto.getString(R.string.mis_sesiones_foto_actualizada_exito)
                     )
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(mensajeExito = e.textoParaUsuario(contexto)) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(mensajeExito = contexto.getString(R.string.error_inesperado)) }
             }
         }
     }
 
     fun guardarFotoUri(contexto: Context, uri: Uri) {
-        val usuario = _uiState.value.usuarioActual ?: _usuarioActual.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val inputStream = contexto.contentResolver.openInputStream(uri)
@@ -162,17 +170,16 @@ class SesionViewModel(
         }
     }
 
-    private fun guardarBitmapEnDisco(contexto: Context, bitmap: Bitmap, usuarioId: Long): String? {
-        return try {
-            val archivo = File(contexto.filesDir, "perfil_usuario_$usuarioId.jpg")
-            FileOutputStream(archivo).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-            }
-            archivo.absolutePath
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+    private fun reducirBitmap(bitmap: Bitmap, maximo: Int): Bitmap {
+        val mayor = maxOf(bitmap.width, bitmap.height)
+        if (mayor <= maximo) return bitmap
+        val escala = maximo.toFloat() / mayor
+        return Bitmap.createScaledBitmap(
+            bitmap,
+            (bitmap.width * escala).toInt(),
+            (bitmap.height * escala).toInt(),
+            true
+        )
     }
 
     fun limpiarMensaje() {

@@ -5,6 +5,10 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import okhttp3.MultipartBody
+import okhttp3.ResponseBody
+import retrofit2.http.Multipart
+import retrofit2.http.Part
 
 
 interface UsuarioApi {
@@ -44,4 +48,11 @@ interface UsuarioApi {
 
     @GET("api/roles")
     suspend fun listarRoles(): List<RolResponse>
+
+    @Multipart
+    @POST("api/usuarios/{id}/foto")
+    suspend fun subirFoto(@Path("id") id: Long, @Part archivo: MultipartBody.Part): ResponseBody
+
+    @GET("api/usuarios/{id}/foto")
+    suspend fun obtenerFoto(@Path("id") id: Long): ResponseBody
 }

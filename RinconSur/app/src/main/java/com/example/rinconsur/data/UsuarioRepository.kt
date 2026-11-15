@@ -18,6 +18,9 @@ import com.example.rinconsur.model.Usuario
 import com.google.gson.JsonParser
 import retrofit2.HttpException
 import java.io.IOException
+import okhttp3.MediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 
 class ApiException(val codigo: Int, val mensajeServidor: String? = null) : Exception(mensajeServidor)
 
@@ -60,6 +63,15 @@ class UsuarioRepository(
 
     suspend fun listarRoles(): List<Rol> =
         llamar { usuarioApi.listarRoles() }.map { Rol(id = it.id, nombre = it.nombre) }
+
+    suspend fun subirFoto(id: Long, bytes: ByteArray) {
+        val cuerpo = RequestBody.create(MediaType.parse("image/jpeg"), bytes)
+        val parte = MultipartBody.Part.createFormData("archivo", "perfil_$id.jpg", cuerpo)
+        llamar { usuarioApi.subirFoto(id, parte) }.close()
+    }
+
+    suspend fun obtenerFoto(id: Long): ByteArray =
+        llamar { usuarioApi.obtenerFoto(id).use { it.bytes() } }
 
     private suspend fun <T> llamar(peticion: suspend () -> T): T = try {
         peticion()
