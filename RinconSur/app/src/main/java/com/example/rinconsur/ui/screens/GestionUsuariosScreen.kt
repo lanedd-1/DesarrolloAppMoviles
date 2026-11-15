@@ -114,9 +114,25 @@ fun GestionUsuariosScreen(
                 BannerNotificacion(mensaje = uiState.mensajeExito!!)
             }
 
+            if (uiState.mensajeError != null) {
+                Spacer(modifier = Modifier.height(Dimens.espacioMedio))
+                Text(
+                    text = uiState.mensajeError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
             Spacer(modifier = Modifier.height(Dimens.espacioMedio))
 
-            if (uiState.usuarios.isEmpty()) {
+            if (uiState.cargando) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(Dimens.espacioGrande),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (uiState.usuarios.isEmpty() && uiState.mensajeError == null) {
                 Text(
                     stringResource(id = R.string.gestion_usuarios_sin_usuarios),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)

@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
+import com.example.rinconsur.model.OlvideContrasenaUiState
 import com.example.rinconsur.permisos.Permisos
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoTexto
@@ -46,12 +47,11 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
-import com.example.rinconsur.viewmodel.OlvideContrasenaUiState
 import com.example.rinconsur.viewmodel.OlvideContrasenaViewModel
 
 @Composable
 fun OlvideContrasenaScreen(
-    onCodigoVerificado: (String) -> Unit = {},
+    onCodigoVerificado: (String, String) -> Unit = { _, _ -> },
     onVolver: () -> Unit = {},
     viewModel: OlvideContrasenaViewModel = viewModel()
 ) {
@@ -73,25 +73,25 @@ fun OlvideContrasenaScreen(
         }
     }
 
+    LaunchedEffect(uiState.codigoVerificado) {
+        if (uiState.codigoVerificado) {
+            onCodigoVerificado(uiState.correo.trim().lowercase(), uiState.codigoCorreo)
+        }
+    }
+
     OlvideContrasenaContent(
         uiState = uiState,
         onCorreoCambia = viewModel::onCorreoCambia,
         onCodigoCambia = viewModel::onCodigoCambia,
-        onCerrarDialogoSuspendido = viewModel::onCerrarDialogoSuspendido, // <-- NUEVO
+        onCerrarDialogoSuspendido = viewModel::onCerrarDialogoSuspendido,
         onEnviarCodigo = {
             if (permisoNoti.isEmpty() || Permisos.tiene(contexto, permisoNoti)) {
-                val dbHelper = com.example.rinconsur.data.RinconDbHelper(contexto)
-                viewModel.onEnviarCodigo(contexto, dbHelper)
+                viewModel.onEnviarCodigo(contexto)
             } else {
                 Permisos.abrirAjustes(contexto)
             }
         },
-        onVerificarCodigo = {
-            val dbHelper = com.example.rinconsur.data.RinconDbHelper(contexto)
-            if (viewModel.onVerificarCodigo(contexto, dbHelper)) {
-                onCodigoVerificado(uiState.correo)
-            }
-        },
+        onVerificarCodigo = { viewModel.onVerificarCodigo(contexto) },
         onVolver = onVolver
     )
 }

@@ -2,21 +2,34 @@ package com.example.rinconsur.viewmodel
 
 import android.content.Context
 import com.example.rinconsur.R
+import com.example.rinconsur.data.UsuarioRepository
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FormularioViewModelTest {
 
     private lateinit var viewModel: FormularioViewModel
     private lateinit var contextoMock: Context
+    private lateinit var repositorioMock: UsuarioRepository
 
     @Before
     fun preparar() {
-        viewModel = FormularioViewModel()
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+        repositorioMock = mockk()
+        viewModel = FormularioViewModel(repositorioMock)
         contextoMock = mockk(relaxed = true)
 
         every { contextoMock.getString(R.string.rol_observador) } returns "Observador de Pasillo"
@@ -29,6 +42,11 @@ class FormularioViewModelTest {
         every { contextoMock.getString(R.string.formulario_error_contrasena_formato) } returns "Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 carácter especial"
     }
 
+    @After
+    fun limpiar() {
+        Dispatchers.resetMain()
+    }
+
     private fun llenarFormularioValido() {
         viewModel.onNombreCambia("Jose Bustamante")
         viewModel.onCorreoCambia("JoseBustamante@rinconsur.cl")
@@ -38,52 +56,52 @@ class FormularioViewModelTest {
     }
 
     @Test
-    fun onRegistrar_conNombreConNumeros_devuelveNullYMuestraError() {
+    fun onRegistrar_conNombreConNumeros_noLlamaAlServidorYMuestraError() {
         llenarFormularioValido()
 
         viewModel.onNombreCambia("Jose123")
 
-        val resultado = viewModel.onRegistrar(contextoMock)
+        viewModel.onRegistrar(contextoMock)
 
-        assertNull(resultado)
+        assertNull(viewModel.uiState.value.usuarioCreado)
+        assertFalse(viewModel.uiState.value.registroExitoso)
         assertEquals("El nombre solo puede contener letras y espacios", viewModel.uiState.value.errorNombre)
+        coVerify(exactly = 0) { repositorioMock.registrar(any(), any(), any(), any()) }
     }
 
     @Test
-    fun onRegistrar_conCorreoSinDominio_devuelveNullYMuestraError() {
-
+    fun onRegistrar_conCorreoSinDominio_noRegistraYMuestraError() {
         llenarFormularioValido()
         viewModel.onCorreoCambia("JoseBustamante@gmail.com")
 
-        val resultado = viewModel.onRegistrar(contextoMock)
+        viewModel.onRegistrar(contextoMock)
 
-        assertNull(resultado)
+        assertNull(viewModel.uiState.value.usuarioCreado)
         assertEquals("Debe ser un correo institucional (@rinconsur.cl)", viewModel.uiState.value.errorCorreo)
     }
 
     @Test
-    fun onRegistrar_conContrasenasDiferentes_devuelveNullYMuestraError() {
+    fun onRegistrar_conContrasenasDiferentes_noRegistraYMuestraError() {
         llenarFormularioValido()
 
         viewModel.onConfirmarContrasenaCambia("Diferente123.")
 
-        val resultado = viewModel.onRegistrar(contextoMock)
+        viewModel.onRegistrar(contextoMock)
 
-        assertNull(resultado)
+        assertNull(viewModel.uiState.value.usuarioCreado)
         assertEquals("Las contraseñas no coinciden", viewModel.uiState.value.errorConfirmarContrasena)
     }
 
     @Test
-    fun onRegistrar_conContrasenaSinFormato_devuelveNullYMuestraError() {
-
+    fun onRegistrar_conContrasenaSinFormato_noRegistraYMuestraError() {
         llenarFormularioValido()
 
         viewModel.onContrasenaCambia("minusculasy5numero")
         viewModel.onConfirmarContrasenaCambia("minusculasy5numero")
 
-        val resultado = viewModel.onRegistrar(contextoMock)
+        viewModel.onRegistrar(contextoMock)
 
-        assertNull(resultado)
+        assertNull(viewModel.uiState.value.usuarioCreado)
         assertEquals("Mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 carácter especial", viewModel.uiState.value.errorContrasena)
     }
 }

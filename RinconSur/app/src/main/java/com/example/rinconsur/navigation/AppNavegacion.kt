@@ -57,8 +57,10 @@ fun AppNavegacion() {
 
         composable(Ruta.OlvideContrasena.ruta) {
             OlvideContrasenaScreen(
-                onCodigoVerificado = { correo ->
-                    navController.navigate(Ruta.CambiarContrasena.crear(correo)) {
+                onCodigoVerificado = { correo, codigo ->
+                    navController.navigate(
+                        Ruta.CambiarContrasena.crear(Uri.encode(correo), Uri.encode(codigo))
+                    ) {
                         popUpTo(Ruta.OlvideContrasena.ruta) { inclusive = true }
                     }
                 },
@@ -68,11 +70,16 @@ fun AppNavegacion() {
 
         composable(
             route = Ruta.CambiarContrasena.ruta,
-            arguments = listOf(navArgument("correo") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("correo") { type = NavType.StringType },
+                navArgument("codigo") { type = NavType.StringType }
+            )
         ) { entrada ->
             val correo = Uri.decode(entrada.arguments?.getString("correo").orEmpty())
+            val codigo = Uri.decode(entrada.arguments?.getString("codigo").orEmpty())
             CambiarContrasenaScreen(
                 correoUsuario = correo,
+                codigo = codigo,
                 onCambioExitoso = {
                     Toast.makeText(contexto, "Contraseña actualizada. Inicia sesión.", Toast.LENGTH_LONG).show()
                     navController.navigate(Ruta.Login.ruta) { popUpTo(0) { inclusive = true } }

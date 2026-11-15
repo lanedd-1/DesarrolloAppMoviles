@@ -7,34 +7,49 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rinconsur.R
+import com.example.rinconsur.data.ApiException
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionPreferencias
+import com.example.rinconsur.data.UsuarioRepository
 import com.example.rinconsur.model.MisSesionesUiState
-import com.example.rinconsur.model.Rol
+import com.example.rinconsur.model.Usuario
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
+import java.io.ByteArrayOutputStream
 
-class SesionViewModel : ViewModel() {
+class SesionViewModel(
+    private val repositorio: UsuarioRepository = UsuarioRepository()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MisSesionesUiState())
     val uiState: StateFlow<MisSesionesUiState> = _uiState.asStateFlow()
 
-    private val _usuarioActual = MutableStateFlow<com.example.rinconsur.model.Usuario?>(null)
-    val usuarioActual: StateFlow<com.example.rinconsur.model.Usuario?> = _usuarioActual.asStateFlow()
+    private val _usuarioActual = MutableStateFlow<Usuario?>(null)
+    val usuarioActual: StateFlow<Usuario?> = _usuarioActual.asStateFlow()
 
     fun cargarUsuario(contexto: Context) {
         val idUsuario = SesionPreferencias(contexto).obtenerIdUsuario()
-        if (idUsuario != -1L) {
-            val dbHelper = RinconDbHelper(contexto)
-            _usuarioActual.value = dbHelper.buscarPorId(idUsuario)
-        } else {
+        if (idUsuario == -1L) {
             _usuarioActual.value = null
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                _usuarioActual.value = repositorio.obtener(idUsuario)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ApiException) {
+                // 404: el usuario ya no existe en el servidor
+                if (e.codigo == 404) _usuarioActual.value = null
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -43,19 +58,30 @@ class SesionViewModel : ViewModel() {
             val idLogueado = SesionPreferencias(contexto).obtenerIdUsuario()
             if (idLogueado != -1L) {
                 val dbHelper = RinconDbHelper(contexto)
-                val usuario = dbHelper.buscarPorId(idLogueado)
+
+                // El usuario viene del servidor; si falla, se usa el que ya estaba cargado
+                val usuario: Usuario? = try {
+                    repositorio.obtener(idLogueado)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    _usuarioActual.value
+                }
+
                 val muestras = dbHelper.obtenerMuestrasRegistradasUsuario(idLogueado)
                 val stats = dbHelper.obtenerEstadisticasSesiones(idLogueado)
                 val sesiones = dbHelper.obtenerSesionesPorUsuario(idLogueado)
 
                 _usuarioActual.value = usuario
 
-                var bitmapCargado: Bitmap? = null
-                if (!usuario?.fotoPerfilRuta.isNullOrEmpty()) {
-                    val archivo = File(usuario!!.fotoPerfilRuta!!)
-                    if (archivo.exists()) {
-                        bitmapCargado = BitmapFactory.decodeFile(archivo.absolutePath)
-                    }
+                // La foto viene del servidor; si no tiene (404) o no hay conexion, queda null
+                val bitmapCargado: Bitmap? = try {
+                    val bytes = repositorio.obtenerFoto(idLogueado)
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    null
                 }
 
                 _uiState.update {
@@ -65,7 +91,7 @@ class SesionViewModel : ViewModel() {
                         sesionesCompletadas = stats.first,
                         sesionesTotales = stats.second,
                         listaSesiones = sesiones,
-                        fotoPerfilBitmap = bitmapCargado
+                        fotoPerfilBitmap = bitmapCargado ?: it.fotoPerfilBitmap
                     )
                 }
             }
@@ -104,23 +130,31 @@ class SesionViewModel : ViewModel() {
     fun guardarFotoBitmap(contexto: Context, bitmap: Bitmap) {
         val usuario = _uiState.value.usuarioActual ?: _usuarioActual.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val rutaGuardada = guardarBitmapEnDisco(contexto, bitmap, usuario.id)
-            if (rutaGuardada != null) {
-                val dbHelper = RinconDbHelper(contexto)
-                dbHelper.actualizarFotoPerfil(usuario.id, rutaGuardada)
+            try {
+                // Se reduce para no pasar el limite de tamaño del servidor
+                val reducido = reducirBitmap(bitmap, 1024)
+                val salida = ByteArrayOutputStream()
+                reducido.compress(Bitmap.CompressFormat.JPEG, 85, salida)
+
+                repositorio.subirFoto(usuario.id, salida.toByteArray())
 
                 _uiState.update {
                     it.copy(
-                        fotoPerfilBitmap = bitmap,
+                        fotoPerfilBitmap = reducido,
                         mensajeExito = contexto.getString(R.string.mis_sesiones_foto_actualizada_exito)
                     )
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(mensajeExito = e.textoParaUsuario(contexto)) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(mensajeExito = contexto.getString(R.string.error_inesperado)) }
             }
         }
     }
 
     fun guardarFotoUri(contexto: Context, uri: Uri) {
-        val usuario = _uiState.value.usuarioActual ?: _usuarioActual.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val inputStream = contexto.contentResolver.openInputStream(uri)
@@ -136,17 +170,16 @@ class SesionViewModel : ViewModel() {
         }
     }
 
-    private fun guardarBitmapEnDisco(contexto: Context, bitmap: Bitmap, usuarioId: Long): String? {
-        return try {
-            val archivo = File(contexto.filesDir, "perfil_usuario_$usuarioId.jpg")
-            FileOutputStream(archivo).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-            }
-            archivo.absolutePath
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+    private fun reducirBitmap(bitmap: Bitmap, maximo: Int): Bitmap {
+        val mayor = maxOf(bitmap.width, bitmap.height)
+        if (mayor <= maximo) return bitmap
+        val escala = maximo.toFloat() / mayor
+        return Bitmap.createScaledBitmap(
+            bitmap,
+            (bitmap.width * escala).toInt(),
+            (bitmap.height * escala).toInt(),
+            true
+        )
     }
 
     fun limpiarMensaje() {

@@ -87,6 +87,13 @@ fun FormularioScreen(
         viewModel.inicializarRolesSegunUsuario(usuarioActual, contexto)
     }
 
+    LaunchedEffect(uiState.usuarioCreado) {
+        uiState.usuarioCreado?.let { usuario ->
+            onRegistroExitoso(usuario)
+            viewModel.consumirUsuarioCreado()
+        }
+    }
+
     LaunchedEffect(uiState.mensajeExito) {
         if (uiState.mensajeExito != null) {
             delay(6000)
@@ -103,7 +110,7 @@ fun FormularioScreen(
         onContrasenaCambia = viewModel::onContrasenaCambia,
         onConfirmarContrasenaCambia = viewModel::onConfirmarContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
-        onRegistrar = { viewModel.onRegistrar(contexto)?.let { usuario -> onRegistroExitoso(usuario) } },
+        onRegistrar = { viewModel.onRegistrar(contexto) },
         onLimpiar = viewModel::onLimpiar,
         onIrMisSesiones = onIrMisSesiones,
         onIrCrearCuenta = onIrCrearCuenta,

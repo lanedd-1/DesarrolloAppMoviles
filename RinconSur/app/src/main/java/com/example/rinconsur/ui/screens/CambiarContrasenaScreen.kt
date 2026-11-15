@@ -20,8 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
-import com.example.rinconsur.data.RinconDbHelper
+import com.example.rinconsur.model.CambiarContrasenaUiState
 import com.example.rinconsur.ui.components.BotonPrincipal
 import com.example.rinconsur.ui.components.CampoContrasena
 import com.example.rinconsur.ui.components.LogoTopBarRinconSur
@@ -41,30 +41,29 @@ import com.example.rinconsur.ui.components.TarjetaSeccion
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
 import com.example.rinconsur.ui.theme.RinconSurTheme
-import com.example.rinconsur.viewmodel.CambiarContrasenaUiState
 import com.example.rinconsur.viewmodel.CambiarContrasenaViewModel
 
 @Composable
 fun CambiarContrasenaScreen(
     correoUsuario: String = "",
+    codigo: String = "",
     onCambioExitoso: () -> Unit = {},
     onVolver: () -> Unit = {},
     viewModel: CambiarContrasenaViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
-    val dbHelper = remember { RinconDbHelper(contexto) }
+
+    LaunchedEffect(uiState.cambioExitoso) {
+        if (uiState.cambioExitoso) onCambioExitoso()
+    }
 
     CambiarContrasenaContent(
         uiState = uiState,
         onContrasenaNuevaCambia = viewModel::onContrasenaNuevaCambia,
         onConfirmarContrasenaCambia = viewModel::onConfirmarContrasenaCambia,
         onAlternarVisibilidad = viewModel::onAlternarVisibilidad,
-        onGuardarContrasena = {
-            if (viewModel.onGuardarContrasena(correoUsuario, dbHelper, contexto)) {
-                onCambioExitoso()
-            }
-        },
+        onGuardarContrasena = { viewModel.onGuardarContrasena(correoUsuario, codigo, contexto) },
         onVolver = onVolver
     )
 }

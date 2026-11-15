@@ -2,23 +2,21 @@ package com.example.rinconsur.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.rinconsur.R
-import com.example.rinconsur.data.RinconDbHelper
+import com.example.rinconsur.data.ApiException
+import com.example.rinconsur.data.UsuarioRepository
+import com.example.rinconsur.model.CambiarContrasenaUiState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-data class CambiarContrasenaUiState(
-    val contrasenaNueva: String = "",
-    val confirmarContrasena: String = "",
-    val contrasenaVisible: Boolean = false,
-    val errorContrasenaNueva: String? = null,
-    val errorConfirmarContrasena: String? = null,
-    val cambioExitoso: Boolean = false
-)
-
-class CambiarContrasenaViewModel : ViewModel() {
+class CambiarContrasenaViewModel(
+    private val repositorio: UsuarioRepository = UsuarioRepository()
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CambiarContrasenaUiState())
     val uiState: StateFlow<CambiarContrasenaUiState> = _uiState.asStateFlow()
@@ -35,8 +33,9 @@ class CambiarContrasenaViewModel : ViewModel() {
         _uiState.update { it.copy(contrasenaVisible = !it.contrasenaVisible) }
     }
 
-    fun onGuardarContrasena(correoUsuario: String, dbHelper: RinconDbHelper, contexto: Context): Boolean {
+    fun onGuardarContrasena(correoUsuario: String, codigo: String, contexto: Context) {
         val estado = _uiState.value
+        if (estado.cargando) return
 
         val patronContrasena = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!._\\-]).{8,}$".toRegex()
 
@@ -53,24 +52,40 @@ class CambiarContrasenaViewModel : ViewModel() {
             else -> null
         }
 
-        if (errorNueva == null && correoUsuario.isBlank()) {
+        if (errorNueva == null && (correoUsuario.isBlank() || codigo.isBlank())) {
             errorNueva = contexto.getString(R.string.cambiar_error_cuenta_no_identificada)
         }
 
-        val hayErrores = errorNueva != null || errorConfirmar != null
-
-        if (!hayErrores) {
-            dbHelper.actualizarContrasena(correoUsuario, estado.contrasenaNueva)
+        if (errorNueva != null || errorConfirmar != null) {
+            _uiState.update {
+                it.copy(
+                    errorContrasenaNueva = errorNueva,
+                    errorConfirmarContrasena = errorConfirmar,
+                    cambioExitoso = false
+                )
+            }
+            return
         }
 
         _uiState.update {
-            it.copy(
-                errorContrasenaNueva = errorNueva,
-                errorConfirmarContrasena = errorConfirmar,
-                cambioExitoso = !hayErrores
-            )
+            it.copy(errorContrasenaNueva = null, errorConfirmarContrasena = null, cargando = true)
         }
 
-        return !hayErrores
+        viewModelScope.launch {
+            try {
+                repositorio.restablecerContrasena(correoUsuario, codigo, estado.contrasenaNueva)
+                _uiState.update { it.copy(cargando = false, cambioExitoso = true) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ApiException) {
+                _uiState.update {
+                    it.copy(cargando = false, errorContrasenaNueva = e.textoParaUsuario(contexto))
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(cargando = false, errorContrasenaNueva = contexto.getString(R.string.error_inesperado))
+                }
+            }
+        }
     }
 }

@@ -9,14 +9,17 @@
     <string name="login_etiqueta_contrasena">Contraseña</string>
     <string name="login_olvidaste_contrasena">¿Olvidaste tu contraseña?</string>
     <string name="login_boton_ingresar">Iniciar Sesión</string>
+    <string name="login_boton_ingresando">Ingresando...</string>
 
     <!-- Errores de Login -->
     <string name="login_error_correo_obligatorio">El correo es obligatorio</string>
     <string name="login_error_correo_institucional">Debe ingresar su correo corporativo (@RinconSur.cl)</string>
     <string name="login_error_contrasena_obligatoria">La contraseña es obligatoria</string>
-    <string name="login_error_contrasena_corta">Mínimo 8 caracteres</string>
     <string name="login_error_credenciales_incorrectas">Correo o contraseña incorrectos</string>
     <string name="login_error_cuenta_suspendida">Tu cuenta ha sido suspendida. Contacta al Administrador.</string>
+    <string name="error_sin_conexion">No se pudo conectar con el servidor</string>
+    <string name="error_servidor_generico">Error del servidor (%1$d)</string>
+    <string name="error_inesperado">Ocurrió un error inesperado</string>
 
     <!-- Textos Olvidaste Contraseña -->
     <string name="olvide_titulo">Recuperar Contraseña</string>
