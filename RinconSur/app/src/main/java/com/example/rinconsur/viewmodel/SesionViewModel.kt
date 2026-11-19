@@ -11,6 +11,7 @@ import com.example.rinconsur.data.ApiException
 import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.data.UsuarioRepository
+import com.example.rinconsur.data.VisitanteRepository
 import com.example.rinconsur.model.MisSesionesUiState
 import com.example.rinconsur.model.Usuario
 import kotlinx.coroutines.CancellationException
@@ -23,7 +24,8 @@ import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 
 class SesionViewModel(
-    private val repositorio: UsuarioRepository = UsuarioRepository()
+    private val repositorio: UsuarioRepository = UsuarioRepository(),
+    private val visitanteRepositorio: VisitanteRepository = VisitanteRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MisSesionesUiState())
@@ -45,7 +47,6 @@ class SesionViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: ApiException) {
-                // 404: el usuario ya no existe en el servidor
                 if (e.codigo == 404) _usuarioActual.value = null
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -57,9 +58,7 @@ class SesionViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val idLogueado = SesionPreferencias(contexto).obtenerIdUsuario()
             if (idLogueado != -1L) {
-                val dbHelper = RinconDbHelper(contexto)
 
-                // El usuario viene del servidor; si falla, se usa el que ya estaba cargado
                 val usuario: Usuario? = try {
                     repositorio.obtener(idLogueado)
                 } catch (e: CancellationException) {
@@ -68,9 +67,21 @@ class SesionViewModel(
                     _usuarioActual.value
                 }
 
-                val muestras = dbHelper.obtenerMuestrasRegistradasUsuario(idLogueado)
-                val stats = dbHelper.obtenerEstadisticasSesiones(idLogueado)
-                val sesiones = dbHelper.obtenerSesionesPorUsuario(idLogueado)
+                val estadisticas = try {
+                    visitanteRepositorio.estadisticas(idLogueado)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    null
+                }
+
+                val sesiones = try {
+                    visitanteRepositorio.listarSesiones(idLogueado)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    null
+                }
 
                 _usuarioActual.value = usuario
 
@@ -87,10 +98,10 @@ class SesionViewModel(
                 _uiState.update {
                     it.copy(
                         usuarioActual = usuario,
-                        totalMuestras = muestras,
-                        sesionesCompletadas = stats.first,
-                        sesionesTotales = stats.second,
-                        listaSesiones = sesiones,
+                        totalMuestras = estadisticas?.muestrasRegistradas ?: it.totalMuestras,
+                        sesionesCompletadas = estadisticas?.sesionesCompletadas ?: it.sesionesCompletadas,
+                        sesionesTotales = estadisticas?.totalSesiones ?: it.sesionesTotales,
+                        listaSesiones = sesiones ?: it.listaSesiones,
                         fotoPerfilBitmap = bitmapCargado ?: it.fotoPerfilBitmap
                     )
                 }
