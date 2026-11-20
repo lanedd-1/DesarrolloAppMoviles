@@ -7,8 +7,8 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rinconsur.R
+import com.example.rinconsur.data.AdministracionRepository
 import com.example.rinconsur.data.ApiException
-import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionPreferencias
 import com.example.rinconsur.data.UsuarioRepository
 import com.example.rinconsur.data.VisitanteRepository
@@ -26,7 +26,8 @@ import java.io.ByteArrayOutputStream
 
 class SesionViewModel(
     private val repositorio: UsuarioRepository = UsuarioRepository(),
-    private val visitanteRepositorio: VisitanteRepository = VisitanteRepository()
+    private val visitanteRepositorio: VisitanteRepository = VisitanteRepository(),
+    private val administracionRepositorio: AdministracionRepository = AdministracionRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MisSesionesUiState())
@@ -67,6 +68,7 @@ class SesionViewModel(
                 } catch (e: Exception) {
                     _usuarioActual.value
                 }
+
 
                 val estadisticas = try {
                     visitanteRepositorio.estadisticas(idLogueado)
@@ -109,14 +111,13 @@ class SesionViewModel(
         }
     }
 
-
     fun prepararAsignacion(contexto: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val observadores = repositorio.listar()
                     .filter { it.rolId == Rol.ID_OBSERVADOR && it.activo }
                 val ocupados = visitanteRepositorio.idsObservadoresOcupados()
-                val cerrados = RinconDbHelper(contexto).obtenerAccesosCerrados()
+                val cerrados = administracionRepositorio.accesosCerrados()
 
                 _uiState.update {
                     it.copy(
@@ -142,9 +143,6 @@ class SesionViewModel(
 
     fun asignarAccesoAObservador(contexto: Context, observadorId: Long, accesoSeleccionado: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val cerrados = RinconDbHelper(contexto).obtenerAccesosCerrados()
-            if (cerrados.contains(accesoSeleccionado)) return@launch
-
             try {
                 visitanteRepositorio.crearSesion(observadorId, accesoSeleccionado)
                 cargarDatos(contexto)

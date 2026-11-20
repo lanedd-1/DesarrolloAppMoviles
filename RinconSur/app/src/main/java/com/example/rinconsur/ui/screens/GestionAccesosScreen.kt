@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -123,6 +124,15 @@ fun GestionAccesosContent(
                 )
             }
 
+            if (uiState.mensajeError != null) {
+                Text(
+                    text = uiState.mensajeError,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
             if (!uiState.esJefeTienda) {
                 VistaAccesoDenegado(onVolver)
             } else {
@@ -139,6 +149,10 @@ fun GestionAccesosContent(
                 )
 
                 Spacer(modifier = Modifier.height(Dimens.espacioChico))
+
+                if (uiState.cargando) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
 
                 uiState.estadoAccesosMap.forEach { (acceso, habilitado) ->
                     ItemOpcionAcceso(
