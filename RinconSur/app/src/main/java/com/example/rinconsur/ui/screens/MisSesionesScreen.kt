@@ -71,7 +71,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
-import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.data.SesionItem
 import com.example.rinconsur.model.Rol
 import com.example.rinconsur.model.Usuario
@@ -192,9 +191,8 @@ fun MisSesionesContent(
     var mostrarDialogoFoto by remember { mutableStateOf(false) }
     var mostrarDialogoAsignarAcceso by remember { mutableStateOf(false) }
 
-    // Estados para alimentar el diálogo con los desplegables de Observador y Acceso
-    var listaObservadores by remember { mutableStateOf<List<Usuario>>(emptyList()) }
-    var accesosCerrados by remember { mutableStateOf<List<String>>(emptyList()) }
+    // Datos para alimentar el diálogo con los desplegables de Observador y Acceso
+    val estadoAsignacion by viewModel.uiState.collectAsStateWithLifecycle()
 
     val esTemaOscuro = isSystemInDarkTheme()
     val fondoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.surface else BurdeoRincon
@@ -204,6 +202,13 @@ fun MisSesionesContent(
         mensajeExito?.let { mensaje ->
             snackbarHostState.showSnackbar(mensaje, duration = SnackbarDuration.Short)
             onLimpiarMensaje()
+        }
+    }
+
+    LaunchedEffect(estadoAsignacion.asignacionLista) {
+        if (estadoAsignacion.asignacionLista) {
+            mostrarDialogoAsignarAcceso = true
+            viewModel.consumirAsignacionLista()
         }
     }
 
@@ -251,8 +256,9 @@ fun MisSesionesContent(
 
     if (mostrarDialogoAsignarAcceso) {
         DialogoNuevaSesion(
-            listaObservadores = listaObservadores,
-            accesosCerrados = accesosCerrados,
+            listaObservadores = estadoAsignacion.observadoresAsignables,
+            observadoresOcupados = estadoAsignacion.observadoresOcupados,
+            accesosCerrados = estadoAsignacion.accesosCerrados,
             onAsignarAcceso = { observadorId, acceso ->
                 mostrarDialogoAsignarAcceso = false
                 viewModel.asignarAccesoAObservador(contexto, observadorId, acceso)
@@ -327,14 +333,7 @@ fun MisSesionesContent(
                         usuarioActual = usuarioActual,
                         lista = listaSesiones,
                         onIniciar = onIniciarSesionConteo,
-                        onAsignarAcceso = {
-                            val dbHelper = RinconDbHelper(contexto)
-                            val todosLosUsuarios = dbHelper.obtenerTodosLosUsuarios()
-                            // Filtramos exclusivamente los observadores activos
-                            listaObservadores = todosLosUsuarios.filter { it.rolId == Rol.ID_OBSERVADOR && it.activo }
-                            accesosCerrados = dbHelper.obtenerAccesosCerrados()
-                            mostrarDialogoAsignarAcceso = true
-                        }
+                        onAsignarAcceso = { viewModel.prepararAsignacion(contexto) }
                     )
                 }
             }

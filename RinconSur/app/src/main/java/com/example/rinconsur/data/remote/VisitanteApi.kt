@@ -61,6 +61,9 @@ interface VisitanteApi {
     @GET("api/sesiones/{id}")
     suspend fun obtenerSesion(@Path("id") id: Long): SesionResponse
 
+    @GET("api/sesiones/activas")
+    suspend fun listarActivas(): List<SesionResponse>
+
     @POST("api/sesiones")
     suspend fun crearSesion(@Body datos: CrearSesionRequest): SesionResponse
 

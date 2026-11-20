@@ -33,6 +33,9 @@ class VisitanteRepository(
     suspend fun listarRegistros(sesionId: Long): List<RegistroDetalleItem> =
         llamar { visitanteApi.listarRegistros(sesionId) }.map { it.aRegistroDetalleItem() }
 
+    suspend fun idsObservadoresOcupados(): List<Long> =
+        llamar { visitanteApi.listarActivas() }.map { it.usuarioId }
+
     suspend fun guardarRegistro(
         sesionId: Long,
         clasificacion: String,
