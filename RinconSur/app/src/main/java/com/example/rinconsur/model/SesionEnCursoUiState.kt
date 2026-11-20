@@ -9,15 +9,17 @@ data class SesionEnCursoUiState(
     val fecha: String = "15-09-2026",
     val guardadoLocalActivo: Boolean = true,
 
-    // Selecciones actuales (one-tap)
     val clasificacionSeleccionada: ClasificacionPersona = ClasificacionPersona.TRANSITO,
     val rangoEtarioSeleccionado: RangoEtarioEnum = RangoEtarioEnum.EDAD_26_40,
     val companiaSeleccionada: TipoCompaniaEnum = TipoCompaniaEnum.SOLO,
     val traeBolsasOtraTienda: Boolean = false,
     val destinoSeleccionado: AccesoDestinoEnum = AccesoDestinoEnum.A1,
 
-    // Historial y métricas de la sesión activa
     val totalRegistrosSesion: Int = 0,
     val ultimoRegistroResumen: String = "No hay Registros",
-    val permiteAnular: Boolean = true
+    val permiteAnular: Boolean = true,
+
+    val cargando: Boolean = false,
+    val mensajeError: String? = null,
+    val sesionFinalizada: Boolean = false
 )

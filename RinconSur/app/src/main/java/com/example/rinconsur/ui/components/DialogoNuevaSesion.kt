@@ -20,11 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.example.rinconsur.R
-import com.example.rinconsur.data.RinconDbHelper
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
@@ -33,13 +31,11 @@ import com.example.rinconsur.ui.theme.Dimens
 @Composable
 fun DialogoNuevaSesion(
     listaObservadores: List<Usuario>,
+    observadoresOcupados: List<Long>,
     accesosCerrados: List<String>,
     onAsignarAcceso: (observadorId: Long, acceso: String) -> Unit,
     onCancelar: () -> Unit
 ) {
-    val contexto = LocalContext.current
-    val dbHelper = remember { RinconDbHelper(contexto) }
-
     var observadorSeleccionado by remember { mutableStateOf<Usuario?>(null) }
     var accesoSeleccionado by remember { mutableStateOf<String?>(null) }
 
@@ -64,7 +60,6 @@ fun DialogoNuevaSesion(
                     .padding(vertical = Dimens.espacioMini),
                 verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
             ) {
-                // Desplegable de Observador (O)
                 ExposedDropdownMenuBox(
                     expanded = expandedObservador,
                     onExpandedChange = { expandedObservador = !expandedObservador }
@@ -91,7 +86,7 @@ fun DialogoNuevaSesion(
                             )
                         } else {
                             listaObservadores.forEach { obs ->
-                                val tieneSesionActiva = dbHelper.tieneSesionActiva(obs.id)
+                                val tieneSesionActiva = observadoresOcupados.contains(obs.id)
                                 DropdownMenuItem(
                                     text = {
                                         Text(
@@ -112,7 +107,6 @@ fun DialogoNuevaSesion(
                     }
                 }
 
-                // Desplegable de Acceso (A)
                 ExposedDropdownMenuBox(
                     expanded = expandedAcceso,
                     onExpandedChange = { expandedAcceso = !expandedAcceso }

@@ -148,7 +148,7 @@
     <string name="sesion_curso_subtitulo">Rincón Sur</string>
     <string name="sesion_curso_cd_menu">Menú</string>
     <string name="sesion_curso_estado_en_curso">En curso · %1$s</string>
-    <string name="sesion_curso_guardado_local">Guardado local activo · Sin conexión</string>
+    <string name="sesion_curso_guardado_local">Guardado en el servidor · En línea</string>
     <string name="sesion_curso_seccion_nuevo">Nuevo registro</string>
     <string name="sesion_curso_subtitulo_tactil">Solo toca opciones</string>
     <string name="sesion_curso_clasificacion">Clasificación</string>
@@ -165,7 +165,7 @@
     <string name="sesion_curso_resumen_ultimo">Último: %1$s</string>
     <string name="sesion_curso_sin_registros">Sin registros previos</string>
     <string name="sesion_curso_boton_anular">Anular último registro</string>
-    <string name="sesion_curso_pie_sincronizacion">Sincronización pendiente. Los registros guardados requieren validación posterior del supervisor.</string>
+    <string name="sesion_curso_pie_sincronizacion">Los registros se guardan en el servidor al instante y quedan sujetos a validación posterior del supervisor.</string>
 
     <!-- Textos Resumen Diario / Métricas -->
     <string name="resumen_diario_titulo">Métricas Rincón Sur</string>

@@ -33,6 +33,10 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -98,6 +102,13 @@ fun SesionEnCursoScreen(
         viewModel.inicializarSesion(contexto, idSesion, acceso)
     }
 
+    LaunchedEffect(uiState.sesionFinalizada) {
+        if (uiState.sesionFinalizada) {
+            viewModel.consumirSesionFinalizada()
+            onVolver()
+        }
+    }
+
     SesionEnCursoContent(
         uiState = uiState,
         usuarioActual = usuarioActual,
@@ -108,10 +119,8 @@ fun SesionEnCursoScreen(
         onGuardarRegistro = { viewModel.onGuardarRegistro(contexto) },
         onAnularUltimoRegistro = { viewModel.onAnularUltimoRegistro(contexto) },
         onPausarSesion = onVolver,
-        onFinalizarSesion = {
-            viewModel.finalizarSesionConteo(contexto)
-            onVolver()
-        },
+        onFinalizarSesion = { viewModel.finalizarSesionConteo(contexto) },
+        onLimpiarError = viewModel::limpiarError,
         onIrMisSesiones = onIrMisSesiones,
         onIrCrearCuenta = onIrCrearCuenta,
         onCerrarSesion = onCerrarSesion,
@@ -134,6 +143,7 @@ fun SesionEnCursoContent(
     onAnularUltimoRegistro: () -> Unit,
     onPausarSesion: () -> Unit = {},
     onFinalizarSesion: () -> Unit = {},
+    onLimpiarError: () -> Unit = {},
     onIrMisSesiones: () -> Unit = {},
     onIrCrearCuenta: () -> Unit = {},
     onCerrarSesion: () -> Unit = {},
@@ -143,6 +153,7 @@ fun SesionEnCursoContent(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var mostrarDialogoPausa by remember { mutableStateOf(false) }
     var mostrarDialogoFinalizar by remember { mutableStateOf(false) }
@@ -153,6 +164,13 @@ fun SesionEnCursoContent(
     val colorContenidoTopAppBar = if (esTemaOscuro) MaterialTheme.colorScheme.onSurface else Color.White
 
     BackHandler { mostrarDialogoPausa = true }
+
+    LaunchedEffect(uiState.mensajeError) {
+        uiState.mensajeError?.let { mensaje ->
+            snackbarHostState.showSnackbar(mensaje, duration = SnackbarDuration.Short)
+            onLimpiarError()
+        }
+    }
 
     if (mostrarDialogoCerrar) {
         DialogoCerrarSesion(
@@ -240,6 +258,15 @@ fun SesionEnCursoContent(
         }
     ) {
         Scaffold(
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState) { data ->
+                    Snackbar(
+                        snackbarData = data,
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                }
+            },
             topBar = {
                 TopAppBar(
                     title = {
