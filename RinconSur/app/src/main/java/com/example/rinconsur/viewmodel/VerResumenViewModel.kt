@@ -2,77 +2,77 @@ package com.example.rinconsur.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.example.rinconsur.data.RinconDbHelper
+import androidx.lifecycle.viewModelScope
+import com.example.rinconsur.R
+import com.example.rinconsur.data.ApiException
+import com.example.rinconsur.data.DashboardRepository
+import com.example.rinconsur.data.remote.ItemDistribucionResponse
+import com.example.rinconsur.model.VerResumenUiState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-data class VerResumenUiState(
-    val acceso: String = "",
-    val fecha: String = "",
-    val totalMuestras: Int = 0,
+class VerResumenViewModel(
+    private val dashboardRepositorio: DashboardRepository = DashboardRepository()
+) : ViewModel() {
 
-    val filtrosDisponibles: List<String> = listOf("Clasificación", "Rango Etario", "Compañía", "Bolsas de otra tienda"),
-    val filtroSeleccionado: String = "Clasificación",
-    val datosGrafico: List<Pair<String, Int>> = emptyList(),
-
-    // --- LISTAS GUARDADAS ---
-    val distribucionClasificacion: List<Pair<String, Int>> = emptyList(),
-    val distribucionEdades: List<Pair<String, Int>> = emptyList(),
-    val distribucionCompania: List<Pair<String, Int>> = emptyList(),
-    val distribucionBolsas: List<Pair<String, Int>> = emptyList()
-)
-
-class VerResumenViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(VerResumenUiState())
     val uiState: StateFlow<VerResumenUiState> = _uiState.asStateFlow()
 
-    fun cargarDatos(context: Context, acceso: String, fecha: String) {
-        val dbHelper = RinconDbHelper(context)
+    fun cargarDatos(contexto: Context, acceso: String, fecha: String) {
+        if (_uiState.value.cargando) return
 
-        // Usamos la DB real para todos los datos
-        val distribucion = dbHelper.obtenerDistribucionClasificacion(acceso, fecha)
-        val edades = dbHelper.obtenerDistribucionRangoEtario(acceso, fecha)
-        val companias = dbHelper.obtenerDistribucionCompania(acceso, fecha)
-        val bolsas = dbHelper.obtenerDistribucionBolsas(acceso, fecha)
+        _uiState.update { it.copy(acceso = acceso, fecha = fecha, cargando = true, mensajeError = null) }
 
-        val total = distribucion.sumOf { it.second }
+        viewModelScope.launch {
+            try {
+                val respuesta = dashboardRepositorio.distribucion(fecha, acceso)
 
-        _uiState.update { estadoActual ->
-            estadoActual.copy(
-                acceso = acceso,
-                fecha = fecha,
-                totalMuestras = total,
-
-                distribucionClasificacion = distribucion,
-                distribucionEdades = edades,
-                distribucionCompania = companias,
-                distribucionBolsas = bolsas,
-
-                datosGrafico = when (estadoActual.filtroSeleccionado) {
-                    "Rango Etario" -> edades
-                    "Compañía" -> companias
-                    "Bolsas de otra tienda" -> bolsas
-                    else -> distribucion
+                _uiState.update { estadoActual ->
+                    val conDatos = estadoActual.copy(
+                        totalMuestras = respuesta.total,
+                        distribucionClasificacion = respuesta.porClasificacion.aPares(),
+                        distribucionEdades = respuesta.porRangoEtario.aPares(),
+                        distribucionCompania = respuesta.porCompania.aPares(),
+                        distribucionBolsas = respuesta.porBolsas.aPares()
+                    )
+                    conDatos.copy(
+                        datosGrafico = datosDelFiltro(conDatos, conDatos.filtroSeleccionado),
+                        cargando = false,
+                        mensajeError = null
+                    )
                 }
-            )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uiState.update { it.copy(cargando = false, mensajeError = textoDeError(e, contexto)) }
+            }
         }
     }
 
     fun cambiarFiltro(nuevoFiltro: String) {
         _uiState.update { estadoActual ->
-            val nuevosDatos = when (nuevoFiltro) {
-                "Rango Etario" -> estadoActual.distribucionEdades
-                "Compañía" -> estadoActual.distribucionCompania
-                "Bolsas de otra tienda" -> estadoActual.distribucionBolsas
-                else -> estadoActual.distribucionClasificacion
-            }
-
             estadoActual.copy(
                 filtroSeleccionado = nuevoFiltro,
-                datosGrafico = nuevosDatos
+                datosGrafico = datosDelFiltro(estadoActual, nuevoFiltro)
             )
         }
     }
+
+    private fun datosDelFiltro(estado: VerResumenUiState, filtro: String): List<Pair<String, Int>> =
+        when (filtro) {
+            "Rango Etario" -> estado.distribucionEdades
+            "Compañía" -> estado.distribucionCompania
+            "Bolsas de otra tienda" -> estado.distribucionBolsas
+            else -> estado.distribucionClasificacion
+        }
+
+    private fun List<ItemDistribucionResponse>.aPares(): List<Pair<String, Int>> =
+        map { it.etiqueta to it.cantidad }
+
+    private fun textoDeError(e: Exception, contexto: Context): String =
+        if (e is ApiException) e.textoParaUsuario(contexto) else contexto.getString(R.string.error_inesperado)
 }

@@ -22,11 +22,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
 import com.example.rinconsur.data.FlujoAcceso
+import com.example.rinconsur.model.ResumenDiarioUiState
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.components.LogoTopBarRinconSur
 import com.example.rinconsur.ui.theme.BurdeoRincon
 import com.example.rinconsur.ui.theme.Dimens
-import com.example.rinconsur.viewmodel.ResumenDiarioUiState
 import com.example.rinconsur.viewmodel.ResumenDiarioViewModel
 
 @Composable
@@ -148,6 +148,18 @@ fun ResumenDiarioContent(
                 }
             }
 
+            if (uiState.cargando) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
+
+            uiState.mensajeError?.let { mensaje ->
+                Text(
+                    text = mensaje,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             EtiquetaSeccion(
                 etiqueta = stringResource(R.string.resumen_diario_p01_etiqueta),
                 titulo = stringResource(R.string.resumen_diario_p01_titulo)
@@ -182,7 +194,9 @@ fun ResumenDiarioContent(
             )
 
             if (uiState.flujos.isEmpty()) {
-                Text(stringResource(R.string.resumen_diario_sin_registros), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.padding(Dimens.espacioMedio))
+                if (!uiState.cargando && uiState.mensajeError == null) {
+                    Text(stringResource(R.string.resumen_diario_sin_registros), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.padding(Dimens.espacioMedio))
+                }
             } else {
                 uiState.flujos.forEach { flujo ->
                     TarjetaAcceso(

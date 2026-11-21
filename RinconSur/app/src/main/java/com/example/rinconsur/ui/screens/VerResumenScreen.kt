@@ -56,6 +56,8 @@ fun VerResumenScreen(
         Color(0xFF6A1B9A)
     )
 
+    val mostrarSinDatos = uiState.datosGrafico.isEmpty() && !uiState.cargando && uiState.mensajeError == null
+
     LaunchedEffect(acceso, fecha) {
         viewModel.cargarDatos(contexto, acceso, fecha)
     }
@@ -93,6 +95,18 @@ fun VerResumenScreen(
                 .padding(Dimens.espacioPantalla),
             verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
         ) {
+            if (uiState.cargando) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
+
+            uiState.mensajeError?.let { mensaje ->
+                Text(
+                    text = mensaje,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent),
@@ -153,7 +167,9 @@ fun VerResumenScreen(
             ) {
                 Column(modifier = Modifier.padding(Dimens.espacioMedio)) {
                     if (uiState.datosGrafico.isEmpty()) {
-                        Text(stringResource(R.string.ver_resumen_sin_datos), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(Dimens.espacioMedio))
+                        if (mostrarSinDatos) {
+                            Text(stringResource(R.string.ver_resumen_sin_datos), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(Dimens.espacioMedio))
+                        }
                     } else {
                         GraficoBarrasNativo(
                             datos = uiState.datosGrafico,
@@ -178,7 +194,9 @@ fun VerResumenScreen(
                     verticalArrangement = Arrangement.spacedBy(Dimens.espacioMedio)
                 ) {
                     if (uiState.datosGrafico.isEmpty()) {
-                        Text(stringResource(R.string.ver_resumen_sin_datos), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(Dimens.espacioMedio))
+                        if (mostrarSinDatos) {
+                            Text(stringResource(R.string.ver_resumen_sin_datos), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(Dimens.espacioMedio))
+                        }
                     } else {
                         GraficoCircularNativo(
                             datos = uiState.datosGrafico,
