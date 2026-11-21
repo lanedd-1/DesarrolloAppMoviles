@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
-import com.example.rinconsur.data.FlujoAcceso
+import com.example.rinconsur.model.FlujoAcceso
 import com.example.rinconsur.model.ResumenDiarioUiState
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.components.LogoTopBarRinconSur

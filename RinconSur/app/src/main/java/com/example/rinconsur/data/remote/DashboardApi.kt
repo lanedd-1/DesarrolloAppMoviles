@@ -1,6 +1,6 @@
 package com.example.rinconsur.data.remote
 
-import com.example.rinconsur.data.FlujoAcceso
+import com.example.rinconsur.model.FlujoAcceso
 import retrofit2.http.GET
 import retrofit2.http.Query
 

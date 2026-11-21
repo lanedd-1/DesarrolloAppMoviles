@@ -1,6 +1,5 @@
 package com.example.rinconsur.model
 
-import com.example.rinconsur.data.RegistroDetalleItem
 
 data class DetalleResumenUiState(
     val acceso: String = "",

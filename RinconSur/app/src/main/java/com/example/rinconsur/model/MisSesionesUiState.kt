@@ -1,7 +1,6 @@
 package com.example.rinconsur.model
 
 import android.graphics.Bitmap
-import com.example.rinconsur.data.SesionItem
 
 data class MisSesionesUiState(
     val usuarioActual: Usuario? = null,

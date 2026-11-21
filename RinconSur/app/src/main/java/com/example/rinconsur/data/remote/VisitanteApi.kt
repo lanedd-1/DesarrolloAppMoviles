@@ -1,7 +1,7 @@
 package com.example.rinconsur.data.remote
 
-import com.example.rinconsur.data.RegistroDetalleItem
-import com.example.rinconsur.data.SesionItem
+import com.example.rinconsur.model.RegistroDetalleItem
+import com.example.rinconsur.model.SesionItem
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET

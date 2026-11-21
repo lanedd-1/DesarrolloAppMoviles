@@ -71,8 +71,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
-import com.example.rinconsur.data.SesionItem
 import com.example.rinconsur.model.Rol
+import com.example.rinconsur.model.SesionItem
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.permisos.Permisos
 import com.example.rinconsur.ui.components.AvatarCircular

@@ -4,6 +4,7 @@ import com.example.rinconsur.data.remote.DashboardApi
 import com.example.rinconsur.data.remote.DistribucionResponse
 import com.example.rinconsur.data.remote.ResumenDiarioResponse
 import com.example.rinconsur.data.remote.RetrofitClient
+import com.example.rinconsur.model.RegistroDetalleItem
 
 class DashboardRepository(
     private val dashboardApi: DashboardApi = RetrofitClient.dashboardApi
