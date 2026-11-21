@@ -7,6 +7,8 @@ import com.example.rinconsur.data.remote.RetrofitClient
 import com.example.rinconsur.data.remote.VisitanteApi
 import com.example.rinconsur.data.remote.aRegistroDetalleItem
 import com.example.rinconsur.data.remote.aSesionItem
+import com.example.rinconsur.model.RegistroDetalleItem
+import com.example.rinconsur.model.SesionItem
 import com.google.gson.JsonParser
 import retrofit2.HttpException
 import java.io.IOException

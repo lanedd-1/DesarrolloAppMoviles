@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
-import com.example.rinconsur.data.RegistroDetalleItem
 import com.example.rinconsur.model.ClasificacionPersona
 import com.example.rinconsur.model.DetalleResumenUiState
 import com.example.rinconsur.model.RangoEtarioEnum
+import com.example.rinconsur.model.RegistroDetalleItem
 import com.example.rinconsur.model.TipoCompaniaEnum
 import com.example.rinconsur.model.Usuario
 import com.example.rinconsur.ui.components.LogoTopBarRinconSur

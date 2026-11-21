@@ -1,7 +1,5 @@
 package com.example.rinconsur.model
 
-import com.example.rinconsur.data.FlujoAcceso
-
 data class ResumenDiarioUiState(
     val iniciales: String = "",
     val nombreUsuario: String = "",
