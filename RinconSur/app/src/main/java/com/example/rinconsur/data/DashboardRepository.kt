@@ -17,4 +17,19 @@ class DashboardRepository(
 
     suspend fun distribucion(fecha: String, acceso: String): DistribucionResponse =
         llamarApi { dashboardApi.distribucion(fecha, acceso) }
+
+    suspend fun registros(fecha: String, acceso: String): List<RegistroDetalleItem> =
+        llamarApi { dashboardApi.registros(fecha, acceso) }
+            .sortedByDescending { it.id }
+            .map {
+                RegistroDetalleItem(
+                    id = it.id,
+                    hora = it.hora,
+                    clasificacion = it.clasificacion,
+                    rangoEtario = it.rangoEtario,
+                    compania = it.compania,
+                    bolsas = it.bolsas,
+                    destino = it.destino
+                )
+            }
 }

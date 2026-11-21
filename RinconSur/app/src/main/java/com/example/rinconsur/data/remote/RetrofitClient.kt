@@ -21,6 +21,8 @@ object RetrofitClient {
 
     val visitanteApi: VisitanteApi by lazy { crear(URL_VISITANTES).create(VisitanteApi::class.java) }
 
+    val registroApi: RegistroApi by lazy { crear(URL_VISITANTES).create(RegistroApi::class.java) }
+
     val administracionApi: AdministracionApi by lazy { crear(URL_ADMINISTRACION).create(AdministracionApi::class.java) }
 
     val dashboardApi: DashboardApi by lazy { crear(URL_DASHBOARD).create(DashboardApi::class.java) }

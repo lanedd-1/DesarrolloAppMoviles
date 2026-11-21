@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.rinconsur.R
 import com.example.rinconsur.data.RegistroDetalleItem
 import com.example.rinconsur.model.ClasificacionPersona
+import com.example.rinconsur.model.DetalleResumenUiState
 import com.example.rinconsur.model.RangoEtarioEnum
 import com.example.rinconsur.model.TipoCompaniaEnum
 import com.example.rinconsur.model.Usuario
@@ -102,7 +103,7 @@ fun DetalleResumenScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleResumenContent(
-    uiState: com.example.rinconsur.viewmodel.DetalleResumenUiState,
+    uiState: DetalleResumenUiState,
     onVolver: () -> Unit,
     onAbrirEdicion: (RegistroDetalleItem) -> Unit
 ) {
@@ -159,6 +160,18 @@ fun DetalleResumenContent(
         ) {
             Spacer(modifier = Modifier.height(Dimens.espacioChico))
 
+            if (uiState.cargando) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
+
+            uiState.mensajeError?.let { mensaje ->
+                Text(
+                    text = mensaje,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             // Tarjeta Superior (Total Muestras)
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -186,12 +199,14 @@ fun DetalleResumenContent(
             Text(text = stringResource(R.string.detalle_resumen_historial_titulo), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
 
             if (uiState.registros.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.detalle_resumen_sin_registros),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(top = Dimens.espacioMedio)
-                )
+                if (!uiState.cargando && uiState.mensajeError == null) {
+                    Text(
+                        text = stringResource(R.string.detalle_resumen_sin_registros),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(top = Dimens.espacioMedio)
+                    )
+                }
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(Dimens.espacioChico),
@@ -375,7 +390,7 @@ fun FiltroChipBasico(texto: String, seleccionado: Boolean, onClick: () -> Unit) 
 private fun DetalleResumenScreenPreview() {
     RinconSurTheme {
         DetalleResumenContent(
-            uiState = com.example.rinconsur.viewmodel.DetalleResumenUiState(
+            uiState = DetalleResumenUiState(
                 acceso = "Acceso 1 - Galería Principal",
                 fecha = "24/10/2026",
                 totalRegistros = 12,
