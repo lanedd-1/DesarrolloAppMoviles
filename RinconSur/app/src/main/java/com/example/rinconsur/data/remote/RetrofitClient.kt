@@ -6,10 +6,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    private const val URL_USUARIOS = "http://10.0.2.2:8081/"
-    private const val URL_VISITANTES = "http://10.0.2.2:8082/"
-    private const val URL_ADMINISTRACION = "http://10.0.2.2:8083/"
-    private const val URL_DASHBOARD = "http://10.0.2.2:8084/"
+    // Un solo punto de entrada: el API Gateway reparte cada ruta al microservicio que corresponde.
+    // 10.0.2.2 es el computador visto desde el emulador. En un celular físico va la IP del computador (ej. 192.168.1.50).
+    private const val URL_GATEWAY = "http://10.0.2.2:8080/"
 
     private fun crear(urlBase: String): Retrofit =
         Retrofit.Builder()
@@ -17,13 +16,13 @@ object RetrofitClient {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-    val usuarioApi: UsuarioApi by lazy { crear(URL_USUARIOS).create(UsuarioApi::class.java) }
+    val usuarioApi: UsuarioApi by lazy { crear(URL_GATEWAY).create(UsuarioApi::class.java) }
 
-    val visitanteApi: VisitanteApi by lazy { crear(URL_VISITANTES).create(VisitanteApi::class.java) }
+    val visitanteApi: VisitanteApi by lazy { crear(URL_GATEWAY).create(VisitanteApi::class.java) }
 
-    val registroApi: RegistroApi by lazy { crear(URL_VISITANTES).create(RegistroApi::class.java) }
+    val registroApi: RegistroApi by lazy { crear(URL_GATEWAY).create(RegistroApi::class.java) }
 
-    val administracionApi: AdministracionApi by lazy { crear(URL_ADMINISTRACION).create(AdministracionApi::class.java) }
+    val administracionApi: AdministracionApi by lazy { crear(URL_GATEWAY).create(AdministracionApi::class.java) }
 
-    val dashboardApi: DashboardApi by lazy { crear(URL_DASHBOARD).create(DashboardApi::class.java) }
+    val dashboardApi: DashboardApi by lazy { crear(URL_GATEWAY).create(DashboardApi::class.java) }
 }
